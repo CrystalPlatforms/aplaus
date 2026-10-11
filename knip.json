@@ -1,0 +1,13 @@
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"ignoreDependencies": ["cloudflare"],
+	"workspaces": {
+		".": {
+			"entry": ["scripts/*.ts", "taze.config.ts"]
+		},
+		"packages/data-ops": {
+			"entry": ["src/*/index.ts", "src/auth/*.ts", "config/auth.ts", "drizzle-*.config.ts"],
+			"ignoreBinaries": ["dotenvx"]
+		}
+	}
+}

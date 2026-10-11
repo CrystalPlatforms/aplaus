@@ -1,0 +1,200 @@
+name: Compat date freshness
+
+on:
+  schedule:
+    - cron: "0 6 * * 3" # Wednesday 06:00 UTC (deps-update is Monday)
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: "Max days behind today before opening PR"
+        required: false
+        default: "90"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: compat-date
+  cancel-in-progress: false
+
+env:
+  # Future-proof: opt into Node 24 for JS actions before GH forces it (2026-06-02 default, 2026-09-16 hard cutoff)
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # `pnpm install` runs `prepare` -> simple-git-hooks, which installs the pre-push
+  # hook into the CI runner, where it then fires on every automated push
+  # (create-pull-request, semantic-release) and can reject the push over checks
+  # CI has already run. Hooks are a local dev net; the explicit steps below are
+  # the CI contract, and they report per-step instead of failing inside a push.
+  SKIP_SIMPLE_GIT_HOOKS: "1"
+  MAX_AGE_DAYS: ${{ github.event.inputs.max_age_days || '90' }}
+
+jobs:
+  bump:
+    name: Bump compatibility_date if stale
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # A pull request opened with the default GITHUB_TOKEN deliberately starts no
+      # workflow runs, so bot pull requests would arrive unchecked. BOT_PR_TOKEN
+      # is a human-provisioned token that does trigger them. Its presence decides
+      # where the gates run: on the pull request when it is set, inline here when
+      # it is not. A clone with no secret still gets a working bot — its pull
+      # request is simply validated before it opens rather than on it.
+      - name: Detect CI-triggering token
+        id: bot_pr_token
+        env:
+          BOT_PR_TOKEN: ${{ secrets.BOT_PR_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${BOT_PR_TOKEN:-}" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "BOT_PR_TOKEN is set — this pull request runs the standard checks."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::BOT_PR_TOKEN is not configured, so this pull request will not start CI. Running the gates inline instead. Add a repository secret named BOT_PR_TOKEN — a fine-grained personal access token with contents:write and pull-requests:write — to have bot pull requests checked exactly like human ones."
+          fi
+
+      - name: Detect stale compatibility_date
+        id: check
+        env:
+          MAX_AGE_DAYS: ${{ env.MAX_AGE_DAYS }}
+        run: |
+          set -euo pipefail
+          today=$(date -u +%Y-%m-%d)
+          today_ts=$(date -u -d "$today" +%s)
+          stale=()
+          shopt -s nullglob
+          for f in apps/*/wrangler.jsonc; do
+            current=$(perl -ne 'next if /^\s*\/\//; if (/"compatibility_date"\s*:\s*"(\d{4}-\d{2}-\d{2})"/) { print "$1\n"; exit }' "$f")
+            if [[ -z "$current" ]]; then
+              echo "::warning file=$f::no active compatibility_date line found"
+              continue
+            fi
+            current_ts=$(date -u -d "$current" +%s)
+            age=$(( (today_ts - current_ts) / 86400 ))
+            echo "$f: $current ($age days old)"
+            if (( age > MAX_AGE_DAYS )); then
+              stale+=("$f|$current|$age")
+            fi
+          done
+
+          if (( ${#stale[@]} == 0 )); then
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+            echo "No stale wrangler.jsonc files."
+            exit 0
+          fi
+
+          echo "stale=true" >> "$GITHUB_OUTPUT"
+          echo "today=$today" >> "$GITHUB_OUTPUT"
+          {
+            echo "report<<EOF"
+            for entry in "${stale[@]}"; do
+              IFS='|' read -r f cur age <<< "$entry"
+              printf -- '- `%s`: `%s` (%s days behind)\n' "$f" "$cur" "$age"
+            done
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "files<<EOF"
+            for entry in "${stale[@]}"; do
+              IFS='|' read -r f _ _ <<< "$entry"
+              echo "$f"
+            done
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Update compatibility_date in stale files
+        if: steps.check.outputs.stale == 'true'
+        env:
+          TODAY: ${{ steps.check.outputs.today }}
+          FILES: ${{ steps.check.outputs.files }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r f; do
+            [[ -z "$f" ]] && continue
+            # Only rewrite non-commented "compatibility_date" lines, preserving JSONC formatting.
+            perl -i -pe '
+              next if /^\s*\/\//;
+              s/("compatibility_date"\s*:\s*)"\d{4}-\d{2}-\d{2}"/${1}"$ENV{TODAY}"/;
+            ' "$f"
+            echo "Bumped $f → $TODAY"
+          done <<< "$FILES"
+
+      - name: Setup pnpm
+        if: steps.check.outputs.stale == 'true'
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        if: steps.check.outputs.stale == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        if: steps.check.outputs.stale == 'true'
+        run: pnpm install --frozen-lockfile
+
+      # Bumping the date invalidates the committed runtime types, so this job
+      # regenerates them in the same pull request rather than leaving a manual
+      # follow-up nobody performs.
+      - name: Regenerate runtime types
+        if: steps.check.outputs.stale == 'true'
+        run: |
+          set -euo pipefail
+          # `wrangler types` reads .dev.vars to declare the Worker's secrets on
+          # Env, and CI has none. Generating without it would silently drop those
+          # declarations, so seed the file from the committed template — only its
+          # key set reaches the generated types, never the values, and that key
+          # set is asserted by scripts/worker-config.test.ts.
+          cp apps/data-service/.example.vars apps/data-service/.dev.vars
+          pnpm --filter data-service cf-typegen
+          rm apps/data-service/.dev.vars
+
+      # Gates only where the pull request itself will not be checked. With the
+      # token set these run on the pull request instead, so a bump that leaves the
+      # types behind fails on a reviewable diff rather than aborting before one exists.
+      - name: Runtime type freshness
+        if: steps.check.outputs.stale == 'true' && steps.bot_pr_token.outputs.configured != 'true'
+        run: pnpm run check:runtime-types
+
+      - name: Lint
+        if: steps.check.outputs.stale == 'true' && steps.bot_pr_token.outputs.configured != 'true'
+        run: pnpm run lint:ci
+
+      - name: Type check
+        if: steps.check.outputs.stale == 'true' && steps.bot_pr_token.outputs.configured != 'true'
+        run: pnpm run types
+
+      - name: Test
+        if: steps.check.outputs.stale == 'true' && steps.bot_pr_token.outputs.configured != 'true'
+        run: pnpm run test
+
+      - name: Knip
+        if: steps.check.outputs.stale == 'true' && steps.bot_pr_token.outputs.configured != 'true'
+        run: pnpm run knip
+
+      - name: Open PR
+        if: steps.check.outputs.stale == 'true'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.BOT_PR_TOKEN || secrets.GITHUB_TOKEN }}
+          branch: chore/compat-date-refresh
+          delete-branch: true
+          commit-message: "chore(workers): refresh compatibility_date to ${{ steps.check.outputs.today }}"
+          title: "chore(workers): refresh compatibility_date to ${{ steps.check.outputs.today }}"
+          body: |
+            Automated refresh — `compatibility_date` was more than `${{ env.MAX_AGE_DAYS }}` days behind today (`${{ steps.check.outputs.today }}`).
+
+            ${{ steps.check.outputs.report }}
+
+            Cloudflare Workers best practice: set `compatibility_date` to today's date on new projects and periodically refresh on existing ones. New runtime features ship behind compat dates — staying current lets you opt into improvements without surprises and keeps you aligned with the runtime version Cloudflare actively tests.
+
+            `worker-configuration.d.ts` was regenerated in the same commit — bumping the date without regenerating fails `pnpm check:runtime-types`, so the two cannot drift apart.
+
+            Checks run on this pull request like they do on any other, so a bump that leaves the generated types behind fails here on a reviewable diff. Where `BOT_PR_TOKEN` is not configured this job runs those same gates itself before opening the PR instead.
+          labels: cloudflare, automated

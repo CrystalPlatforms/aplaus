@@ -1,0 +1,124 @@
+name: Deps update
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Monday 06:00 UTC (07:00/08:00 PL)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: deps-update
+  cancel-in-progress: false
+
+env:
+  # Future-proof: opt into Node 24 for JS actions before GH forces it (2026-06-02 default, 2026-09-16 hard cutoff)
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # `pnpm install` runs `prepare` -> simple-git-hooks, which installs the pre-push
+  # hook into the CI runner, where it then fires on every automated push
+  # (create-pull-request, semantic-release) and can reject the push over checks
+  # CI has already run. Hooks are a local dev net; the explicit steps below are
+  # the CI contract, and they report per-step instead of failing inside a push.
+  SKIP_SIMPLE_GIT_HOOKS: "1"
+
+jobs:
+  update:
+    name: Bump deps + open PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # A pull request opened with the default GITHUB_TOKEN deliberately starts no
+      # workflow runs, so bot pull requests would arrive unchecked. BOT_PR_TOKEN
+      # is a human-provisioned token that does trigger them. Its presence decides
+      # where the gates run: on the pull request when it is set, inline here when
+      # it is not. A clone with no secret still gets a working bot — its pull
+      # request is simply validated before it opens rather than on it.
+      - name: Detect CI-triggering token
+        id: bot_pr_token
+        env:
+          BOT_PR_TOKEN: ${{ secrets.BOT_PR_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${BOT_PR_TOKEN:-}" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "BOT_PR_TOKEN is set — this pull request runs the standard checks."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::BOT_PR_TOKEN is not configured, so this pull request will not start CI. Running the gates inline instead. Add a repository secret named BOT_PR_TOKEN — a fine-grained personal access token with contents:write and pull-requests:write — to have bot pull requests checked exactly like human ones."
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (sanity check current state)
+        run: pnpm install --frozen-lockfile
+
+      - name: Update deps
+        run: pnpm run deps:update
+
+      - name: Refresh lockfile
+        run: pnpm install --no-frozen-lockfile
+
+      # A wrangler bump ships a newer workerd, which invalidates the committed
+      # runtime types, so regenerate them in the same pull request. Without this
+      # the freshness check fails every run that picks up a wrangler release.
+      - name: Regenerate runtime types
+        run: |
+          set -euo pipefail
+          # `wrangler types` reads .dev.vars to declare the Worker's secrets on
+          # Env, and CI has none. Seed it from the committed template — only its
+          # key set reaches the generated types, never the values.
+          cp apps/data-service/.example.vars apps/data-service/.dev.vars
+          pnpm --filter data-service cf-typegen
+          rm apps/data-service/.dev.vars
+
+      # Gates only where the pull request itself will not be checked. With the
+      # token set these run on the pull request instead, so a bump that breaks a
+      # typecheck fails on a reviewable diff rather than aborting before one exists.
+      - name: Lint
+        if: steps.bot_pr_token.outputs.configured != 'true'
+        run: pnpm run lint:ci
+
+      - name: Type check
+        if: steps.bot_pr_token.outputs.configured != 'true'
+        run: pnpm run types
+
+      - name: Test
+        if: steps.bot_pr_token.outputs.configured != 'true'
+        run: pnpm run test
+
+      - name: Knip
+        if: steps.bot_pr_token.outputs.configured != 'true'
+        run: pnpm run knip
+
+      - name: Open PR
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.BOT_PR_TOKEN || secrets.GITHUB_TOKEN }}
+          branch: chore/deps-update
+          delete-branch: true
+          commit-message: "chore(deps): weekly minor + patch bumps"
+          title: "chore(deps): weekly minor + patch bumps"
+          body: |
+            Automated weekly run of `pnpm deps:update` (`taze -r -w`) +
+            `pnpm install`. Walks every workspace package — root, apps/*,
+            packages/* — so sub-package versions stay in sync.
+
+            Checks run on this pull request like they do on any other, so a
+            bump that breaks lint, types, tests or knip fails here on a
+            reviewable diff. Where `BOT_PR_TOKEN` is not configured this job
+            runs those same gates itself before opening the PR instead.
+
+            Close this PR if anything looks off and run the bumps manually.
+          labels: dependencies, automated
