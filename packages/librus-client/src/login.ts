@@ -28,7 +28,7 @@ export interface LoginOutcome {
  * scheme-less host ("synergia.librus.pl/x") or a relative path ("/x"). Null
  * when nothing parses — the caller maps that to a typed login failure.
  */
-export function resolveContinueUrl(raw: string, base: string): string | null {
+function resolveContinueUrl(raw: string, base: string): string | null {
 	const candidates = [raw, `https://${raw}`];
 	for (const candidate of candidates) {
 		try {
