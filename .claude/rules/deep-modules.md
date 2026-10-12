@@ -12,32 +12,33 @@ Small interface, large implementation (Ousterhout). Absorb complexity inside mod
 
 | Layer | Module boundary | Interface (narrow) | Hides |
 |-------|----------------|-----------|-------|
-| DB domain | `data-ops/src/{domain}/index.ts` | Exported queries + Zod schemas | Table defs, query builders, Drizzle internals |
+| Librus protocol | `packages/librus-client/src/index.ts` | login, readers, cookie jar, typed errors | x-baner, redirect walking, cookie rules, gateway envelope |
 | API handler | `data-service/src/hono/handlers/{name}.ts` | Hono routes | Request validation, response mapping |
-| API service | `data-service/src/hono/services/{name}.ts` | Service functions returning `Result<T>` | Business rules, data-ops calls, error mapping |
+| API service | `data-service/src/hono/services/{name}.ts` | Service functions returning `Result<T>` | Business rules, librus-client calls, KV, error mapping |
 | Middleware | `data-service/src/hono/middleware/{name}.ts` | Hono middleware export | Auth checks, rate limit logic, header parsing |
 
-## data-ops Domain Pattern
+## librus-client Module Pattern
 
-Each domain folder (`packages/data-ops/src/client/`, `packages/data-ops/src/health/`, etc.) is one deep module:
+`packages/librus-client` is one deep module. Consumers import only from the barrel
+(`@repo/librus-client`): login, readers, cookie jar DTO, typed errors.
 
-- `table.ts` — Drizzle table definition (internal)
-- `schema.ts` — Zod schemas (internal unless needed by consumers)
-- `queries.ts` — query functions (internal)
-- `index.ts` — barrel export: only what consumers need
+- `HttpDeps` injects fetch/now/random — tests mock at the HTTP boundary only
+- Readers normalize the G envelope (`{<Resource>, Resources, Url}`) into flat typed objects
+- Protocol internals (`baner.ts`, `http.ts`, `cookie-parse.ts`, `gateway.ts`) stay unexported
 
-Don't export `table.ts` internals. If a consumer needs a column type, expose it via a Zod schema or TypeScript type from `index.ts`.
+Don't export protocol internals. If a consumer needs a normalized shape, expose it as a
+TypeScript type from the barrel.
 
 ## data-service Handler→Service Split
 
 One handler file + one service file per domain is fine. Don't split further unless a service exceeds 500 lines — then split by subdomain, not by function count.
 
 - Handlers: thin — parse request, call service, map `Result<T>` to response
-- Services: deep — all business logic, validation, data-ops calls
+- Services: deep — all business logic, validation, librus-client calls, KV writes
 
 ## Testing at the Boundary
 
-- **data-ops domains**: test exported query functions, mocking `getDb()` at the database boundary
+- **librus-client**: test exported functions, mocking fetch at the HTTP boundary
 - **API handlers**: test via HTTP requests (`app.request()`)
 - **Middleware**: test via HTTP requests with appropriate fixtures
 - If you need to test an internal function → the module should probably split

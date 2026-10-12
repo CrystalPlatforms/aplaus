@@ -9,7 +9,7 @@ paths:
 
 - Use ES module syntax with default export
 - Extend `WorkerEntrypoint` for typed bindings
-- Initialize resources (DB, auth) once in the constructor, not per-request in `fetch()`
+- Keep per-request state out of module scope; bindings (KV) need no initialization
 
 ```ts
 import { WorkerEntrypoint } from 'cloudflare:workers'
@@ -17,11 +17,7 @@ import { WorkerEntrypoint } from 'cloudflare:workers'
 export default class extends WorkerEntrypoint<Env> {
   constructor(ctx: ExecutionContext, env: Env) {
     super(ctx, env)
-    initDatabase({
-      host: env.DATABASE_HOST,
-      username: env.DATABASE_USERNAME,
-      password: env.DATABASE_PASSWORD,
-    })
+    // one-time validation only; bindings (KV) need no initialization
   }
 
   fetch(request: Request): Promise<Response> {
@@ -39,13 +35,13 @@ export default class extends WorkerEntrypoint<Env> {
 ## Secrets Management
 
 - Never hardcode secrets
-- Configure via `sync-secrets.sh`
+- Configure via `sync-secrets.sh` (no secrets exist yet; VAPID keys arrive with the push phase)
 - Access same as env vars: `env.SECRET_NAME`
 - Use `.dev.vars` for local dev (gitignored)
 
 ## Request Handling
 
-- Module-level state lives as long as the isolate, not the request: keep it to the DB and auth singletons initialized in the constructor, and never store per-request data there
+- Module-level state lives as long as the isolate, not the request: never store per-request data there
 - Use `waitUntil()` for async work after response
 - Respect the CPU time limit: Workers Paid defaults to 30 s per request, raisable to 5 min with `limits.cpu_ms`
 

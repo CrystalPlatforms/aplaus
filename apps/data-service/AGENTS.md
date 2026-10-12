@@ -1,66 +1,51 @@
 # data-service
 
-Cloudflare Worker API exposing data-ops queries via Hono REST endpoints.
+Cloudflare Worker API: device tokens in KV, Librus proxy via librus-client.
 
 ## Stack
 
-- Hono (Cloudflare Workers adapter)
-- WorkerEntrypoint class pattern
-- Consumes `@repo/data-ops` for DB queries and Zod schemas
+- Hono (Cloudflare Workers adapter), WorkerEntrypoint class pattern
+- Storage: KV only (binding `KV`) — devices, accounts, cookie jars, login-throttle counters
+- Consumes `@repo/librus-client` for the whole Librus protocol
 
 ## Structure
 
 ```
 src/
-├── index.ts              # Worker entrypoint, initializes DB
+├── index.ts              # Worker entrypoint
+├── kv/                   # typed KV access (store, login-throttle)
 └── hono/
     ├── app.ts            # Hono app, middleware chain, routes
-    ├── handlers/         # Route handlers (thin, delegate to services)
-    ├── services/         # Business logic, calls data-ops queries
-    ├── middleware/       # request-id, cors, auth, rate-limiter, error-handler
-    └── utils/            # error helpers (createErrorResponse, isError)
+    ├── handlers/         # thin: auth-handlers, grades-handlers, health-handlers
+    ├── services/         # business logic: auth-service, grades-service, health-service
+    ├── middleware/       # request-id, cors, device-auth, rate-limiter, error-handler
+    ├── schemas/          # zod request schemas
+    ├── types/            # Result<T>, AppError
+    └── utils/            # error helpers
 ```
-
-## Patterns
-
-See `hono.md` and `error-handling.md` rules for handler/service/query patterns and Result/AppError details.
-
-**Middleware order** (in app.ts):
-1. `requestId()` - generates/passes correlation ID
-2. `onError` - global error handler
-3. `cors` - CORS headers
-4. Route-specific: `requireAuth()`, `rateLimiter`, `zValidator`
 
 ## Endpoints
 
 - `GET /health/live` - liveness (instant 200)
-- `GET /health/ready` - readiness (checks DB)
-- `GET /clients` - public list
-- `GET|POST|PUT|DELETE /clients/*` - CRUD (GET /:id + mutations require auth)
-- `POST /api/auth/*` - Better Auth routes (sign-up, sign-in, sign-out, get-session)
+- `GET /health/ready` - readiness (KV probe; 200 when KV answers, 503 otherwise)
+- `POST /api/login` - Librus login -> device token; rate limited (IP limiter + per-login failure counter)
+- `GET /api/me` - device-token -> account meta (banner data)
+- `GET /api/grades` - device-token -> normalized grades + categories + comments
 
-<important if="you are adding or modifying routes, handlers, or middleware">
+## Device auth
 
-## Auth Patterns
+`requireDevice()` from `middleware/device-auth.ts` reads `Authorization: Bearer <token>`,
+resolves `device:{token}` in KV, sets `accountId` on the context. 401 with a Polish message
+when missing or unknown.
 
-`requireAuth()` from `middleware/require-auth.ts` — checks session validity + `approved` flag:
-- `401` — no valid session
-- `403` — valid session but `approved === false`
-- On success, `c.get("session")` → `{ session, user }` typed
+## Patterns
 
-```ts
-// Public — no middleware
-clients.get("/", zValidator(...), handler)
+See `hono.md` and `error-handling.md` rules for handler/service patterns and Result/AppError
+details. Services never throw: they catch LibrusError and map it through
+`services/librus-errors.ts` (toAppError) into `Result<T>`.
 
-// Protected — requireAuth() before validators
-clients.post("/", requireAuth(), zValidator(...), handler)
-```
-
-**Service Bindings:** RPC methods on `WorkerEntrypoint` bypass HTTP entirely — no `requireAuth()` needed on them. Only `fetch()` goes through Hono middleware.
-
-**Auth routes** (`/api/auth/*`) already have `rateLimiter("RATE_LIMIT_AUTH", { windowSeconds: 60 })` applied in `app.ts` — don't add again. The middleware names a binding; the actual limit lives in `wrangler.jsonc` under `ratelimits`, per environment.
-
-</important>
+**Middleware order** (in app.ts): requestId -> onError -> cors; auth, rate limiting and
+validation are per route.
 
 ## Dev
 
@@ -68,7 +53,7 @@ clients.post("/", requireAuth(), zValidator(...), handler)
 pnpm run dev                # local dev server (port 8788)
 ```
 
-Deployment is CI-only — see the Deployment section of the root `AGENTS.md`. This package intentionally has no `deploy` script: a local `wrangler deploy` replaces the running Worker in place, skipping the versioned upload, the canary and the readiness gate the pipeline is built around.
+Deployment is CI-only - see the Deployment section of the root `AGENTS.md`.
 
 ## Testing
 
@@ -76,33 +61,29 @@ Deployment is CI-only — see the Deployment section of the root `AGENTS.md`. Th
 pnpm run test               # vitest run, inside workerd
 ```
 
-This suite runs in the Workers runtime (`vitest.config.mts` wires `cloudflareTest()` from `@cloudflare/vitest-plugin`), not Node. Bindings are the real ones from `wrangler.jsonc`'s dev environment — `import { env } from "cloudflare:workers"` and use them directly rather than stubbing. Rate-limit assertions therefore track whatever `ratelimits` says, so changing a limit there changes what the tests enforce.
-
-Everything runs locally: no credentials, no network, no container runtime. `.dev.vars` is loaded when present but nothing in the suite depends on it.
+This suite runs in the Workers runtime (`vitest.config.mts` wires `cloudflareTest()` from
+`@cloudflare/vitest-plugin`), not Node. Bindings are the real ones from `wrangler.jsonc`'s dev
+environment - `import { env } from "cloudflare:workers"` and use them directly rather than
+stubbing. Rate-limit assertions track whatever `ratelimits` says.
 
 ## Env vars
 
-Split by sensitivity, not by convenience.
-
-**Versioned config** — `wrangler.jsonc`, under `env.<name>.vars`, so a change is reviewable in the pull request that makes it:
+**Versioned config** - `wrangler.jsonc`, under `env.<name>.vars`:
 - `CLOUDFLARE_ENV` - dev | staging | production
 - `ALLOWED_ORIGINS` - comma-separated origins (staging/production; dev uses a fixed localhost list)
 
-**Secrets** — `.dev.vars` (local) or pushed with `./sync-secrets.sh <env>` (remote), never committed:
-- `DATABASE_HOST`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`
-- `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` - Better Auth config
+**Secrets** - none yet. The push phase adds VAPID keys via `./sync-secrets.sh <env>`, which
+pushes the whole `.example.vars`-fanned file in one `wrangler secret bulk` call.
 
-`sync-secrets.sh` pushes the whole file in one `wrangler secret bulk` call and refuses any key that belongs in versioned config.
+**KV namespaces** - one per environment under `env.<name>.kv_namespaces`. Local dev and tests
+use the workerd simulation; the committed ids are placeholders. Before the first deploy, create
+real namespaces (`wrangler kv namespace create KV`) and paste the ids.
 
-After editing `env.<name>.vars`, run `pnpm run cf-typegen`. Wrangler types the dev environment's vars as literals, which `service-bindings.d.ts` widens back to `string` — the same code runs in every environment.
-
-The same applies to `compatibility_date` and `compatibility_flags`: they decide which runtime types get generated, so changing one without regenerating leaves the Worker compiling against a runtime it no longer targets. `pnpm run check:runtime-types` fails the build on that gap, in CI and locally.
-
-## Placement
-
-`staging` and `production` run with `"placement": { "mode": "smart" }` so the Worker runs near the single-region Postgres rather than near an arbitrary visitor. `dev` is excluded — the local runtime has no placement decision to make.
+After editing `env.<name>.vars` or bindings, run `pnpm run cf-typegen` (in this package).
+`pnpm run check:runtime-types` fails the build on a stale `worker-configuration.d.ts`.
 
 ## Don't
 
-- Put DB queries here - add to `@repo/data-ops/{domain}`
+- Put Librus protocol code here - extend `@repo/librus-client` instead
+- Store passwords in KV - cookie jars and account meta only
 - Modify `worker-configuration.d.ts`, use `pnpm run cf-typegen`

@@ -11,7 +11,7 @@ function read(relPath: string): string {
 const CURATED_AGENT_DOCS = [
 	"AGENTS.md",
 	"apps/data-service/AGENTS.md",
-	"packages/data-ops/AGENTS.md",
+	"packages/librus-client/AGENTS.md",
 ];
 
 const REMOVED_CLOUDFLARE_FEATURES = [
@@ -102,7 +102,7 @@ describe("root agent file depth", () => {
 		const rootHeadings = headingCount(read("AGENTS.md"));
 		const packageHeadingCounts = [
 			headingCount(read("apps/data-service/AGENTS.md")),
-			headingCount(read("packages/data-ops/AGENTS.md")),
+			headingCount(read("packages/librus-client/AGENTS.md")),
 		];
 		const minPackageHeadings = Math.min(...packageHeadingCounts);
 		expect(rootHeadings).toBeGreaterThanOrEqual(minPackageHeadings);

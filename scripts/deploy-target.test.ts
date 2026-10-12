@@ -187,8 +187,8 @@ describe("resolveWorkerName", () => {
 	});
 
 	it("matches the name the shipped Worker actually deploys under", () => {
-		expect(resolveWorkerName(ROOT, "staging")).toBe("hono-on-cf-ds-staging");
-		expect(resolveWorkerName(ROOT, "production")).toBe("hono-on-cf-ds-production");
+		expect(resolveWorkerName(ROOT, "staging")).toBe("aplaus-ds-staging");
+		expect(resolveWorkerName(ROOT, "production")).toBe("aplaus-ds-production");
 	});
 
 	it("resolves nothing for an environment that names no Worker", () => {

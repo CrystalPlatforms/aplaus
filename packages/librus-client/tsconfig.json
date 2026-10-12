@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"noUncheckedIndexedAccess": true,
+		"isolatedModules": true,
+		// Consumers compile this package's source under their own configuration,
+		// so nothing here is ever emitted — this config only type-checks.
+		"noEmit": true,
+		"strict": true,
+		"skipLibCheck": true,
+		"lib": ["ESNext"],
+		"types": ["node"]
+	},
+	"include": ["src"]
+}

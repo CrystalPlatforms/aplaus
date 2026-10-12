@@ -19,7 +19,8 @@
 	},
 	"dependencies": {
 		"@hono/zod-validator": "^0.7.6",
-		"@repo/data-ops": "workspace:*",
-		"hono": "^4.13.13"
+		"@repo/librus-client": "workspace:*",
+		"hono": "^4.13.13",
+		"zod": "^4.6.5"
 	}
 }

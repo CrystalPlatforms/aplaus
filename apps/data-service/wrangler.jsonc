@@ -1,6 +1,6 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
-	"name": "hono-on-cf-ds",
+	"name": "aplaus-ds",
 	"main": "./src/index.ts",
 	"compatibility_date": "2026-10-07",
 	"compatibility_flags": ["nodejs_compat"],
@@ -28,8 +28,7 @@
 		 * Local / Development environment
 		 */
 		"dev": {
-			"name": "hono-on-cf-ds-dev",
-			// No "placement" here: the local runtime has no placement decision to make.
+			"name": "aplaus-ds-dev",
 			"vars": {
 				"CLOUDFLARE_ENV": "dev",
 				// Local development uses a fixed localhost allowlist, so this stays empty.
@@ -45,20 +44,22 @@
 				// many checkpoints behind a handful of egress addresses, so an entire
 				// provider can reach the Worker as one client address. A human-sized limit
 				// here turns routine monitoring into false alerts. 5/s still caps a single
-				// address far below anything that would stress the database behind /ready.
+				// address far below anything that would stress KV behind /ready.
 				{
 					"name": "RATE_LIMIT_HEALTH",
 					"namespace_id": "1002",
 					"simple": { "limit": 300, "period": 60 }
 				}
+			],
+			"kv_namespaces": [
+				{
+					"binding": "KV",
+					// Local dev and tests use the workerd KV simulation; this id is
+					// consulted only when deploying. Create the namespace once and
+					// paste its real id here (see README, "Wdrozenie").
+					"id": "00000000000000000000000000000000"
+				}
 			]
-			// "kv_namespaces": [
-			//   {
-			//     "binding": "CACHE",
-			//     "id": "eed883194c594bf8ac25811ec3d37751",
-			//     "remote": true
-			//   }
-			// ],
 			// "queues": {
 			//   "producers": [
 			//     {
@@ -87,10 +88,7 @@
 			//     "custom_domain": true
 			//   }
 			// ],
-			"name": "hono-on-cf-ds-staging",
-			// Every request round-trips to a single-region Postgres, so run the Worker
-			// near the database rather than near an arbitrary visitor.
-			"placement": { "mode": "smart" },
+			"name": "aplaus-ds-staging",
 			"vars": {
 				"CLOUDFLARE_ENV": "staging",
 				"ALLOWED_ORIGINS": "https://staging.YOUR_DOMAIN.COM"
@@ -107,14 +105,13 @@
 					"namespace_id": "2002",
 					"simple": { "limit": 300, "period": 60 }
 				}
+			],
+			"kv_namespaces": [
+				{
+					"binding": "KV",
+					"id": "00000000000000000000000000000000"
+				}
 			]
-			// "kv_namespaces": [
-			//   {
-			//     "binding": "CACHE",
-			//     "id": "eb683052a4dd40b3a87d212c23b36c0c",
-			//     "remote": false
-			//   }
-			// ],
 			// "queues": {
 			//   "producers": [
 			//     {
@@ -143,10 +140,7 @@
 			//     "custom_domain": true
 			//   }
 			// ],
-			"name": "hono-on-cf-ds-production",
-			// Every request round-trips to a single-region Postgres, so run the Worker
-			// near the database rather than near an arbitrary visitor.
-			"placement": { "mode": "smart" },
+			"name": "aplaus-ds-production",
 			"vars": {
 				"CLOUDFLARE_ENV": "production",
 				"ALLOWED_ORIGINS": "https://YOUR_DOMAIN.COM"
@@ -163,14 +157,13 @@
 					"namespace_id": "3002",
 					"simple": { "limit": 300, "period": 60 }
 				}
+			],
+			"kv_namespaces": [
+				{
+					"binding": "KV",
+					"id": "00000000000000000000000000000000"
+				}
 			]
-			// "kv_namespaces": [
-			//   {
-			//     "binding": "CACHE",
-			//     "id": "7688a332f25e416795f71a004b557f65",
-			//     "remote": false
-			//   }
-			// ],
 			// "queues": {
 			//   "producers": [
 			//     {

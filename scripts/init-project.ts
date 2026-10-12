@@ -39,29 +39,17 @@ const ENV_TEMPLATES: EnvTemplate[] = [
 			"apps/data-service/.production.vars",
 		],
 	},
-	{
-		template: "packages/data-ops/.env.example",
-		targets: [
-			"packages/data-ops/.env.dev",
-			"packages/data-ops/.env.staging",
-			"packages/data-ops/.env.production",
-		],
-	},
 ];
 
 const WRANGLER_FILES = ["apps/data-service/wrangler.jsonc"];
 const REQUIRED_WRANGLER_ENVS = ["staging", "production"];
 
 const NEXT_STEPS = [
-	"Fill DB credentials in apps/data-service/.{dev,staging,production}.vars",
-	"  and packages/data-ops/.env.{dev,staging,production}",
-	"  Get from https://console.neon.tech (DATABASE_HOST/USERNAME/PASSWORD).",
-	"Set BETTER_AUTH_SECRET in apps/data-service/.{dev,staging,production}.vars",
-	"  Generate with: openssl rand -base64 32",
-	"Set BETTER_AUTH_URL to the deployed data-service URL per env.",
-	"(optional) Delete the example `client` domain when ready — see README Step 6.",
-	"Run migrations: pnpm run setup && pnpm run db:generate:dev && pnpm run db:migrate:dev",
-	"Start dev: pnpm run dev:data-service",
+	"Create one KV namespace per environment in the Cloudflare dashboard",
+	"  (wrangler kv namespace create KV) and paste the ids into",
+	"  apps/data-service/wrangler.jsonc under env.<name>.kv_namespaces.",
+	"No server secrets are needed yet — login data comes from the device.",
+	"Start dev: pnpm run dev:data-service and pnpm run dev:web",
 ];
 
 // ── helpers ──────────────────────────────────────────────────────────

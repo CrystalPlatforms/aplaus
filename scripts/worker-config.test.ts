@@ -37,19 +37,11 @@ const LOCAL_ENVIRONMENT = "dev";
 const ALL_ENVIRONMENTS = [LOCAL_ENVIRONMENT, ...SERVER_ENVIRONMENTS];
 
 /**
- * Values that stay secrets: database connection credentials, the Better Auth
- * signing secret, and the deployment target's public base URL. The base URL is
- * held back deliberately — it is only knowable once a custom domain is wired
- * (deferred to the deploy-ergonomics slice), and a versioned placeholder would
- * mis-issue auth callbacks silently instead of failing loudly on a missing secret.
+ * Credentials the Worker needs. None exist yet: the only persistence is KV
+ * (a binding, not a secret) and login data flows from the device. The push
+ * phase (VAPID keys) adds the first entries here.
  */
-const SECRET_KEYS = [
-	"DATABASE_HOST",
-	"DATABASE_USERNAME",
-	"DATABASE_PASSWORD",
-	"BETTER_AUTH_SECRET",
-	"BETTER_AUTH_URL",
-];
+const SECRET_KEYS: string[] = [];
 
 /** Plain, non-sensitive values that belong in versioned per-environment config. */
 const PLAIN_CONFIG_KEYS = ["CLOUDFLARE_ENV", "ALLOWED_ORIGINS"];
@@ -83,17 +75,12 @@ describe("every environment survives a config dry-run", () => {
 	}, 180_000);
 });
 
-describe("Smart Placement runs the Worker near its database", () => {
-	it.each(SERVER_ENVIRONMENTS)("is enabled on %s", (environment) => {
-		expect(environments[environment]?.placement?.mode).toBe("smart");
-	});
-
-	it("is absent from local development, which has no placement decision to make", () => {
-		expect(environments[LOCAL_ENVIRONMENT]?.placement).toBeUndefined();
-	});
-
-	it("is not declared at the top level, where local development would inherit it", () => {
+describe("no Smart Placement — there is no single-region origin to sit near", () => {
+	it("is declared nowhere, so execution follows the visitor", () => {
 		expect(wrangler.placement).toBeUndefined();
+		for (const environment of ALL_ENVIRONMENTS) {
+			expect(environments[environment]?.placement).toBeUndefined();
+		}
 	});
 });
 
@@ -120,7 +107,6 @@ describe("configuration splits by sensitivity, not by convenience", () => {
 
 	it("leaves only credentials in the secrets template", () => {
 		const keys = secretTemplateKeys();
-		expect(keys.length).toBeGreaterThan(0);
 		expect(keys.toSorted()).toEqual(SECRET_KEYS.toSorted());
 	});
 

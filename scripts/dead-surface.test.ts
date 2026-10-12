@@ -83,7 +83,7 @@ describe("declared license metadata matches the shipped LICENSE file", () => {
 		for (const pkg of [
 			"package.json",
 			"apps/data-service/package.json",
-			"packages/data-ops/package.json",
+			"packages/librus-client/package.json",
 		]) {
 			const { license } = JSON.parse(read(pkg));
 			expect(license, `${pkg} license field`).toBe("MIT");

@@ -26,12 +26,12 @@ clients.post("/", requireAuth(), zValidator("json", ClientCreateRequestSchema), 
 ## Route Structure
 
 - Handlers: thin wrappers, call services
-- Services: business logic, call data-ops queries
+- Services: business logic, call librus-client readers and KV
 - Keep handlers focused on HTTP concerns
 
 ```ts
 // handlers/client-handlers.ts
-clients.get("/:id", requireAuth(), zValidator("param", IdParamSchema), async (c) => {
+api.get("/me", requireDevice, async (c) => {
   const { id } = c.req.valid("param");
   return resultToResponse(c, await clientService.getClientById(id));
 });
@@ -41,12 +41,12 @@ clients.get("/:id", requireAuth(), zValidator("param", IdParamSchema), async (c)
 
 **ALWAYS** use `zValidator` from `@hono/zod-validator` — never raw `z.parse()`, `z.safeParse()`, or manual `c.req.json()` parsing in handlers.
 
-**ALWAYS** import named schemas from `@repo/data-ops/{domain}` — never write inline `z.object()` inside `zValidator()`. If a schema doesn't exist yet, create it in the appropriate `data-ops` package first.
+**ALWAYS** import named schemas from `../schemas/{name}` — never write inline `z.object()` inside `zValidator()`. If a schema doesn't exist yet, create it in `apps/data-service/src/hono/schemas/` first.
 
 ```ts
-// CORRECT — named schema from data-ops
+// CORRECT — named schema from src/hono/schemas
 import { zValidator } from '@hono/zod-validator'
-import { UserCreateSchema, UserIdParamSchema } from '@repo/data-ops/user'
+import { UserCreateSchema, UserIdParamSchema } from '../schemas/user'
 
 app.post('/users',
   zValidator('json', UserCreateSchema),

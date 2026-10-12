@@ -1,0 +1,21 @@
+{
+	"name": "@repo/librus-client",
+	"version": "0.0.0",
+	"description": "Deep module wrapping the unofficial Librus Synergia API: login protocol, cookie sessions and typed readers",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"types": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"packageManager": "pnpm@12.9.1",
+	"devDependencies": {
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.11"
+	}
+}

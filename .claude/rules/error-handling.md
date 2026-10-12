@@ -4,31 +4,25 @@
 
 | Layer | Pattern | Location |
 |-------|---------|----------|
-| DB | Drizzle wraps pg errors in `DrizzleQueryError` | data-ops |
-| API services | Return `Result<T>` | data-service `types/result.ts` |
+| Librus API | `LibrusError` taxonomy (code + Polish message + HTTP status) | librus-client |
+| API services | Catch `LibrusError` -> `toAppError()` -> `Result<T>` | data-service `apps/data-service/src/hono/services/` |
+| API handlers | `resultToResponse` maps `Result<T>` to JSON | data-service `apps/data-service/src/hono/handlers/` |
 
-## Drizzle Error Unwrapping
+## librus-client Errors
 
-`error.cause` holds original Postgres error, NOT `error.message`.
-`error.message` = `"Failed query: <SQL>\nparams: <values>"` — never contains constraint info.
-Check `error.cause.code` for pg codes (e.g. `23505` = unique violation).
-
-```ts
-function isUniqueViolation(error: unknown): boolean {
-  if (!(error instanceof Error)) return false
-  const cause = error.cause
-  if (cause instanceof Error) {
-    const pgCode = (cause as Error & { code?: string }).code
-    if (pgCode === '23505') return true
-  }
-  return false
-}
-```
+`LibrusError` carries `code` (`LibrusErrorCode`), `status`, and `userMessage` (Polish, ready
+for the UI). Mapping is HTTP-status-first, checked before parsing any body:
+401 -> `SESSION_EXPIRED`, 403 at login with `errors[]` -> `WRONG_CREDENTIALS`,
+403 elsewhere -> `FORBIDDEN`, 404 -> `NOT_FOUND`, anything else -> `LOGIN_FAILED`
+or `UNEXPECTED_RESPONSE`.
 
 ## Result Pattern (data-service)
 
-Services return `Result<T>` — never throw. `Result<T>` is the only service-layer error pattern.
-`AppError` shape: `code`, `message`, `status`, optional `field`.
+Services return `Result<T>` — never throw. `AppError` shape: `code`, `message`, `status`,
+optional `field`. `services/librus-errors.ts` owns the single `toAppError()` mapping.
 Handlers unwrap via `resultToResponse`. Unexpected errors propagate to global `onErrorHandler`.
 
-Middleware that needs to short-circuit (auth, rate limit, validation) throws `HTTPException` from `hono/http-exception`; the global handler maps it to a JSON response. Do not introduce a dedicated `ApiError` class — `HTTPException` and `Result<T>` cover every case.
+Middleware that needs to short-circuit (auth, rate limit, validation) throws `HTTPException`
+from `hono/http-exception`; the global handler maps it to a JSON response. Do not introduce a
+dedicated `ApiError` class server-side — `HTTPException` and `Result<T>` cover every case.
+(The web app has its own `ApiError` for fetch failures; that one is client-side only.)

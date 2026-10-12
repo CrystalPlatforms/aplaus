@@ -1,10 +1,9 @@
 import { Hono } from "hono";
-import auth from "./handlers/auth-handlers";
-import clients from "./handlers/client-handlers";
+import { api as authApi } from "./handlers/auth-handlers";
+import { grades } from "./handlers/grades-handlers";
 import health from "./handlers/health-handlers";
 import { createCorsMiddleware } from "./middleware/cors";
 import { onErrorHandler } from "./middleware/error-handler";
-import { rateLimiter } from "./middleware/rate-limiter";
 import { requestId } from "./middleware/request-id";
 
 export const App = new Hono<{ Bindings: Env }>();
@@ -12,8 +11,7 @@ export const App = new Hono<{ Bindings: Env }>();
 App.use("*", requestId());
 App.onError(onErrorHandler);
 App.use("*", createCorsMiddleware());
-App.use("/api/auth/*", rateLimiter("RATE_LIMIT_AUTH", { windowSeconds: 60 }));
 
-App.route("/api/auth", auth);
 App.route("/health", health);
-App.route("/clients", clients);
+App.route("/api", authApi);
+App.route("/api/grades", grades);

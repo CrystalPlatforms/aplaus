@@ -50,7 +50,6 @@ describe("wireCustomDomain", () => {
 
 	it("keeps the config's comments, which explain why each setting is there", () => {
 		const wired = wireCustomDomain(shipped, "example.com");
-		expect(wired).toContain("run the Worker");
 		expect(wired).toContain("Sized for uptime monitors");
 	});
 
