@@ -3,7 +3,8 @@
 	"ignoreDependencies": ["cloudflare"],
 	"workspaces": {
 		".": {
-			"entry": ["scripts/*.ts", "taze.config.ts"]
+			"entry": ["scripts/*.ts", "taze.config.ts"],
+			"ignore": ["crs-assets/**"]
 		}
 	}
 }
