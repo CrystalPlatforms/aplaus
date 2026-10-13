@@ -3,12 +3,13 @@ import { type Context, Hono } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { requireDevice } from "../middleware/device-auth";
 import { rateLimiter } from "../middleware/rate-limiter";
-import { LoginRequestSchema } from "../schemas/auth";
+import { LoginRequestSchema, SwitchAccountRequestSchema } from "../schemas/auth";
 import * as authService from "../services/auth-service";
 import type { Result } from "../types/result";
 
 /**
- * `/api` routes: login (rate limited), me (device-token), later more.
+ * `/api` routes: login (rate limited; an existing device token adds a second
+ * account), me, accounts list/switch/refresh (device-token protected).
  */
 const api = new Hono<{ Bindings: Env }>();
 
@@ -18,7 +19,8 @@ api.post(
 	zValidator("json", LoginRequestSchema),
 	async (c) => {
 		const { login, password } = c.req.valid("json");
-		const result = await authService.login(c.env, { login, password });
+		const deviceToken = c.req.header("authorization")?.replace(/^Bearer\s+/i, "") ?? null;
+		const result = await authService.login(c.env, { login, password }, deviceToken);
 		return resultToResponse(c, result, 201);
 	},
 );
@@ -27,6 +29,37 @@ api.get("/me", requireDevice, async (c) => {
 	const accountId = c.get("accountId");
 	return resultToResponse(c, await authService.getMe(c.env.KV, accountId));
 });
+
+api.get("/accounts", requireDevice, async (c) => {
+	const deviceToken = c.get("deviceToken");
+	return resultToResponse(c, await authService.listAccounts(c.env.KV, deviceToken));
+});
+
+api.post(
+	"/accounts/switch",
+	requireDevice,
+	zValidator("json", SwitchAccountRequestSchema),
+	async (c) => {
+		const deviceToken = c.get("deviceToken");
+		const { accountId } = c.req.valid("json");
+		return resultToResponse(c, await authService.switchAccount(c.env.KV, deviceToken, accountId));
+	},
+);
+
+api.post(
+	"/accounts/refresh",
+	rateLimiter("RATE_LIMIT_AUTH", { windowSeconds: 60 }),
+	requireDevice,
+	zValidator("json", LoginRequestSchema),
+	async (c) => {
+		const deviceToken = c.get("deviceToken");
+		const { login, password } = c.req.valid("json");
+		return resultToResponse(
+			c,
+			await authService.refreshAccount(c.env, { login, password }, deviceToken),
+		);
+	},
+);
 
 function resultToResponse<T>(
 	c: Context,

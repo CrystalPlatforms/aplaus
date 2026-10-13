@@ -81,9 +81,19 @@ function resourceOf(
 ): Record<string, unknown> | null {
 	const url = refUrl(ref);
 	if (!url) return null;
-	const found = resources[url];
-	if (typeof found !== "object" || found === null) return null;
-	return found as Record<string, unknown>;
+	const direct = resources[url];
+	if (typeof direct === "object" && direct !== null) return direct as Record<string, unknown>;
+	// The ref URL and the Resources keys do not always agree on host/scheme —
+	// fall back to comparing the path part ("/2.0/Teachers/55").
+	const path = url.replace(/^https?:\/\/[^/]+/, "").toLowerCase();
+	for (const [key, value] of Object.entries(resources)) {
+		if (typeof value !== "object" || value === null) continue;
+		const keyPath = key.replace(/^https?:\/\/[^/]+/, "").toLowerCase();
+		if (keyPath === path || key.endsWith(path) || path.endsWith(keyPath)) {
+			return value as Record<string, unknown>;
+		}
+	}
+	return null;
 }
 
 function personNameOf(resources: Record<string, unknown>, ref: unknown): string | null {
@@ -100,6 +110,32 @@ function nameOf(resources: Record<string, unknown>, ref: unknown): string | null
 	return asString(resource.Name);
 }
 
+function inlineNameOf(ref: unknown): string | null {
+	if (typeof ref !== "object" || ref === null) return null;
+	const inline = ref as { Name?: unknown; Short?: unknown };
+	return asString(inline.Name) ?? asString(inline.Short);
+}
+
+function inlinePersonNameOf(ref: unknown): string | null {
+	if (typeof ref !== "object" || ref === null) return null;
+	const inline = ref as { FirstName?: unknown; LastName?: unknown };
+	return [asString(inline.FirstName), asString(inline.LastName)].filter(Boolean).join(" ") || null;
+}
+
+/**
+ * Some envelopes send a teacher ref as a bare {Url} with no Id ("AddedBy" is
+ * the observed case), which makes the /Teachers dictionary match impossible.
+ * The id still rides on the Url ("/2.0/Teachers/55"), so recover it there.
+ */
+function refIdWithUrlFallback(ref: unknown): number | null {
+	const id = refId(ref);
+	if (id !== null) return id;
+	const url = refUrl(ref);
+	if (!url) return null;
+	const match = /\/(\d+)(?:\/)?$/.exec(url);
+	return match ? Number(match[1]) : null;
+}
+
 function normalizeGrade(raw: unknown, resources: Record<string, unknown>): Grade | null {
 	if (typeof raw !== "object" || raw === null) return null;
 	const g = raw as Record<string, unknown>;
@@ -112,10 +148,10 @@ function normalizeGrade(raw: unknown, resources: Record<string, unknown>): Grade
 		dateAdded: asString(g.AddDate) ?? "",
 		semester: asNumber(g.Semester) ?? 0,
 		subjectId: refId(g.Subject),
-		subjectName: nameOf(resources, g.Subject),
+		subjectName: inlineNameOf(g.Subject) ?? nameOf(resources, g.Subject),
 		categoryId: refId(g.Category),
-		addedById: refId(g.AddedBy),
-		addedByName: personNameOf(resources, g.AddedBy),
+		addedById: refIdWithUrlFallback(g.AddedBy),
+		addedByName: inlinePersonNameOf(g.AddedBy) ?? personNameOf(resources, g.AddedBy),
 		studentId: refId(g.Student),
 		lessonId: refId(g.Lesson),
 		isConstituent: g.IsConstituent === true,

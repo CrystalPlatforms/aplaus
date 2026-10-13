@@ -24,7 +24,7 @@ Passwords are never stored server-side: the server keeps cookie jars and account
 ```bash
 pnpm run setup             # install dependencies
 pnpm run dev:data-service  # API dev (port 8788)
-pnpm run dev:web           # web dev (port 5173)
+pnpm run dev:web           # web dev (port 4000)
 pnpm run lint              # check all (formatting + linting)
 pnpm run lint:fix          # auto-fix all
 pnpm run test              # run all tests

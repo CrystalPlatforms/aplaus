@@ -121,6 +121,15 @@ Wzorzec odczytu dla całej apki: typowany reader `librus-client` (normalizacja k
 
 ## Phase 4: Plan lekcji + kalendarz
 
+**Status**: zaimplementowane (issue #6). Arytmetyka tygodni jest kliencka (`shiftWeekStart` na
+YYYY-MM-DD w librus-client); `Pages.Next/Prev` mapowane do `weekStart` jako wsparcie nawigacji.
+Kształt elementów `ClassFreeDays` nie był obserwowany w audycie (puste tablice na wszystkich
+kontach) — parser jest defensywny: element liczy się, gdy ma `Id` i `Date`, reszta opcjonalna.
+Odwołane lekcje i zastępstwa wyróżnione `data-flag` + etykietą tekstową („Odwołana"/„Zastępstwo"),
+nie tylko kolorem. Poprawki HITL: zastępstwa pokazują oryginalnego nauczyciela przekreślonego
+→ nowego (pola `Org*` z załącznika audytu), lekcja otwiera arkusz szczegółów z przejściem do
+osobnej strony ocen przedmiotu (`/grades/subject/:id`).
+
 **User stories**: 10, 11, 12
 
 ### What to build
@@ -145,6 +154,16 @@ Rea­ders `Timetables?weekStart` (klucze dynamiczne — daty; slot może być pu
 ---
 
 ## Phase 5: Zadania domowe + frekwencja
+
+**Status**: zaimplementowane (issue #7). Statystyka frekwencji mapuje `Identifier` z
+`Attendances/Types`: `presence` → obecności, `absence` → usprawiedliwione, `absence_unexcused` →
+nieusprawiedliwione, `lateness` → spóźnienia; typy o nieznanych identyfikatorach liczone per typ,
+poza czterema kategoriami głównymi — semantyka do potwierdzenia w HITL. Po HITL: mapowanie jest
+wielosygnałowe (Identifier → polska nazwa → skrót), bo realne słowniki zwracają Identifier null
+lub zlokalizowany; ekran pokazuje też rozbicie per typ. Sale i oryginalni nauczyciele
+zastępstw dopełniane z słowników /Classrooms i /Teachers (Resources odpowiedzi Timetables
+niosą wyłącznie Urls — potwierdzone w danych audytu); oba słowniki best-effort (404/403 → pusto). Zadania: lista pokazuje skrót (2 linie),
+pełna treść w arkuszu po tapnięciu.
 
 **User stories**: 13, 14
 
@@ -196,6 +215,15 @@ Readers: `SchoolNotices`, `Notes`, `ParentTeacherConferences`, `Schools`, `Class
 ---
 
 ## Phase 7: Konta — wiele kont i ciche odnawianie
+
+**Status**: zaimplementowane (issue #5). Hasło per konto trzyma przeglądarka (localStorage
+urządzenia); serwer nigdy go nie zapisuje. Odnawianie napędza urządzenie: 401 z proxy →
+`POST /api/accounts/refresh` z loginem+hasłem z urządzenia → nowy słoik w KV → **jednokrotny**
+retry żądania (współdzielony przy równoległych żądaniach); porażka odnowienia czyści sesję
+i pokazuje ekran logowania. Przełączenie konta to `POST /api/accounts/switch` + unieważnienie
+wszystkich cache'ów React Query. Poprawki HITL: „Dodaj konto" otwiera modal (nie formularz
+w arkuszu), baner ma strzałkę w dół jako afordancję przełącznika. Nazwy nauczycieli w ocenach
+rozwiązywane tolerancyjnie (Resources keys bywają z innym hostem niż `Url` referencji).
 
 **User stories**: 2, 3, 4, 5
 

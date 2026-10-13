@@ -78,6 +78,7 @@
 			"!**/worker-configuration.d.ts",
 			"!**/package-lock.json",
 			"!librus-api-audit.json",
+			"!apps/data-service/wrangler.init-probe*",
 			"!crs-assets",
 			"!.claude/settings.json",
 			"!.claude/settings.local.json",

@@ -5,7 +5,20 @@
  * (x-baner, redirect walking, cookie rules) stays inside.
  */
 
+export {
+	type Attendance,
+	type AttendanceType,
+	readAttendances,
+	readAttendanceTypes,
+} from "./attendances";
 export { buildBaner, encodeBanerPart, randomBanerPart } from "./baner";
+export {
+	type CalendarRef,
+	type ClassFreeDay,
+	readCalendars,
+	readClassFreeDays,
+} from "./calendars";
+export { type Classroom, readClassrooms } from "./classrooms";
 export {
 	CookieJar,
 	type CookieJarDTO,
@@ -21,6 +34,23 @@ export {
 	readGradeComments,
 	readGrades,
 } from "./grades";
+export {
+	type HomeWork,
+	type HomeWorkAssignment,
+	readHomeWorkAssignments,
+	readHomeWorks,
+} from "./homework";
 export { defaultDeps, type HttpDeps } from "./http";
 export { type LibrusAccount, type LoginOutcome, loginToLibrus } from "./login";
 export { readMe } from "./me";
+export { readSubjects, type Subject } from "./subjects";
+export { readTeachers, type Teacher } from "./teachers";
+export {
+	readTimetable,
+	shiftWeekStart,
+	type Timetable,
+	type TimetableDay,
+	type TimetableLesson,
+	weekStartFromUrl,
+} from "./timetable";
+export { readUser, type User } from "./users";

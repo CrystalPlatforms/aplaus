@@ -27,6 +27,9 @@ export default defineConfig({
 	// forwarded there — the browser never needs to know the API address. In
 	// production the app is served same-origin with the API, so no proxy there.
 	server: {
+		// Fixed port so the dev origin stays predictable (CORS allowlist in the
+		// API's cors.ts lists it). Falls back to 4001+ if 4000 is taken.
+		port: 4000,
 		proxy: {
 			"/api": "http://localhost:8788",
 		},

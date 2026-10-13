@@ -8,3 +8,27 @@ body {
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 	-webkit-font-smoothing: antialiased;
 }
+
+/* Splash title font (ADLaM Display, loaded in index.html). */
+.font-display {
+	font-family: "ADLaM Display", "ADLaM Dotre", system-ui, sans-serif;
+}
+
+/* The splash wordmark follows the loader: it fades in a beat after it. */
+.splash-title {
+	opacity: 0;
+	animation: splash-title-in 0.4s ease-out 0.25s forwards;
+}
+
+@keyframes splash-title-in {
+	to {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.splash-title {
+		animation: none;
+		opacity: 1;
+	}
+}

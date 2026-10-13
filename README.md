@@ -24,7 +24,7 @@ pnpm run setup
 
 ```bash
 pnpm run dev:data-service   # API (port 8788)
-pnpm run dev:web            # aplikacja web (port 5173)
+pnpm run dev:web            # aplikacja web (port 4000)
 ```
 
 Web w trybie dev przekazuje żądania `/api` na `http://localhost:8788` (proxy w `apps/web/vite.config.ts`) — przeglądarka woła własny origin i nic nie trzeba konfigurować.

@@ -6,3 +6,7 @@ export const LoginRequestSchema = z.object({
 });
 
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
+
+export const SwitchAccountRequestSchema = z.object({
+	accountId: z.string().min(1),
+});

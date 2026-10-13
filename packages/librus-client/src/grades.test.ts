@@ -122,12 +122,77 @@ describe("readGrades", () => {
 		expect(grades[0]?.subjectName).toBe("Matematyka");
 	});
 
+	it("recovers the teacher id from the AddedBy Url when the ref has no Id", async () => {
+		const deps: HttpDeps = {
+			fetch: vi.fn(async (input: string | URL | Request) => {
+				const url =
+					typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+				const path = new URL(url).pathname;
+				const body =
+					path.endsWith("/Grades") && !path.endsWith("/Grades/Categories")
+						? {
+								Grades: [
+									{
+										Id: 101,
+										Grade: "5",
+										Date: "2026-10-01",
+										Semester: 1,
+										Subject: { Id: 12, Name: "Historia" },
+										AddedBy: { Url: "/2.0/Teachers/55" },
+										IsConstituent: true,
+									},
+								],
+							}
+						: { Categories: [], Comments: [] };
+				return Response.json(body);
+			}),
+			now: () => 0,
+			randomPart: () => "",
+		} as HttpDeps;
+		const grades = await readGrades(CookieJar.empty(), deps);
+		expect(grades[0]?.addedById).toBe(55);
+	});
+
 	it("readGradeCategories maps the Categories array", async () => {
 		const deps = depsWithFixtures({});
 		const categories = await readGradeCategories(CookieJar.empty(), deps);
 		expect(categories).toHaveLength(2);
 		expect(categories[0]).toMatchObject({ id: 5, name: "Sprawdzian", short: "S", standard: true });
 		expect(categories[1]?.isSemestral).toBe(true);
+	});
+
+	it("prefers the name carried on the Subject ref itself over Resources", async () => {
+		const deps: HttpDeps = {
+			fetch: vi.fn(async (input: string | URL | Request) => {
+				const url =
+					typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+				const path = new URL(url).pathname;
+				const body =
+					path.endsWith("/Grades") && !path.endsWith("/Grades/Categories")
+						? {
+								Grades: [
+									{
+										Id: 101,
+										Grade: "5",
+										Date: "2026-10-01",
+										Semester: 1,
+										// Names ride on the refs; Resources index absent.
+										Subject: { Id: 12, Name: "Historia" },
+										AddedBy: { Id: 55, FirstName: "Anna", LastName: "Kowalska" },
+										IsConstituent: true,
+									},
+								],
+							}
+						: { Categories: [], Comments: [] };
+				return Response.json(body);
+			}),
+			now: () => 0,
+			randomPart: () => "",
+		} as HttpDeps;
+		const grades = await readGrades(CookieJar.empty(), deps);
+		expect(grades[0]?.subjectId).toBe(12);
+		expect(grades[0]?.subjectName).toBe("Historia");
+		expect(grades[0]?.addedByName).toBe("Anna Kowalska");
 	});
 
 	it("readGradeComments maps Grade/AddedBy refs and Text", async () => {

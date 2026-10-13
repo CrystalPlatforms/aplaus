@@ -18,6 +18,8 @@ export interface AccountRecord {
 
 export interface DeviceRecord {
 	accountIds: string[];
+	/** The account proxy requests resolve to; falls back to the first account. */
+	activeAccountId: string | null;
 }
 
 const ACCOUNT_PREFIX = "account:";
@@ -25,6 +27,40 @@ const DEVICE_PREFIX = "device:";
 
 const accountKey = (id: string) => `${ACCOUNT_PREFIX}${id}`;
 const deviceKey = (token: string) => `${DEVICE_PREFIX}${token}`;
+
+/** The account proxy requests use: the active one or the first added. */
+export function activeAccountIdOf(device: DeviceRecord): string | null {
+	return device.activeAccountId ?? device.accountIds[0] ?? null;
+}
+
+/**
+ * Adds an account to the device and makes it active. Saving twice keeps the
+ * list stable (a re-login of an existing account must not duplicate it).
+ */
+export async function addAccountToDevice(
+	kv: KVNamespace,
+	token: string,
+	accountId: string,
+): Promise<DeviceRecord> {
+	const device = (await loadDevice(kv, token)) ?? { accountIds: [], activeAccountId: null };
+	if (!device.accountIds.includes(accountId)) device.accountIds.push(accountId);
+	device.activeAccountId = accountId;
+	await saveDevice(kv, token, device);
+	return device;
+}
+
+/** Switches the active account. No-op when the account is not on the device. */
+export async function setDeviceActiveAccount(
+	kv: KVNamespace,
+	token: string,
+	accountId: string,
+): Promise<DeviceRecord | null> {
+	const device = await loadDevice(kv, token);
+	if (!device || !device.accountIds.includes(accountId)) return null;
+	device.activeAccountId = accountId;
+	await saveDevice(kv, token, device);
+	return device;
+}
 
 /** Loads an account record or null. */
 export async function loadAccount(kv: KVNamespace, id: string): Promise<AccountRecord | null> {

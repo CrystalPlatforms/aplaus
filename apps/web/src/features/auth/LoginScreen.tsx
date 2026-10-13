@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Loader } from "@/components/Loader";
 import { apiFetch, setToken } from "@/lib/api";
 import type { AccountView } from "@/lib/auth";
+import { setActiveAccountId, setCredentials, setLoggedOut } from "@/lib/credentials";
 
 export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 	const [login, setLogin] = useState("");
@@ -32,9 +33,14 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 				sleep(MIN_LOADER_MS),
 			]);
 			setToken(result.deviceToken);
+			setLoggedOut(false);
+			setCredentials(result.account.id, { login, password });
+			setActiveAccountId(result.account.id);
 			// The auth gate renders from the ["me"] query — reset it so the shell
-			// appears immediately instead of after a manual page refresh.
+			// appears immediately instead of after a manual page refresh. The
+			// accounts list refetches too (the device gained an account).
 			await queryClient.resetQueries({ queryKey: ["me"] });
+			await queryClient.resetQueries({ queryKey: ["accounts"] });
 			onSuccess();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Coś poszło nie tak.");
@@ -46,7 +52,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 	return (
 		<div className="min-h-dvh flex flex-col items-center justify-center px-6 bg-white dark:bg-black">
 			<div className="w-full max-w-sm">
-				<h1 className="text-3xl font-bold tracking-tight text-center mb-8">Aplaus</h1>
+				<h1 className="font-display text-3xl font-bold tracking-tight text-center mb-8">Aplaus</h1>
 				<form id="login-form" onSubmit={handleSubmit} className="flex flex-col gap-3">
 					<input
 						className="rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 px-4 py-3 text-base outline-none focus:border-blue-500"
@@ -58,7 +64,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 					/>
 					<input
 						type="password"
-						className="rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 px-4 py-3 text-base outline-none focus:border-blue-500"
+						className="rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 px-4 py-3"
 						placeholder="Hasło"
 						autoComplete="current-password"
 						value={password}

@@ -28,9 +28,16 @@ src/
 
 - `GET /health/live` - liveness (instant 200)
 - `GET /health/ready` - readiness (KV probe; 200 when KV answers, 503 otherwise)
-- `POST /api/login` - Librus login -> device token; rate limited (IP limiter + per-login failure counter)
-- `GET /api/me` - device-token -> account meta (banner data)
+- `POST /api/login` - Librus login -> device token; with a device token it adds another account to the device; rate limited (IP limiter + per-login failure counter)
+- `GET /api/me` - device-token -> active account meta (banner data)
+- `GET /api/accounts` - device-token -> all accounts of the device + activeAccountId
+- `POST /api/accounts/switch` - device-token + `{accountId}` -> moves the proxy context to that account
+- `POST /api/accounts/refresh` - device-token + `{login, password}` -> silent renewal: re-login, jar swap in KV; rate limited; ownership-checked
 - `GET /api/grades` - device-token -> normalized grades + categories + comments
+- `GET /api/timetable?weekStart=YYYY-MM-DD` - device-token -> week grid + next/prev weekStart
+- `GET /api/calendar/free-days` - device-token -> calendars + class free days
+- `GET /api/homework` - device-token -> schedule homework entries + assignments
+- `GET /api/attendance` - device-token -> attendance records + type dictionary
 
 ## Device auth
 

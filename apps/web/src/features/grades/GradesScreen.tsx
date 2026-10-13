@@ -1,9 +1,11 @@
 import type { Grade } from "@repo/librus-client";
 import { useMemo, useState } from "react";
+import { ViewLoader } from "@/components/ViewLoader";
+import { GradeDetailSheet } from "./GradeDetailSheet";
 import { useGrades } from "./queries";
 import { computeOverallStats, computeSemesterStats } from "./stats";
 
-type Detail = { grade: Grade; subject: string; teacher: string };
+type Detail = Grade;
 
 export function GradesScreen() {
 	const { data, isLoading, isError } = useGrades();
@@ -33,8 +35,7 @@ export function GradesScreen() {
 		(data?.comments ?? []).filter((c) => c.gradeId === gradeId);
 	const categoryOf = (id: number | null) => (data?.categories ?? []).find((c) => c.id === id);
 
-	if (isLoading)
-		return <p className="py-16 text-center text-sm text-neutral-400">Ładowanie ocen...</p>;
+	if (isLoading) return <ViewLoader />;
 	if (isError)
 		return <p className="py-16 text-center text-sm text-red-500">Nie udało się pobrać ocen.</p>;
 
@@ -73,7 +74,7 @@ export function GradesScreen() {
 								<button
 									type="button"
 									className="w-full px-4 py-2.5 flex items-center justify-between text-left"
-									onClick={() => setDetail({ grade, subject, teacher: grade.addedByName ?? "" })}
+									onClick={() => setDetail(grade)}
 								>
 									<span className="min-w-0">
 										<span className="block text-sm font-medium">
@@ -94,9 +95,9 @@ export function GradesScreen() {
 			))}
 			{detail && (
 				<GradeDetailSheet
-					detail={detail}
-					category={categoryOf(detail.grade.categoryId)}
-					comments={commentsOf(detail.grade.id)}
+					grade={detail}
+					category={categoryOf(detail.categoryId)}
+					comments={commentsOf(detail.id)}
 					onClose={() => setDetail(null)}
 				/>
 			)}
@@ -130,95 +131,5 @@ function StatsCard({
 				<p className="text-2xl font-bold">{overall.count}</p>
 			</div>
 		</div>
-	);
-}
-
-function GradeDetailSheet({
-	detail,
-	category,
-	comments,
-	onClose,
-}: {
-	detail: { grade: Grade; subject: string; teacher: string };
-	category?: {
-		id: number;
-		name: string;
-		short: string | null;
-		standard: boolean;
-		colorId: number | null;
-		isSemestral: boolean;
-		isFinal: boolean;
-		isSemestralProposition: boolean;
-		isFinalProposition: boolean;
-		blockAnyGrades: boolean;
-	};
-	comments: { id: number; gradeId: number | null; addedById: number | null; text: string | null }[];
-	onClose: () => void;
-}) {
-	const g = detail.grade;
-	return (
-		<button
-			type="button"
-			aria-label="Zamknij szczegóły oceny"
-			className="fixed inset-0 z-20 flex items-end justify-center bg-black/30 cursor-default"
-			onClick={onClose}
-		>
-			<div
-				role="dialog"
-				aria-modal="true"
-				aria-label={`Szczegóły oceny: ${detail.subject}`}
-				className="w-full max-w-xl rounded-t-3xl bg-white dark:bg-neutral-900 p-6 pb-10 max-h-[80dvh] overflow-y-auto"
-				onClick={(e) => e.stopPropagation()}
-				onKeyDown={(e) => e.stopPropagation()}
-			>
-				<div className="flex items-center justify-between mb-4">
-					<h3 className="text-lg font-bold">{detail.subject}</h3>
-					<button
-						type="button"
-						onClick={onClose}
-						className="text-sm text-blue-600 dark:text-blue-400"
-					>
-						Zamknij
-					</button>
-				</div>
-				<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-					<dt className="text-neutral-500">Ocena</dt>
-					<dd className="font-semibold">{g.grade}</dd>
-					<dt className="text-neutral-500">Kategoria</dt>
-					<dd>{category?.name ?? "—"}</dd>
-					<dt className="text-neutral-500">Nauczyciel</dt>
-					<dd>{detail.teacher || "—"}</dd>
-					<dt className="text-neutral-500">Data</dt>
-					<dd>{g.dateOccurred || "—"}</dd>
-					<dt className="text-neutral-500">Dodano</dt>
-					<dd>{g.dateAdded || "—"}</dd>
-				</dl>
-				<div className="mt-4 flex flex-wrap gap-2">
-					{g.isConstituent && <Flag label="Liczy się do średniej" />}
-					{g.isSemester && <Flag label="Semestralna" />}
-					{g.isFinal && <Flag label="Końcowa" />}
-					{g.isSemesterProposition && <Flag label="Propozycja semestralna" />}
-					{g.isFinalProposition && <Flag label="Propozycja końcowa" />}
-				</div>
-				{comments.length > 0 && (
-					<div className="mt-4">
-						<p className="text-xs text-neutral-500 mb-1">Komentarze</p>
-						{comments.map((c) => (
-							<p key={c.id} className="text-sm py-1">
-								{c.text ?? "—"}
-							</p>
-						))}
-					</div>
-				)}
-			</div>
-		</button>
-	);
-}
-
-function Flag({ label }: { label: string }) {
-	return (
-		<span className="text-xs px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
-			{label}
-		</span>
 	);
 }

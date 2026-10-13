@@ -37,8 +37,14 @@ export function Loader() {
           height: 6.80px;
           width: 6.80px;
           border-radius: 50%;
-          background-color: #167c51;
+          background-color: #171717;
           transition: background-color 0.3s ease;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          .uib-dot-loader .uib-dot::before {
+            background-color: #f5f5f5;
+          }
         }
 
         .uib-dot-loader .uib-dot:nth-child(2) {
