@@ -16,6 +16,8 @@ export interface AccountView {
 	firstName: string;
 	lastName: string;
 	role: string;
+	/** Librus role id: 8 = uczeń, 5 = rodzic (bramka usprawiedliwień). */
+	groupId: number;
 }
 
 export interface AccountsState {

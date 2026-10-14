@@ -29,7 +29,7 @@ describe("LoginScreen", () => {
 	it("submits credentials when the button is clicked", async () => {
 		apiFetchMock.mockResolvedValue({
 			deviceToken: "tok",
-			account: { id: "1", firstName: "A", lastName: "B", role: "Uczeń" },
+			account: { id: "1", firstName: "A", lastName: "B", role: "Uczeń", groupId: 8 },
 		});
 		const { onSuccess } = renderLogin();
 		fireEvent.change(screen.getByPlaceholderText("Login Librusa"), { target: { value: "adam" } });
@@ -50,7 +50,7 @@ describe("LoginScreen", () => {
 		try {
 			apiFetchMock.mockResolvedValue({
 				deviceToken: "tok",
-				account: { id: "1", firstName: "A", lastName: "B", role: "Uczeń" },
+				account: { id: "1", firstName: "A", lastName: "B", role: "Uczeń", groupId: 8 },
 			});
 			const { onSuccess } = renderLogin();
 			fireEvent.change(screen.getByPlaceholderText("Login Librusa"), { target: { value: "adam" } });

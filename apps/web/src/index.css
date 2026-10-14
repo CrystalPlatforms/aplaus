@@ -11,7 +11,7 @@ body {
 
 /* Splash title font (ADLaM Display, loaded in index.html). */
 .font-display {
-	font-family: "ADLaM Display", "ADLaM Dotre", system-ui, sans-serif;
+	font-family: "Aldrich", system-ui, sans-serif;
 }
 
 /* The splash wordmark follows the loader: it fades in a beat after it. */

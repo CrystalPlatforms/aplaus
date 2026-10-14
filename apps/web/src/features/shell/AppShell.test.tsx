@@ -28,8 +28,20 @@ import { setToken } from "@/lib/api";
 import { AuthProvider } from "@/lib/auth";
 import { AppShell } from "./AppShell";
 
-const ACCOUNT_A = { id: "librus:7", firstName: "Adam", lastName: "Testowy", role: "Uczeń" };
-const ACCOUNT_B = { id: "librus:9", firstName: "Filip", lastName: "Drugi", role: "Rodzic" };
+const ACCOUNT_A = {
+	id: "librus:7",
+	firstName: "Adam",
+	lastName: "Testowy",
+	role: "Uczeń",
+	groupId: 8,
+};
+const ACCOUNT_B = {
+	id: "librus:9",
+	firstName: "Filip",
+	lastName: "Drugi",
+	role: "Rodzic",
+	groupId: 5,
+};
 
 function renderShell() {
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });

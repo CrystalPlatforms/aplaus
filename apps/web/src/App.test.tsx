@@ -28,7 +28,13 @@ vi.stubGlobal("localStorage", {
 	clear: () => void storage.clear(),
 });
 
-const ACCOUNT = { id: "librus:7", firstName: "Adam", lastName: "Testowy", role: "Uczeń" };
+const ACCOUNT = {
+	id: "librus:7",
+	firstName: "Adam",
+	lastName: "Testowy",
+	role: "Uczeń",
+	groupId: 8,
+};
 const GRADES = { grades: [], categories: [], comments: [] };
 
 /** Routes the mock by path, like the real API would. */

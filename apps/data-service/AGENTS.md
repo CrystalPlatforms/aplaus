@@ -38,6 +38,26 @@ src/
 - `GET /api/calendar/free-days` - device-token -> calendars + class free days
 - `GET /api/homework` - device-token -> schedule homework entries + assignments
 - `GET /api/attendance` - device-token -> attendance records + type dictionary
+- `GET /api/school/overview` - device-token -> school meta + class + lessons + subjects
+- `GET /api/school/notices` - device-token -> school notices with validity periods
+- `GET /api/school/notes` - device-token -> notes (uwagi)
+- `GET /api/school/conferences` - device-token -> parent-teacher conferences
+- `GET /api/school/justifications` - device-token -> justifications; FORBIDDEN unless the
+  active account is a parent (groupId 5)
+- `GET /api/messages/me` - device-token -> M account meta (messages session)
+- `GET /api/messages/inbox?page=&limit=` - device-token -> one inbox page + total
+- `GET /api/messages/outbox?page=&limit=` - device-token -> one outbox page + total
+- `GET /api/messages/inbox/:id` - device-token -> message detail (marks read in Librus)
+- `GET /api/messages/outbox/:id` - device-token -> detail of a sent message
+- `GET /api/messages/inbox/unread-count` - device-token -> unread counters (metadata only)
+- `GET /api/messages/attachments/:fileId/:messageId` - device-token -> the attachment bytes
+  (contract from the official messages client)
+- `GET /api/messages/tags` - device-token -> message tags
+- `GET /api/messages/receivers/types` - device-token -> receiver type dictionary
+- `GET /api/messages/receivers/custom-groups` - device-token -> custom receiver groups
+
+The messages routes keep the M cookie jar per account (`AccountRecord.mJar`); when absent or
+expired it is re-established once from the stored G jar (no credentials involved).
 
 ## Device auth
 

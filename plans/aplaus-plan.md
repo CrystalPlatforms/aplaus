@@ -190,6 +190,69 @@ Readers `HomeWorks`, `HomeWorkAssignments` (uwaga: wielkie `W` — pułapka z au
 
 ## Phase 6: Kokpit + pozostałe odczyty + usprawiedliwienia
 
+**Status**: zaimplementowane (issue #8). Readery G (`SchoolNotices`, `Notes`, `Schools`,
+`Classes`, `Lessons`, `ParentTeacherConferences`, `Justifications`; `Subjects` istniał od fazy 3).
+`Notes` i `Schools.LessonsRange` nie były obserwowane w audycie — parsery defensywne (element
+liczy się z `Id`, reszta opcjonalna; analogicznie jak `ClassFreeDays` w fazie 4). `Justifications`
+parsuje wyjątkowy kształt `{status, message, data}` (lowercase). Bramka roli jest dwuwarstwowa:
+web ukrywa sekcję i nie inicjuje query (`enabled`), a proxy odpowiada FORBIDDEN dla `groupId !== 5`
+bez wołania Librusa. Kokpit agreguje kliencko (czysty vm: najnowsze oceny, dzisiejszy plan bez
+odwołanych, zadania od najbliższego terminu z fallbackiem na zaległe, ogłoszenia w mocy) — zakładka
+Start. Odchylenie w górę: `AccountView` (serwer i web) doliczyło `groupId`, bo gate po etykiecie
+roli byłby kruchy. Poprawki HITL: nazwy przedmiotów/nauczycieli lekcji i wychowawca dopełniane
+ze słowników /Subjects i /Teachers na proxy (koperta /Lessons i /Classes nie niesie nazw na
+żywych kontach); ogłoszenia pokazują 3 linijki treści, pełną w arkuszu po tapnięciu; etykiety
+statusów odwrócone — aktualne ogłoszenie to norma (bez etykiety), wyróżniane są „Zakończone"
+i „Nadchodzące"; zebrania otwierają arkusz ze szczegółami. Poprawki HITL (runda 2): treść
+wiadomości M przychodzi **Base64 (UTF-8)** — potwierdzone na żywym koncie, `decodeMaybeBase64`
+dekoduje topic/content (alfabet Base64 + poprawne UTF-8; zwykły tekst przepuszczany bez zmian);
+ogłoszenia i zebrania zamiast arkuszy mają **osobne widoki** `/more/notices/notice/:id` oraz
+`/more/conferences/:id` (dane z cache listy, bez dodatkowych żądań); nazwy nauczycieli lekcji
+i wychowawca dopełniane z `Users/{id}` (koperta `/Lessons` i `/Classes` nie niesie nazw,
+a `/Teachers` odpowiada 404 na żywych kontach — jak przy ocenach), best-effort, do 30 zapytań;
+lista lekcji deduplikowana po parze (przedmiot, nauczyciel), bo `/Lessons` zwraca jedną pozycję
+na grupę tygodniową (stąd powtórzone WF/niemiecki). Poprawki HITL (runda 3): szczegóły wiadomości
+na żywych kontach potrafią zwrócić treść skróconą albo pod inną nazwą pola (treść „znikała"
+po dojściu detalu) — reader czyta wszystkie obserwowane warianty pola (`content`, `body`,
+`text`, `messageContent`…), a ekran renderuje **dłuższą** z dwóch dostępnych treści
+(detal vs cache listy) z dopiskiem, gdy tekst pochodzi z listy. Poprawki HITL (runda 4,
+kontrakt z publicznego kodu klienta wiadomości Librusa — bez żywych danych): pełna treść
+wiadomości jest w polu **`Message`** (wielkie M) odpowiedzi detalu, a po dekodowaniu Base64
+może być w kopercie XML `<Content>…</Content>` — reader czyta `Message` najpierw i rozpakowuje
+kopertę; `content` z listy to tylko skrócony podgląd. **Pobieranie załączników** weszło wcześniej
+niż planowana faza 10: kontrakt `GET /attachments/{fileId}/messages/{messageId}` z tego samego
+kodu klienta; proxy `/api/messages/attachments/:fileId/:messageId` strumieniuje bajty z nazwą
+z Content-Disposition, ekran renderuje załączniki jako przyciski pobierania. Dopisek
+„Pokazano pełniejszą treść z listy" usunięty (decyzja HITL). Czcionka wordmarku Aplaus:
+ADLaM Display → **Aldrich** (splash + ekran logowania). Poprawki HITL (runda 5, diagnostyka
+na żywej sesji za zgodą właściciela): potwierdzone 200 i pełny kształt detalu
+`/outbox/messages/{id}` (pole `Message`, `attachments`, flaga `archive`, `receivers`,
+`readedCount`); `content` z listy to podgląd ucięty na ~100 bajtach Base64; curl bez sesji:
+`/outbox/messages/{id}` → 401 (endpoint istnieje), `/messages/{id}` → 404 (to nie jest trasa
+detalu). Detal wysłanych, który nie chce się otworzyć, to najpewniej wiadomość w **archiwum** —
+fallback detalu zmieniony z martwej ścieżki `/messages/{id}` na `/archive/messages/{id}`
+(kontrakt z kodu oficjalnego klienta); skrypt diagnostyczny poza repo (/tmp), nie commitowany.
+Poprawki HITL (runda 6): zdekodowana treść to koperta **`<Message><Content><![CDATA[treść]]></Content>…</Message>`**
+— ekstrakcja bierze pierwszy węzeł `Content` gdziekolwiek w dokumencie (jak `getElementsByTagName`
+w oficjalnym kliencie), a ucięty podgląd z listy pokazuje częściowy tekst po otwierającym
+znaczniku zamiast surowych tagów XML; czyszczenie stosowane i na liście, i na detalu.
+Poprawki HITL (runda 7 — trasa archiwum + twardość ekstrakcji): analiza bundla oficjalnego
+klienta pokazała, że szczegóły archiwalne czyta z tras **`/archive/inbox|outbox/messages/{id}`**
+(plain `/archive/messages` to tylko DELETE oficjalnego klienta) — fallback detalu kolejno:
+`{folder}/messages/{id}` → `archive/{folder}/messages/{id}` → `archive/messages/{id}`.
+Miękka śmierć sesji M (200 z HTML-em logowania po przekierowaniach) rzuca teraz
+`SESSION_EXPIRED`, więc jednorazowe ponowne zestawienie jar-a M faktycznie się uruchamia.
+`contentOf` dekoduje i czyści **wszystkie** znane pola treści i wybiera najdłuższy kandydat
+(krótki `content` nie może zamaskować pełnego `Message`); brak węzła `Content` → strip tagów
+(jak parsererror→raw→DOMPurify w oficjalnym kliencie); archiwalny payload bez `messageId`
+dostaje id z żądania. UI detalu: gdy detal padnie, a z cache listy zostaje ucięty podgląd,
+ekran mówi wprost („skrócony podgląd") i daje „Spróbuj ponownie" zamiast cichego cięcia.
+Poprawka HITL (runda 8 — PRAWDZIWY korzeń „Nie udało się pobrać" dla wysłanych): w handlerze
+wiadomości **nie było trasy `GET /api/messages/outbox/:id`** — web pytał `/api/messages/outbox/...`
+i dostawał Hono 404, więc szczegóły WYSLANYCH nigdy się nie otwierały (odebrane miały trasę).
+Dodana trasa + `getOutboxDetail`; regresja zabezpieczona testem HTTP (`App.request`) assertującym
+200 oraz wywołanie readera z folderem `outbox`.
+
 **User stories**: 23, 24, 25, 26, 27
 
 ### What to build
@@ -249,6 +312,24 @@ Model wielu kont: dodanie konta (login+hasło → nowe konto w KV), przełączni
 ---
 
 ## Phase 8: Wiadomości — odczyt
+
+**Status**: zaimplementowane (issue #9). Łańcuch sesji M (`wiadomosci3` → `MultiDomainLogon`)
+ustanawia słoik M per konto obok słoika G (`AccountRecord.mJar` w KV); proxy sam naprawia sesję —
+brak słoika lub 401 z M wyzwala jednokrotne ustanowienie z obecnego słoika G, bez haseł i bez
+dodatkowego logowania urządzenia. Sekretne parametry URL (token, login) nie są nigdzie logowane
+(test pilnuje czystości konsoli podczas łańcucha). Odchylenie od audytu:
+detal wiadomości (`/inbox/messages/{id}`) był poza zakresem audytu, więc czytany defensywnie
+(`data` obiekt + `attachments` opcjonalnie); otwarcie w UI oznacza przeczytaną (zaakceptowane) —
+ekran detalu invaliduje listę i licznik dokładnie raz, a licznik nieprzeczytanych czytany jest
+osobnym, pojedynczym żądaniem metadanych (test na rejestrze wywołań). Zakładka Wiadomości dostała
+badge z licznikiem; paginacja `page`/`limit` walidowana zod-em (limit ≤ 50). Poprawki HITL:
+odpowiedź detalu na żywym koncie nie miała `content` — reader czyta też `body` (asymetria
+z audytu: request `content`, response `body`); gdy Librus odmówi szczegółów (404 na obu
+ścieżkach), ekran renderuje treść z cache listy z dopiskiem „Pokazano treść z listy";
+adresowanie detalu ma fallback `/{folder}/messages/{id}` → `/messages/{id}` (zapis w audycie
+używa `/messages/{id}`); nazwy załączników czytane heurystycznie (klucze + dowolny string
+wyglądający jak nazwa pliku), pliki bez nazwy dostają numer „Załącznik N" zamiast mylącego
+„plik"; pobieranie plików pozostaje poza zakresem fazy (lista załączników wg PRD).
 
 **User stories**: 15
 

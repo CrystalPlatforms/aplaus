@@ -111,6 +111,32 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 	return (await response.json()) as T;
 }
 
+/**
+ * Downloads a binary proxy response as a file: fetches with the device token,
+ * saves under the given name. Renewal is skipped on purpose — a failed
+ * download is retried by tapping again.
+ */
+export async function apiDownload(path: string, fileName: string): Promise<void> {
+	const response = await plainFetch(path);
+	if (!response.ok) {
+		const payload = await readErrorPayload(response);
+		throw new ApiError(
+			response.status,
+			payload?.code ?? "UNKNOWN",
+			payload?.error ?? "Nie udało się pobrać pliku.",
+		);
+	}
+	const blob = await response.blob();
+	const url = URL.createObjectURL(blob);
+	const anchor = document.createElement("a");
+	anchor.href = url;
+	anchor.download = fileName;
+	document.body.appendChild(anchor);
+	anchor.click();
+	anchor.remove();
+	URL.revokeObjectURL(url);
+}
+
 async function readErrorPayload(
 	response: Response,
 ): Promise<{ code?: string; error?: string } | null> {

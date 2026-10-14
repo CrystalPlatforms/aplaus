@@ -1,16 +1,31 @@
+/**
+ * Shell: tabs (Start = kokpit, Oceny, Plan, Wiadomości, Więcej), banner,
+ * account switcher and the sub-routes under /more and /messages.
+ */
 import { useEffect, useState } from "react";
 import { AttendanceScreen } from "@/features/attendance/AttendanceScreen";
+import { ConferenceDetailScreen } from "@/features/conferences/ConferenceDetailScreen";
+import { ConferencesScreen } from "@/features/conferences/ConferencesScreen";
+import { DashboardScreen } from "@/features/dashboard/DashboardScreen";
 import { GradesScreen } from "@/features/grades/GradesScreen";
 import { SubjectGradesScreen } from "@/features/grades/SubjectGradesScreen";
 import { HomeworkScreen } from "@/features/homework/HomeworkScreen";
+import { JustificationsScreen } from "@/features/justifications/JustificationsScreen";
+import { MessageDetailScreen } from "@/features/messages/MessageDetailScreen";
+import { MessagesScreen } from "@/features/messages/MessagesScreen";
+import { useUnreadCount } from "@/features/messages/queries";
+import { NotesScreen } from "@/features/notes/NotesScreen";
+import { NoticeDetailScreen } from "@/features/notices/NoticeDetailScreen";
+import { NoticesScreen } from "@/features/notices/NoticesScreen";
+import { SchoolScreen } from "@/features/school/SchoolScreen";
 import { TimetableScreen } from "@/features/timetable/TimetableScreen";
 import { useAuth } from "@/lib/auth";
 import { useRoute } from "@/lib/router";
 import { AccountSwitcher } from "./AccountSwitcher";
 import { LoginBanner } from "./LoginBanner";
-import { PlaceholderScreen } from "./PlaceholderScreen";
 
 const TABS = [
+	{ id: "start", label: "Start", path: "/start" },
 	{ id: "grades", label: "Oceny", path: "/grades" },
 	{ id: "plan", label: "Plan", path: "/timetable" },
 	{ id: "messages", label: "Wiadomości", path: "/messages" },
@@ -19,25 +34,30 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
+/** Maps a path to its tab; defaults to grades for paths like /grades/subject. */
+function activeTabOf(path: string): TabId {
+	if (path.startsWith("/start")) return "start";
+	if (path.startsWith("/timetable")) return "plan";
+	if (path.startsWith("/messages")) return "messages";
+	if (path.startsWith("/more")) return "more";
+	return "grades";
+}
+
 export function AppShell() {
 	const { account, logout } = useAuth();
 	const { path, navigate } = useRoute();
 	const [switcherOpen, setSwitcherOpen] = useState(false);
 
-	// "/" carries no view — land on the grades tab.
 	useEffect(() => {
-		if (path === "/") navigate("/grades");
+		if (path === "/") navigate("/start");
 	}, [path, navigate]);
 
-	const activeTab: TabId = path.startsWith("/timetable")
-		? "plan"
-		: path.startsWith("/messages")
-			? "messages"
-			: path.startsWith("/more")
-				? "more"
-				: "grades";
+	const activeTab = activeTabOf(path);
 
 	const isSubject = path.startsWith("/grades/subject/");
+	const isMessageDetail = /^\/messages\/(inbox|outbox)\/[^/]+$/.test(path);
+	const unread = useUnreadCount();
+	const badge = account ? (unread.data?.inbox ?? 0) : 0;
 
 	return (
 		<div className="min-h-dvh bg-neutral-50 dark:bg-black text-neutral-900 dark:text-neutral-100">
@@ -55,7 +75,6 @@ export function AppShell() {
 								lastName={account.lastName}
 								roleLabel={account.role}
 							/>
-							{/* affordance arrow — the switcher button was hard to spot */}
 							<svg
 								aria-hidden="true"
 								viewBox="0 0 12 12"
@@ -84,11 +103,14 @@ export function AppShell() {
 			<main className="pb-24 px-4 pt-4 max-w-xl mx-auto">
 				{isSubject ? (
 					<SubjectGradesRoute />
+				) : isMessageDetail ? (
+					<MessageDetailRoute />
 				) : (
 					<>
+						{activeTab === "start" && <DashboardScreen />}
 						{activeTab === "grades" && <GradesScreen />}
 						{activeTab === "plan" && <TimetableScreen />}
-						{activeTab === "messages" && <PlaceholderScreen label="Wiadomości" />}
+						{activeTab === "messages" && <MessagesScreen />}
 						{activeTab === "more" && <MoreRoutes />}
 					</>
 				)}
@@ -100,11 +122,20 @@ export function AppShell() {
 							key={t.id}
 							type="button"
 							onClick={() => navigate(t.path)}
-							className={`flex-1 py-3 text-xs font-medium ${
+							className={`flex-1 py-3 text-xs font-medium relative ${
 								activeTab === t.id ? "text-blue-600 dark:text-blue-400" : "text-neutral-500"
 							}`}
 						>
 							{t.label}
+							{t.id === "messages" && badge > 0 ? (
+								<span
+									role="img"
+									aria-label={`${badge} nieprzeczytanych`}
+									className="absolute top-1.5 right-1/2 translate-x-4 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4 font-semibold"
+								>
+									{badge > 99 ? "99+" : badge}
+								</span>
+							) : null}
 						</button>
 					))}
 				</div>
@@ -114,7 +145,7 @@ export function AppShell() {
 	);
 }
 
-/** Routes under /more: menu, homework and attendance subviews. */
+/** Routes under /more: menu and the school-domain subviews. */
 function MoreRoutes() {
 	const { path } = useRoute();
 	if (path.startsWith("/more/homework")) {
@@ -133,11 +164,70 @@ function MoreRoutes() {
 			</div>
 		);
 	}
+	if (path.startsWith("/more/notices/notice/")) {
+		const id = path.split("/").pop() ?? "";
+		return (
+			<div>
+				<StickyBack to="/more/notices" label="Ogłoszenia" />
+				<NoticeDetailScreen id={id} />
+			</div>
+		);
+	}
+	if (path.startsWith("/more/notices")) {
+		return (
+			<div>
+				<StickyBack to="/more" label="Więcej" />
+				<NoticesScreen />
+			</div>
+		);
+	}
+	if (path.startsWith("/more/notes")) {
+		return (
+			<div>
+				<StickyBack to="/more" label="Więcej" />
+				<NotesScreen />
+			</div>
+		);
+	}
+	if (path.startsWith("/more/conferences/")) {
+		const id = path.split("/").pop() ?? "";
+		return (
+			<div>
+				<StickyBack to="/more/conferences" label="Zebrania" />
+				<ConferenceDetailScreen id={id} />
+			</div>
+		);
+	}
+	if (path.startsWith("/more/conferences")) {
+		return (
+			<div>
+				<StickyBack to="/more" label="Więcej" />
+				<ConferencesScreen />
+			</div>
+		);
+	}
+	if (path.startsWith("/more/school")) {
+		return (
+			<div>
+				<StickyBack to="/more" label="Więcej" />
+				<SchoolScreen />
+			</div>
+		);
+	}
+	if (path.startsWith("/more/justifications")) {
+		return (
+			<div>
+				<StickyBack to="/more" label="Więcej" />
+				<JustificationsScreen />
+			</div>
+		);
+	}
 	return <MoreMenu />;
 }
-
 function MoreMenu() {
 	const { navigate } = useRoute();
+	const { account } = useAuth();
+	const isParent = account?.groupId === 5;
 	return (
 		<div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
 			<button
@@ -154,6 +244,57 @@ function MoreMenu() {
 			>
 				Frekwencja
 			</button>
+			<button
+				type="button"
+				onClick={() => navigate("/more/notices")}
+				className="w-full px-4 py-4 text-left text-sm font-medium"
+			>
+				Ogłoszenia
+			</button>
+			<button
+				type="button"
+				onClick={() => navigate("/more/notes")}
+				className="w-full px-4 py-4 text-left text-sm font-medium"
+			>
+				Uwagi
+			</button>
+			<button
+				type="button"
+				onClick={() => navigate("/more/conferences")}
+				className="w-full px-4 py-4 text-left text-sm font-medium"
+			>
+				Zebrania z rodzicami
+			</button>
+			<button
+				type="button"
+				onClick={() => navigate("/more/school")}
+				className="w-full px-4 py-4 text-left text-sm font-medium"
+			>
+				Szkoła i klasa
+			</button>
+			{isParent ? (
+				<button
+					type="button"
+					onClick={() => navigate("/more/justifications")}
+					className="w-full px-4 py-4 text-left text-sm font-medium"
+				>
+					Usprawiedliwienia
+				</button>
+			) : null}
+		</div>
+	);
+}
+
+/** Message detail route (/messages/inbox/:id, /messages/outbox/:id). */
+function MessageDetailRoute() {
+	const { path } = useRoute();
+	const parts = path.split("/");
+	const folder = parts[2] === "outbox" ? "outbox" : "inbox";
+	const id = parts.pop() ?? "";
+	return (
+		<div>
+			<StickyBack to="/messages" label="Wiadomości" />
+			<MessageDetailScreen folder={folder} id={id} />
 		</div>
 	);
 }

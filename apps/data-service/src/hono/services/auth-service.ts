@@ -28,6 +28,8 @@ export interface AccountView {
 	firstName: string;
 	lastName: string;
 	role: string;
+	/** Librus role id: 8 = uczeń, 5 = rodzic (gate for usprawiedliwienia). */
+	groupId: number;
 }
 
 const ROLE_NAMES: Record<number, string> = {
@@ -44,6 +46,7 @@ const toView = (account: AccountRecord): AccountView => ({
 	firstName: account.firstName,
 	lastName: account.lastName,
 	role: roleLabel(account.groupId),
+	groupId: account.groupId,
 });
 
 /** Injectable boundary: the Librus HTTP dance. Tests replace it wholesale. */

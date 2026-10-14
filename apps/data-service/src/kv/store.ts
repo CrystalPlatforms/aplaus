@@ -13,6 +13,8 @@ export interface AccountRecord {
 	groupId: number;
 	/** Cookie jar (domena G) shared by every device and, later, cron. */
 	jar: CookieJarDTO;
+	/** Cookie jar of the messages (M) session, per wiadomosci.librus.pl. */
+	mJar?: CookieJarDTO | null;
 	createdAt: string;
 }
 
@@ -79,6 +81,17 @@ export async function loadDevice(kv: KVNamespace, token: string): Promise<Device
 /** Persists an account record. */
 export async function saveAccount(kv: KVNamespace, record: AccountRecord): Promise<void> {
 	await kv.put(accountKey(record.id), JSON.stringify(record));
+}
+
+/** Persists only the M jar of an account (the rest of the record stays). */
+export async function saveAccountMJar(
+	kv: KVNamespace,
+	accountId: string,
+	mJar: CookieJarDTO,
+): Promise<void> {
+	const account = await loadAccount(kv, accountId);
+	if (!account) return;
+	await kv.put(accountKey(accountId), JSON.stringify({ ...account, mJar }));
 }
 
 /** Persists a device record. */
