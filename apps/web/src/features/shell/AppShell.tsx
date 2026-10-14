@@ -11,8 +11,11 @@ import { GradesScreen } from "@/features/grades/GradesScreen";
 import { SubjectGradesScreen } from "@/features/grades/SubjectGradesScreen";
 import { HomeworkScreen } from "@/features/homework/HomeworkScreen";
 import { JustificationsScreen } from "@/features/justifications/JustificationsScreen";
+import { ComposeScreen } from "@/features/messages/ComposeScreen";
+import { DraftsScreen } from "@/features/messages/DraftsScreen";
 import { MessageDetailScreen } from "@/features/messages/MessageDetailScreen";
 import { MessagesScreen } from "@/features/messages/MessagesScreen";
+import { MessagesSettingsScreen } from "@/features/messages/MessagesSettingsScreen";
 import { useUnreadCount } from "@/features/messages/queries";
 import { NotesScreen } from "@/features/notes/NotesScreen";
 import { NoticeDetailScreen } from "@/features/notices/NoticeDetailScreen";
@@ -56,6 +59,9 @@ export function AppShell() {
 
 	const isSubject = path.startsWith("/grades/subject/");
 	const isMessageDetail = /^\/messages\/(inbox|outbox)\/[^/]+$/.test(path);
+	const replyForward = /^\/messages\/(inbox|outbox)\/([^/]+)\/(reply|forward)$/.exec(path);
+	const isCompose = path === "/messages/compose" || /^\/messages\/compose\/[^/]+$/.test(path);
+	const isDraftsList = path === "/messages/drafts";
 	const unread = useUnreadCount();
 	const badge = account ? (unread.data?.inbox ?? 0) : 0;
 
@@ -103,6 +109,15 @@ export function AppShell() {
 			<main className="pb-24 px-4 pt-4 max-w-xl mx-auto">
 				{isSubject ? (
 					<SubjectGradesRoute />
+				) : isCompose ? (
+					<ComposeRoute />
+				) : isDraftsList ? (
+					<div>
+						<StickyBack to="/messages" label="Wiadomości" />
+						<DraftsScreen />
+					</div>
+				) : replyForward !== null ? (
+					<ReplyForwardRoute match={replyForward} />
 				) : isMessageDetail ? (
 					<MessageDetailRoute />
 				) : (
@@ -131,7 +146,7 @@ export function AppShell() {
 								<span
 									role="img"
 									aria-label={`${badge} nieprzeczytanych`}
-									className="absolute top-1.5 right-1/2 translate-x-4 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4 font-semibold"
+									className="absolute top-1 right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4 font-semibold"
 								>
 									{badge > 99 ? "99+" : badge}
 								</span>
@@ -222,6 +237,14 @@ function MoreRoutes() {
 			</div>
 		);
 	}
+	if (path.startsWith("/more/messages-settings")) {
+		return (
+			<div>
+				<StickyBack to="/more" label="Więcej" />
+				<MessagesSettingsScreen />
+			</div>
+		);
+	}
 	return <MoreMenu />;
 }
 function MoreMenu() {
@@ -272,6 +295,13 @@ function MoreMenu() {
 			>
 				Szkoła i klasa
 			</button>
+			<button
+				type="button"
+				onClick={() => navigate("/more/messages-settings")}
+				className="w-full px-4 py-4 text-left text-sm font-medium"
+			>
+				Wiadomości — ustawienia (podpisy, etykiety, grupy)
+			</button>
 			{isParent ? (
 				<button
 					type="button"
@@ -281,6 +311,36 @@ function MoreMenu() {
 					Usprawiedliwienia
 				</button>
 			) : null}
+		</div>
+	);
+}
+
+/** Compose route (/messages/compose, /messages/compose/:draftId). */
+function ComposeRoute() {
+	const { path } = useRoute();
+	const parts = path.split("/");
+	const draftId = parts.length > 3 ? (parts[3] ?? undefined) : undefined;
+	return (
+		<div>
+			<StickyBack to="/messages" label="Wiadomości" />
+			<ComposeScreen draftId={draftId} />
+		</div>
+	);
+}
+
+/** Reply/forward route (/messages/:folder/:id/reply|forward). */
+function ReplyForwardRoute({ match }: { match: RegExpExecArray }) {
+	const [, rawFolder, id, action] = match;
+	const folder = rawFolder === "outbox" ? ("outbox" as const) : ("inbox" as const);
+	const context = { folder, id: id ?? "" };
+	const actionIsForward = action === "forward";
+	return (
+		<div>
+			<StickyBack to={`/messages/${folder}/${id}`} label="Wiadomości" />
+			<ComposeScreen
+				replyTo={actionIsForward ? undefined : context}
+				forwardOf={actionIsForward ? context : undefined}
+			/>
 		</div>
 	);
 }

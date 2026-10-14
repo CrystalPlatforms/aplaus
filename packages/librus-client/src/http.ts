@@ -41,12 +41,13 @@ export interface WalkedResponse {
 }
 
 /**
- * GET/POST with the jar, following 3xx hops manually (max 10), merging cookies
- * on every hop. Returns the first response that is not a redirect.
+ * GET/POST/PUT/DELETE with the jar, following 3xx hops manually (max 10),
+ * merging cookies on every hop. Returns the first response that is not a
+ * redirect. PUT/DELETE serve the M write contracts (drafts, tags, trash).
  */
 export async function walkRedirects(
 	url: string,
-	init: RequestInit & { method: "GET" | "POST" },
+	init: RequestInit & { method: "GET" | "POST" | "PUT" | "DELETE" },
 	jar: CookieJar,
 	deps: HttpDeps,
 ): Promise<WalkedResponse> {

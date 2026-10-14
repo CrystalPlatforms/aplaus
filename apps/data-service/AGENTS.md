@@ -54,7 +54,43 @@ src/
   (contract from the official messages client)
 - `GET /api/messages/tags` - device-token -> message tags
 - `GET /api/messages/receivers/types` - device-token -> receiver type dictionary
+- `GET /api/messages/receivers/student-subjects` - device-token -> the student's subject
+  categories (composer picker; id = `subject-{teacherIdentifier}`)
+- `GET /api/messages/receivers?type=<typeId>` - device-token -> people of one receiver type
+  (composer picker; path derived, not audited — HITL confirms)
+- `GET /api/messages/client-scan` - device-token -> scans the official messages client's
+  HTML/JS bundles with the live M session and extracts receiver endpoints + the tag
+  `colorRgb` format (same ground truth the audit used; one-click, no DevTools needed)
+- `GET /api/messages/receivers/probe?type=<typeId>` - device-token -> diagnostic probe:
+  statuses + raw snippets of the candidate M endpoints (receiver lists, files storage,
+  tags, custom groups); successful POST probes may create `Probe-Aplaus` test rows
 - `GET /api/messages/receivers/custom-groups` - device-token -> custom receiver groups
+- `POST /api/messages/send` - device-token -> sends a message (exactly one POST /messages; no retry
+  on ambiguous outcome; M-session 401 may renew once because nothing was delivered)
+- `GET /api/messages/drafts` - device-token -> one drafts page + total
+- `POST /api/messages/drafts` - device-token -> create a draft (optional `repliedToMessageId` /
+  `forwardedMessageId` in the body takes the context route; ids travel as strings)
+- `GET /api/messages/drafts/:id` - device-token -> draft body for editing (null when gone)
+- `PUT /api/messages/drafts/:variant/:id` - device-token -> update draft (variant newOne/reply/forward)
+- `DELETE /api/messages/drafts/:id` - device-token -> delete draft
+- `GET /api/messages/signatures` - device-token -> signatures (Librus 404 = empty list)
+- `POST /api/messages/signatures` - device-token -> create signature
+- `PUT /api/messages/signatures/:id` - device-token -> modify signature
+- `DELETE /api/messages/signatures/:id` - device-token -> delete signature
+- `POST /api/messages/tags` - device-token -> create tag
+- `PUT /api/messages/tags/:id` - device-token -> rename tag
+- `DELETE /api/messages/tags/:id` - device-token -> delete tag
+- `POST /api/messages/receivers/custom-groups` - device-token -> create receiver group
+- `PUT /api/messages/receivers/custom-groups/:id` - device-token -> rename receiver group
+- `DELETE /api/messages/receivers/custom-groups/:id` - device-token -> delete receiver group
+- `GET /api/messages/trash` - device-token -> one trash page + total
+- `POST /api/messages/trash` - device-token + `{messageId}` -> move a message to the trash bin
+- `PUT /api/messages/trash/:id/restore` - device-token -> restore from trash
+- `DELETE /api/messages/trash/:id` - device-token -> permanent delete (UI confirms first)
+- `POST /api/messages/attachments/storage` - device-token -> create attachment storage (`storageId`)
+- `POST /api/messages/attachments` - device-token, multipart (`storageId`, `fileToStore`,
+  `temporaryFileId?`) -> upload one attachment
+- `DELETE /api/messages/attachments/:fileId/storage/:storageId` - device-token -> remove attachment
 
 The messages routes keep the M cookie jar per account (`AccountRecord.mJar`); when absent or
 expired it is re-established once from the stored G jar (no credentials involved).

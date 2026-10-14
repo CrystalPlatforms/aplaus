@@ -1,21 +1,40 @@
 import { useState } from "react";
+import { ButtonSpinner } from "@/components/Loader";
 import { ViewLoader } from "@/components/ViewLoader";
 import { useRoute } from "@/lib/router";
-import { useInboxMessages, useOutboxMessages } from "./queries";
+import {
+	useDeletePermanently,
+	useInboxMessages,
+	useOutboxMessages,
+	useRestoreFromTrash,
+	useTrashMessages,
+} from "./queries";
 
 const PAGE_LIMIT = 20;
-const FOLDERS = ["inbox", "outbox"] as const;
+const FOLDERS = ["inbox", "outbox", "trash"] as const;
+const FOLDER_LABELS: Record<(typeof FOLDERS)[number], string> = {
+	inbox: "Odebrane",
+	outbox: "Wysłane",
+	trash: "Kosz",
+};
 
-/** Folder list: Odebrane / Wysłane with "Starsze" pagination. */
+/** Folder list: Odebrane / Wysłane / Kosz with "Starsze" "Kosz" actions. */
 export function MessagesScreen() {
 	const { navigate } = useRoute();
-	const [folder, setFolder] = useState<"inbox" | "outbox">("inbox");
+	const [folder, setFolder] = useState<"inbox" | "outbox" | "trash">("inbox");
 	const [page, setPage] = useState(1);
+	const [confirmId, setConfirmId] = useState<string | null>(null);
+	const [actionError, setActionError] = useState<string | null>(null);
 
-	// Rules of hooks: call both, pick by folder.
+	// Rules of hooks: call all folder hooks, pick by folder.
 	const inbox = useInboxMessages(page, PAGE_LIMIT);
 	const outbox = useOutboxMessages(page, PAGE_LIMIT);
-	const { data, isLoading, isError } = folder === "inbox" ? inbox : outbox;
+	const trash = useTrashMessages(page, PAGE_LIMIT);
+	const restoreFromTrash = useRestoreFromTrash();
+	const deletePermanently = useDeletePermanently();
+
+	const { data, isLoading, isError } =
+		folder === "inbox" ? inbox : folder === "outbox" ? outbox : trash;
 
 	if (isError) {
 		return (
@@ -28,8 +47,51 @@ export function MessagesScreen() {
 	const total = data?.total ?? 0;
 	const totalPages = Math.max(1, Math.ceil(total / PAGE_LIMIT));
 
+	async function onRestore(id: string) {
+		setActionError(null);
+		try {
+			await restoreFromTrash.mutateAsync(id);
+		} catch (e) {
+			setActionError(e instanceof Error ? e.message : "Nie udało się przywrócić wiadomości.");
+		}
+	}
+
+	async function onDeletePermanently(id: string) {
+		setActionError(null);
+		try {
+			await deletePermanently.mutateAsync(id);
+			setConfirmId(null);
+		} catch (e) {
+			setActionError(e instanceof Error ? e.message : "Nie udało się trwale usunąć wiadomości.");
+		}
+	}
+
 	return (
 		<div className="flex flex-col gap-4">
+			{actionError && (
+				<p
+					role="alert"
+					className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 px-3 py-2 text-xs text-red-700 dark:text-red-300"
+				>
+					{actionError}
+				</p>
+			)}
+			<div className="flex gap-2">
+				<button
+					type="button"
+					onClick={() => navigate("/messages/compose")}
+					className="flex-1 rounded-xl bg-green-700 px-3 py-2.5 text-sm font-medium text-white"
+				>
+					Nowa wiadomość
+				</button>
+				<button
+					type="button"
+					onClick={() => navigate("/messages/drafts")}
+					className="rounded-xl border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 text-sm font-medium"
+				>
+					Szkice
+				</button>
+			</div>
 			<div className="flex rounded-xl bg-neutral-200/70 dark:bg-neutral-900 p-1">
 				{FOLDERS.map((f) => (
 					<button
@@ -43,7 +105,7 @@ export function MessagesScreen() {
 							folder === f ? "bg-white dark:bg-neutral-800 shadow" : "text-neutral-500"
 						}`}
 					>
-						{f === "inbox" ? "Odebrane" : "Wysłane"}
+						{FOLDER_LABELS[f]}
 					</button>
 				))}
 			</div>
@@ -87,6 +149,64 @@ export function MessagesScreen() {
 										</span>
 										<span className="text-neutral-400 shrink-0">&gt;</span>
 									</button>
+									{folder === "trash" && (
+										<div className="flex gap-2 px-4 pb-2.5 -mt-1">
+											<button
+												type="button"
+												onClick={() => void onRestore(m.messageId)}
+												disabled={restoreFromTrash.isPending}
+												className="text-xs font-medium text-blue-600 dark:text-blue-400"
+											>
+												{restoreFromTrash.isPending &&
+												restoreFromTrash.variables === m.messageId ? (
+													<>
+														<ButtonSpinner />
+														Przywracanie…
+													</>
+												) : (
+													"Przywróć"
+												)}
+											</button>
+											{confirmId === m.messageId ? (
+												<>
+													<span className="text-xs text-neutral-500">
+														Trwale usunąć? Bezpowrotne.
+													</span>
+													<button
+														type="button"
+														onClick={() => void onDeletePermanently(m.messageId)}
+														disabled={deletePermanently.isPending}
+														className="text-xs font-medium text-red-600 dark:text-red-400"
+													>
+														{deletePermanently.isPending &&
+														deletePermanently.variables === m.messageId ? (
+															<>
+																<ButtonSpinner />
+																Usuwanie…
+															</>
+														) : (
+															"Tak, usuń trwale"
+														)}
+													</button>
+													<button
+														type="button"
+														onClick={() => setConfirmId(null)}
+														className="text-xs font-medium text-neutral-500"
+													>
+														Anuluj
+													</button>
+												</>
+											) : (
+												<button
+													type="button"
+													onClick={() => setConfirmId(m.messageId)}
+													className="text-xs font-medium text-red-600 dark:text-red-400"
+												>
+													Usuń trwale
+												</button>
+											)}
+										</div>
+									)}
 								</li>
 							);
 						})}

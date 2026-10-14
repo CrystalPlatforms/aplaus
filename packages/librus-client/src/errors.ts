@@ -27,6 +27,9 @@ const MESSAGES: Record<LibrusErrorCode, string> = {
 };
 
 export class LibrusError extends Error {
+	/** Szczegół PL dla UI (statusy/ścieżki/fragment odpowiedzi); null = domyślny. */
+	readonly customMessage: string | null;
+
 	constructor(
 		public readonly code: LibrusErrorCode,
 		public readonly status: number,
@@ -34,11 +37,12 @@ export class LibrusError extends Error {
 	) {
 		super(message ?? MESSAGES[code]);
 		this.name = "LibrusError";
+		this.customMessage = message ?? null;
 	}
 
-	/** The Polish message a UI can show as-is. */
+	/** The Polish message a UI can show as-is (custom detail wins over the default). */
 	get userMessage(): string {
-		return MESSAGES[this.code];
+		return this.customMessage ?? MESSAGES[this.code];
 	}
 }
 

@@ -37,14 +37,7 @@ export function Loader() {
           height: 6.80px;
           width: 6.80px;
           border-radius: 50%;
-          background-color: #171717;
-          transition: background-color 0.3s ease;
-        }
-
-        @media (prefers-color-scheme: dark) {
-          .uib-dot-loader .uib-dot::before {
-            background-color: #f5f5f5;
-          }
+          background-color: #2563eb;
         }
 
         .uib-dot-loader .uib-dot:nth-child(2) {
@@ -83,5 +76,54 @@ export function Loader() {
         }
       `}</style>
 		</output>
+	);
+}
+
+/**
+ * Mały wariant loadera do przycisków w trakcie akcji — ten sam pierścień
+ * kropek co wyżej, 14px, ustawiany PRZED tekstem statusu. Kolory kropek
+ * z klas Tailwind (bg-neutral-800 dark:bg-neutral-200) — ten sam mechanizm
+ * motywu co resztta aplikacji, więc przełączają się identycznie.
+ */
+export function ButtonSpinner() {
+	return (
+		<span className="btn-dot-spinner" aria-hidden="true">
+			{[0, 1, 2, 3, 4, 5].map((i) => (
+				<span
+					key={i}
+					className="btn-dot-spinner-dot size-[4px] rounded-full bg-blue-600"
+					style={{ animationDelay: `${i === 0 ? 0 : -(0.5 - i * 0.0833)}s` }}
+				/>
+			))}
+			<style>{`
+        .btn-dot-spinner {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: flex-start;
+          height: 14px;
+          width: 14px;
+          margin-right: 6px;
+          vertical-align: -2px;
+          animation: btn-smoothRotate 1.8s linear infinite;
+        }
+        .btn-dot-spinner .btn-dot-spinner-dot {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 100%;
+          width: 100%;
+          animation: btn-rotate 1s ease-in-out infinite;
+        }
+        @keyframes btn-rotate {
+          0% { transform: rotate(0deg); }
+          65%, 100% { transform: rotate(360deg); }
+        }
+        @keyframes btn-smoothRotate {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+		</span>
 	);
 }

@@ -11,21 +11,30 @@ import {
 	type AttachmentDownload,
 	CookieJar,
 	type CustomReceiverGroup,
+	createContextDraft,
+	createDraft,
+	deleteDraft,
 	establishMessagesSession,
 	fetchAttachment,
+	listDrafts,
 	type MessageDetail,
 	type MessageListPage,
 	type MessageTag,
+	type ReceiverEntry,
 	type ReceiverType,
 	readCustomReceiverGroups,
+	readDraft,
 	readInboxMessages,
 	readMessageDetail,
 	readMessagesMe,
 	readOutboxMessages,
+	readReceiversByType,
 	readReceiverTypes,
 	readTags,
 	readUnreadMessagesCount,
+	sendMessage,
 	type UnreadCounts,
+	updateDraft,
 } from "@repo/librus-client";
 import { loadAccount, saveAccountMJar } from "@/kv/store";
 import type { Result } from "../types/result";
@@ -42,7 +51,20 @@ export interface MessagesDeps {
 	readTags: typeof readTags;
 	readReceiverTypes: typeof readReceiverTypes;
 	readCustomReceiverGroups: typeof readCustomReceiverGroups;
+	readReceiversByType: typeof readReceiversByType;
 	fetchAttachment: typeof fetchAttachment;
+}
+
+/** Injectable boundary for the write side (drafts, send) — see messages-write-service. */
+export interface WriteMessagesDeps {
+	establishMessagesSession: typeof establishMessagesSession;
+	createDraft: typeof createDraft;
+	createContextDraft: typeof createContextDraft;
+	readDraft: typeof readDraft;
+	updateDraft: typeof updateDraft;
+	deleteDraft: typeof deleteDraft;
+	listDrafts: typeof listDrafts;
+	sendMessage: typeof sendMessage;
 }
 
 const defaultMessagesDeps: MessagesDeps = {
@@ -55,7 +77,19 @@ const defaultMessagesDeps: MessagesDeps = {
 	readTags,
 	readReceiverTypes,
 	readCustomReceiverGroups,
+	readReceiversByType,
 	fetchAttachment,
+};
+
+export const defaultWriteMessagesDeps: WriteMessagesDeps = {
+	createContextDraft,
+	establishMessagesSession,
+	createDraft,
+	readDraft,
+	updateDraft,
+	deleteDraft,
+	listDrafts,
+	sendMessage,
 };
 
 /**
@@ -65,7 +99,7 @@ const defaultMessagesDeps: MessagesDeps = {
 async function loadMessagesJar(
 	kv: KVNamespace,
 	accountId: string,
-	deps: MessagesDeps,
+	deps: Pick<MessagesDeps, "establishMessagesSession">,
 ): Promise<Result<{ jar: CookieJar; groupId: number }>> {
 	const account = await loadAccount(kv, accountId);
 	if (!account) {
@@ -93,11 +127,11 @@ async function loadMessagesJar(
 	}
 }
 
-/** One read through the M session, with a single re-establish retry on 401. */
-async function withMessagesSession<T>(
+/** One read through the M session, with a single re-establish retry on 401. Shared with the write service. */
+export async function withMessagesSession<T>(
 	kv: KVNamespace,
 	accountId: string,
-	deps: MessagesDeps,
+	deps: Pick<MessagesDeps, "establishMessagesSession">,
 	call: (jar: CookieJar) => Promise<T>,
 ): Promise<Result<T>> {
 	const session = await loadMessagesJar(kv, accountId, deps);
@@ -217,6 +251,16 @@ export async function getReceiverTypes(
 	deps: MessagesDeps = defaultMessagesDeps,
 ): Promise<Result<ReceiverType[]>> {
 	return withMessagesSession(kv, accountId, deps, (jar) => deps.readReceiverTypes(jar));
+}
+
+/** GET /api/messages/receivers?type= — people of one receiver type (composer picker). */
+export async function getReceivers(
+	kv: KVNamespace,
+	accountId: string,
+	typeId: string,
+	deps: MessagesDeps = defaultMessagesDeps,
+): Promise<Result<ReceiverEntry[]>> {
+	return withMessagesSession(kv, accountId, deps, (jar) => deps.readReceiversByType(jar, typeId));
 }
 
 /** GET /api/messages/receivers/custom-groups. */

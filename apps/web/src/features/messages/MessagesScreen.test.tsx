@@ -99,3 +99,69 @@ describe("MessagesScreen", () => {
 		);
 	});
 });
+
+const TRASH_PAGE = {
+	messages: [
+		{
+			messageId: "2001",
+			senderName: "Anna Kowalska",
+			topic: "Stara wiadomość",
+			content: "Treść",
+			sendDate: "2026-10-01 08:00:00",
+			readDate: "2026-10-01 09:00:00",
+			hasAttachments: false,
+		},
+	],
+	total: 1,
+};
+
+describe("MessagesScreen — kosz wymaga potwierdzenia trwałego usunięcia", () => {
+	beforeEach(() => {
+		storage.clear();
+		setToken("device-token-test");
+		apiFetchMock.mockReset();
+		apiFetchMock.mockImplementation(async (path: string, init?: RequestInit) => {
+			if (path.startsWith("/api/messages/inbox?")) return INBOX_PAGE;
+			if (path.startsWith("/api/messages/outbox?")) return { messages: [], total: 0 };
+			if (path.startsWith("/api/messages/trash?")) return TRASH_PAGE;
+			if (path === "/api/messages/trash/2001" && init?.method === "DELETE") return null;
+			throw new Error(`unexpected api call: ${path}`);
+		});
+	});
+
+	it("pierwsze kliknięcie tylko pyta; trwałe usunięcie idzie dopiero po potwierdzeniu", async () => {
+		renderMessages();
+		// Przełącz na Kosz.
+		fireEvent.click(await screen.findByRole("button", { name: "Kosz" }));
+		expect(await screen.findByText("Stara wiadomość")).toBeTruthy();
+
+		// Pierwsze kliknięcie NIE usuwa — pokazuje potwierdzenie.
+		fireEvent.click(screen.getByRole("button", { name: "Usuń trwale" }));
+		expect(screen.getByText("Trwale usunąć? Bezpowrotne.")).toBeTruthy();
+		expect(apiFetchMock.mock.calls.filter(([p]) => p === "/api/messages/trash/2001")).toHaveLength(
+			0,
+		);
+
+		// Potwierdzenie dopiero wykonuje DELETE.
+		fireEvent.click(screen.getByRole("button", { name: "Tak, usuń trwale" }));
+		await waitFor(() => {
+			expect(
+				apiFetchMock.mock.calls.some(
+					([p, i]) => p === "/api/messages/trash/2001" && (i as RequestInit).method === "DELETE",
+				),
+			).toBe(true);
+		});
+	});
+
+	it("Anuluj przerywa trwałe usuwanie", async () => {
+		renderMessages();
+		fireEvent.click(await screen.findByRole("button", { name: "Kosz" }));
+		await screen.findByText("Stara wiadomość");
+		fireEvent.click(screen.getByRole("button", { name: "Usuń trwale" }));
+		fireEvent.click(screen.getByRole("button", { name: "Anuluj" }));
+		expect(screen.queryByText("Trwale usunąć? Bezpowrotne.")).toBeNull();
+		expect(apiFetchMock.mock.calls.filter(([p]) => p === "/api/messages/trash/2001")).toHaveLength(
+			0,
+		);
+	});
+});

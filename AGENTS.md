@@ -82,7 +82,9 @@ Package-specific rules live under `.claude/rules/data-service/` — see [llms.tx
 ## UI conventions
 
 - Every loading state shows the dot loader (`apps/web/src/components/Loader.tsx`, green dots), never a bare text placeholder alone.
-- The loader dots are green (#167c51); when the loader sits on a white (#FFFFFF) surface, switch the dot color so it stays visible.
+- ALL loaders (the view Loader and the ButtonSpinner) use the SAME fixed BLUE dots (#2563eb / bg-blue-600) in every theme — no light/dark variants. User decision, r.21.
+- Button action labels during an operation (Zapisywanie…, Usuwanie… etc.) always get the small
+  ButtonSpinner (components/Loader.tsx, blue dots) placed BEFORE the label text. User decision, r.21.
 
 ## Don't
 

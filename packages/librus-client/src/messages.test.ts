@@ -461,3 +461,22 @@ describe("M session death (non-JSON success)", () => {
 		});
 	});
 });
+
+describe("readCustomReceiverGroups — HITL r.4 kształty", () => {
+	it("czyta grupy z {data: [...]}, gdy {groups: []} nie zawiera niczego", async () => {
+		const { deps } = depsServingM({
+			"receivers/custom-groups": { data: [{ id: 7, name: "Moja grupa" }] },
+		});
+		expect(await readCustomReceiverGroups(CookieJar.empty(), deps)).toEqual([
+			{ id: "7", name: "Moja grupa" },
+		]);
+	});
+});
+it("czyta grupy z {Groups: [...]} i kluczami groupId/groupName", async () => {
+	const { deps } = depsServingM({
+		"receivers/custom-groups": { Groups: [{ groupId: 9, groupName: "Szersza" }] },
+	});
+	expect(await readCustomReceiverGroups(CookieJar.empty(), deps)).toEqual([
+		{ id: "9", name: "Szersza" },
+	]);
+});

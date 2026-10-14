@@ -8,10 +8,68 @@
 
 import type { MessageDetail, MessageListItem } from "@repo/librus-client";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ButtonSpinner } from "@/components/Loader";
 import { ViewLoader } from "@/components/ViewLoader";
 import { apiDownload } from "@/lib/api";
-import { useInvalidateMessages, useMessageDetail } from "./queries";
+import { useRoute } from "@/lib/router";
+import { useInvalidateMessages, useMessageDetail, useMoveToTrash } from "./queries";
+
+("./queries");
+
+/** Action row under the message: reply, forward, move to trash (Faza 10). */
+function MessageActions({ folder, id }: { folder: "inbox" | "outbox"; id: string }) {
+	const { navigate } = useRoute();
+	const moveToTrash = useMoveToTrash();
+	const [error, setError] = useState<string | null>(null);
+
+	async function onTrash() {
+		setError(null);
+		try {
+			await moveToTrash.mutateAsync(id);
+			navigate("/messages");
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Nie udało się przenieść do kosza.");
+		}
+	}
+
+	return (
+		<div className="flex flex-col gap-2">
+			{error && <p className="text-xs text-red-500">{error}</p>}
+			<div className="flex flex-wrap gap-2">
+				<button
+					type="button"
+					onClick={() => navigate(`/messages/${folder}/${id}/reply`)}
+					className="rounded-xl border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-sm font-medium"
+				>
+					Odpowiedz
+				</button>
+				<button
+					type="button"
+					onClick={() => navigate(`/messages/${folder}/${id}/forward`)}
+					className="rounded-xl border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-sm font-medium"
+				>
+					Przekaż
+				</button>
+				<button
+					type="button"
+					onClick={() => void onTrash()}
+					disabled={moveToTrash.isPending}
+					className="rounded-xl border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 disabled:opacity-50"
+				>
+					{moveToTrash.isPending ? (
+						<>
+							<ButtonSpinner />
+							Przenoszenie…
+						</>
+					) : (
+						"Do kosza"
+					)}
+				</button>
+			</div>
+		</div>
+	);
+}
 
 /** Finds the message in any cached folder page of this folder. */
 function listItemOf(
@@ -61,6 +119,7 @@ export function MessageDetailScreen({ folder, id }: { folder: "inbox" | "outbox"
 					>
 						Spróbuj ponownie
 					</button>
+					<MessageActions folder={folder} id={id} />
 					<MessageCard message={fallback} messageId={id} />
 				</>
 			);
@@ -94,7 +153,12 @@ export function MessageDetailScreen({ folder, id }: { folder: "inbox" | "outbox"
 	const listContent = fallback?.content ?? "";
 	const content =
 		detailContent.length >= listContent.length ? detailContent : (fallback?.content ?? "");
-	return <MessageCard message={data} content={content} messageId={id} />;
+	return (
+		<div className="flex flex-col gap-4">
+			<MessageActions folder={folder} id={id} />
+			<MessageCard message={data} content={content} messageId={id} />
+		</div>
+	);
 }
 
 function MessageCard({

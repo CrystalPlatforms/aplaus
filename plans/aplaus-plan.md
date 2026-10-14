@@ -381,6 +381,21 @@ Kompozytor: wybór odbiorców (typy + własne grupy), temat, treść (HTML, esca
 
 ---
 
+
+### Implementation notes (2026-10-14)
+
+- Zrealizowane: `packages/librus-client/src/drafts.ts` (szkice newOne + send + kontekst reply/forward
+  jako string), proxy `/api/messages/{send,drafts...}`, kompozytor + lista szkiców w PWA.
+- Aktualizacja po HITL rundzie 1: kompozytor ma teraz **picker osób z kategorii**
+  (`readReceiversByType` w `receivers.ts`, `GET /api/messages/receivers?type=`) zamiast ręcznego
+  accountId. Ścieżka (`receivers/{type}`, fallback zbiorcze `receivers`) jest wyprowadzona, nie
+  zaaudytowana — HITL potwierdza.
+- Aktualizacja po HITL rundzie 1: część zapisów M odpowiada 200/201 z PUSTYM body mimo sukcesu
+  (szkic, kosz) — warstwa zapisu traktuje puste echo jako sukces bez potwierdzenia; wysyłka z
+  pustym echem zgłasza sukces z nieznanym id (bez błędu, żeby nie prowokować duplikatu).
+- Wysyłka: dokładnie jedno żądanie `POST /messages`; ponowienie wyłącznie po odnowieniu sesji M
+  przy 401 (401 = nic nie zostało dostarczone). Przy 5xx/network error błąd idzie do UI bez ponowienia.
+
 ## Phase 10: Wiadomości — pełny obieg (HITL)
 
 **User stories**: 18, 19, 20, 21, 22
@@ -407,6 +422,278 @@ Odpowiedź i przekazanie (szkice reply/forward z `repliedToMessageId`/`forwarded
 - [ ] HITL: checklista per operacja (reply, forward, plik, podpis, etykieta, kosz) na realnym koncie z weryfikacją w Librusie — [observable: checklista HITL]
 
 ---
+
+
+### Implementation notes (2026-10-14)
+
+- Zrealizowane: `packages/librus-client/src/messages-ops.ts` (załączniki, podpisy, etykiety, grupy,
+  kosz), proxy `/api/messages/{signatures,tags,receivers/custom-groups,trash,attachments...}`, UI:
+  akcje reply/forward/kosz na wiadomości, Kosz w liście folderów, ustawienia podpisów/etykiet/grup.
+- Odstępstwa: (1) ścieżka listy kosza `/trash-bin/messages` jest wyprowadzona z zaaudytowanej trasy
+  restore, nie zaaudytowana wprost; (2) modyfikacja podpisu istnieje end-to-end (API), ale UI ma
+  tylko create/delete; zmiana nazwy etykiety/grupy istnieje w API, UI bez rename; (3) wysyłka
+  z kontekstem (`repliedToMessageId`/`forwardedMessageId` w `POST /messages`) jest z kontraktu
+  klienta Librusa — do potwierdzenia w HITL.
+
+### Implementation notes — HITL runda 21 (2026-10-14) — HITL zdany ✅
+
+- **Użytkownik potwierdził: „wszystko działa”** (odbiorcy, etykiety, grupy, wysyłka).
+- Dokończone stany ładowania przycisków (wzorem „Przenoszenie…”): Przywracanie…/Usuwanie…
+  (kosz), Usuwanie… (szkice), Dodawanie…/Usuwanie… (podpisy, etykiety, grupy — z
+  disabled per wiersz po mutation.variables), istniejące zachowane (Zapisywanie…,
+  Wysyłanie…, Sprawdzam…, Skanuję…).
+- **Spinner przed każdym napisem statusu**: `ButtonSpinner` (components/Loader.tsx) — mały
+  (12px) pierścień kropek jak w loaderze aplikacji, kropki BIAŁE (decyzja użytkownika z innego
+  czatu; cienka ciemna obwódka dla widoczności na jasnych tłach), wstawiany PRZED tekstem.
+  Zasada zapisana w .claude/CLAUDE.md (UI conventions).
+
+### Implementation notes — HITL runda 20 (2026-10-14) — final picker
+
+- Decyzja użytkownika: kompozytor ma DOKŁADNIE dwie kategorie + własne grupy:
+  **Wychowawcy** (wychowawca ucznia z student-subjects) i **Kadra szkoły** (wszyscy
+  pracownicy z /receivers/groups/school-employees, search po nazwisku) + „Grupa: {name}".
+- Słownik typów Librusa przestał zasilać listę kategorii (useReceiverTypes zostaje tylko
+  do etykiet chipów); default kategorii: Wychowawcy.
+
+### Implementation notes — HITL runda 19 (2026-10-14)
+
+- Korekta po prośbie użytkownika („tylko kategorie które Librus wysyła”): eksperyment
+  kategorii-przedmiotów (subject-{id}) WYCOFANY — wracają kategorie ze słownika
+  /receivers/types (Wychowawcy, Nauczyciele, Dyrektorzy, Rada rodziców, Bibliotekarz,
+  Inny specjalista, Admin). Kategorie pracowników wypełnia lista kadry szkoły
+  (/receivers/groups/school-employees — jedyne źródło personelu, jak w oficjalnym
+  kliencie); Wychowawcy/Nauczyciele precyzyjnie z student-subjects; rady rodziców puste.
+- Trasa /receivers/student-subjects i readStudentSubjects usunięte (eksperyment).
+
+### Implementation notes — HITL runda 18 (2026-10-14)
+
+- Prośba użytkownika: tylko kategorie Librusa (usuń wymyśloną „Kadrę szkoły”); oficjalny
+  Librus pozwala z konta ucznia pisać do wszystkich. Wdrożone: kategorie = słownik
+  /receivers/types; kategorie pracowników bez dedykowanego źródła (headteachers, librarian,
+  otherSpecialist, admin, schoolParentsCouncil...) wypełnia lista kadry szkoły (200 dla
+  ucznia); rady rodziców (403) zostają puste. Statyczna opcja „Kadra szkoły” usunięta.
+
+### Implementation notes — HITL runda 17 (2026-10-14)
+
+- Prośba użytkownika: pisać też do nauczycieli spoza własnych przedmiotów. Nowa kategoria
+  **„Kadra szkoły (wszyscy)”** (typeId `school-employees`) → `/receivers/groups/
+  school-employees` (200 na koncie ucznia, pełna lista {accountId, label}); search filtruje
+  po nazwisku. Chipy odbiorców mają statyczne etykiety kategorii (STATIC_TYPE_LABELS).
+- Kategorie osobiste pozostają: Nauczyciele (własne przedmioty), Wychowawcy („Godzina
+  wychowawcza”), grupy własne.
+
+### Implementation notes — HITL runda 16 (2026-10-14) — ODBIORCY DZIAŁAJĄ ✅
+
+- HITL: „SUKCES! są odbiorcy” — picker pokazuje osoby. Sortowanie na kategorie wg danych,
+  które Librus realnie udostępnia koncie ucznia (ground truth z testera):
+  - **Nauczyciele** = `/receivers/student-subjects` ({teacherIdentifier, subject}) × nazwiska
+    z `/receivers/groups/school-employees` ({accountId, label}) → „Banachewicz Ewa — Muzyka”;
+  - **Wychowawcy** = nauczyciel z przedmiotem „Godzina wychowawcza” (samo nazwisko);
+  - **kadra szkoły** = {receivers:[{accountId,label}]} — obsługiwany kształt (label jako nazwa,
+    generyczne kontenery receivers/list/items);
+  - **członkownie własnych grup** = /receivers/custom-groups/{id}/receivers-management (200;
+    pusta grupa = pusta lista — poprawne);
+  - kategorie bez źródła dla ucznia (Dyrektorzy, Bibliotekarz, Rada rodziców = 403) → pusta
+    lista z uczciwym komunikatem (globalny fallback kadry usunięty — był niezgodny z kategoriami).
+- Probe: usunięte POST-proby etykiet/grup (kontrakty potwierdzone — tester nie tworzy już śmieci).
+
+### Implementation notes — HITL runda 15 (2026-10-14) — ETYKIETY DZIAŁAJĄ ✅
+
+- **HITL: „JEST, dodało się! Etykiety działają!”** — potwierdzony kontrakt zadziałał od
+  pierwszego żądania: `{name, colorRGB: <hex bez # wielkimi>}`; mapa 30 nazw CSS -> hex
+  w `messages-ops.ts`; lista etykiet pokazuje kropkę koloru (odczyt colorRGB/tagId).
+- Odbiorcy — kolejne tory (nadal 404 na groups/{typ} dla „tutors”):
+  1. **członkowie własnych grup**: prawa trasa ze skanu
+     `/receivers/custom-groups/{id}/receivers-management`; pseudo-typ `group-{id}` w
+     readReceiversByType; kompozytor pokazuje grupy użytkownika w selekcji kategorii
+     („Grupa: {name}”) — odbiorcy wybieralni z własnych grup JUŻ TERAZ.
+  2. nowe kandydaty: `/receivers/student-subjects`, `/receivers/jst/subjects`,
+     `/receivers/groups` (zbiorcza) — w readReceiversByType i probe.
+
+### Implementation notes — HITL runda 14 (2026-10-14)
+
+- Nawet nazwa CSS („khaki”) → 422 MISSING_COLOR_RGB. Nowe hipotezy w grze:
+  (1) stary formularz etykiet (zrzuty użytkownika) to HTML — stare API mogło brać
+  **form-urlencoded**; probe próbuje POST /tags z ciałem `name=...&colorRgb=khaki`
+  (probeOnce: string w body = urlencoded, obiekt = JSON), plus trasy /tags/new i PUT /tags.
+  (2) formularz etykiet żyje w starym module wiadomości — skaner v6 poluje na niego:
+  strony synergii (sesja G) + ramki iframe, wzorce <form action>, „Etykiet…”, modules/msg.
+- Wynik rozstrzygnie tester + skaner (przyciski w ustawieniach wiadomości).
+
+### Implementation notes — HITL runda 13 (2026-10-14) — ZAGADKA KOLORU ROZWIĄZANA
+
+- Użytkownik przesłał zrzuty ekranu STAREGO formularza Librusa („Etykiety wiadomości”):
+  pole Kolor to select z **nazwami kolorów CSS** (khaki, lightskyblue, …, lawngreen — 30
+  pozycji). `colorRgb` przyjmuje więc NAZWĘ CSS, nie hex — stąd wszystkie 422.
+- Wdrożone: paleta UI = dokładna lista Librusa jako select (domyślnie „khaki”, jak u nich)
+  z podglądem swatcha; createTag wysyła nazwę as-is (warianty hex tylko dla wejścia hex);
+  TagWriteSchema przyjmuje nazwy (3-20 znaków); probe: POST /tags z „khaki”.
+- Odbiorcy: wdrożone w r.12 prawdziwe trasy /receivers/groups/{grupa} — do potwierdzenia HITL.
+
+### Implementation notes — HITL runda 12 (2026-10-14) — TABELA ENDPOINTÓW KLIENTA
+
+- Skaner wyciągnął stałą tabelę tras oficjalnego klienta (r.11 skanował już właściwe chunki):
+  **`/receivers/groups/{grupa}`** (+ warianty `jst-teachers`, `jst-parents`, `jst-students`,
+  `jst-school-employees`, `school-employees`, `students-and-attendants`, `class-parents`,
+  `kindergarteners`), `/receivers/jst/subjects`, `/receivers/student-subjects`,
+  `/receivers/custom-groups/{id}/receivers-management` (członkowie grupy!),
+  `/tags`, `/tags/{id}`, `/tags/{id}/messages-attachment`, plus potwierdzenia naszych tras
+  (`/trash-bin/messages/{id}/restore`, `/signatures/create|modify/{id}`).
+- Kształty: osoby mają `receiverId` (nie accountId) i `availabilityStatus`; tagi czytane jako
+  `tagId`. Wdrożone: readReceiversByType próbuje `receivers/groups/{typ}` → `jst-{typ}` →
+  stare kandydaci; `receiverId` w entryAccountIdOf; `tagId` w readTags. Probe: GET
+  receivers/groups/{typ} i jst-{typ}. Etykiety: string „colorRgb” NIE występuje w paczkach
+  ucznia — moduł tworzenia etykiet prawdopodobnie nie ładuje się dla konta ucznia.
+- Skaner: limit paczek 24→40, kolejka 40→64, wzorzec `color-field` (colorXxx: =).
+
+### Implementation notes — HITL runda 11 (2026-10-14)
+
+- Skan r.10: kolejka zalała się fragmentem „et.js” (regex chunków łapał ogonki słów typu
+  „target.js”) i limit 16 poszedł na 14× ten sam plik — prawdziwe lazy chunki niedosięgnięte.
+- Skaner v5: deduplikacja kolejki (Set), chunki tylko po nazewnictwie Vite
+  `Nazwa-HASH.js` (myślnik + hasz odfiltrowuje śmieci), HTML czyta script src + modulepreload,
+  limit 24 paczek. Fix TDZ `isVendor` (ReferenceError połykany przez try/catch).
+
+### Implementation notes — HITL runda 10 (2026-10-14) — APLIKACJA ZNALEZIONA
+
+- **Skaner trafił na prawdziwą aplikację**: `START → https://wiadomosci.librus.pl/nowy/`
+  („Librus - Wiadomości”, paczki w /nowy/assets/). Wcześniej: root = „Portal LIBRUS” (login),
+  wszystkie zgadywane ścieżki = 404 — aplikacja żyje wyłącznie pod /nowy/.
+- Pierwszy skan /nowy/ dał mało: limit 8 paczek zużyły biblioteki (react/moment), chunki z
+  logiką nie zdążyły. Wzorzec `receivers/crossed-out-students` dowodzi, że endpointy
+  /receivers/... istnieją (nasze 404 to złe nazwy, nie brak modułu).
+- Skaner v4: pomija vendory (react|moment|scheduler|sentry|vendor|jquery), skanuje 16 paczek,
+  rozwija chunki z KAŻDEJ paczki (limit kolejki 24), nowe wzorce: pełne ścieżki
+  `receivers/...` i kontekst „tag + color”. Limity dopasowań 60→120.
+
+### Implementation notes — HITL runda 9 (2026-10-14)
+
+- **Grupy potwierdzone w 100%**: tester utworzył grupę `201 {"groupId":21109,"name":"Probe-Aplaus"}`;
+  lista `{groups:[...]}` czytana poprawnie. „Reszta działa”.
+- Etykiety: sweep 6 kanonicznych kolorów też 422 MISSING_COLOR_RGB — palety sztywnej nie
+  potwierdzono; kontrakt trzeba wyciągnąć z paczki JS prawdziwego klienta.
+- Skaner v3: skanuje **ścieżką prawdziwego klienta** (synergia/wiadomosci3 z sesją G — ta sama,
+  którą ustawia sesja M; `walk.url` to wejście aplikacji), fallback: kandydaci na domenie M.
+  Raport: linia START (landing URL) + kandydaci z tytułami i rozpoznaniem (stara-aplikacja/
+  logowanie/aplikacja) + fragment wejścia + skanowane paczki + druga warstwa chunków.
+- Wynik r.8 skanera (na domenie M): root = „Portal LIBRUS” (logowanie), pozostałe ścieżki 404 —
+  aplikacja nie jest hostowana pod zgadywanymi ścieżkami; stąd skok na łańcuch synergii.
+
+### Implementation notes — HITL runda 8 (2026-10-14)
+
+- Etykiety: opakowane ciało `{tag:{...}}` dostało MISSING_NAME + MISSING_COLOR_RGB — walidator
+  czyta top-level; `name` (string) PRZECHODZI, `colorRgb` nie wiąże się w żadnym z 11 kształtów.
+  Zgadywanie zakończone — **Skaner kodu klienta** (`client-scan.ts`, `GET /api/messages/
+  client-scan`, przycisk „Skanuj kod klienta Librusa” w ustawieniach): pobiera HTML wejścia SPA
+  (kandydaci `/`, `/!messages_v2`, `/messages_v2`, `/!messages3`, `/messages3`, `/app`) i paczki
+  JS żywą sesją M, regexuje endpointy receiver / colorRgb / trasy tags — to samo źródło prawdy,
+  z którego korzystał audyt, zautomatyzowane bez DevTools.
+- Odbiorcy: członkowie grup (custom-groups/{id} i …/{id}/receivers) → 404; types/{t}/search →
+  404. Skaner powinien pokazać prawdziwy endpoint ludzi.
+- Jeśli skaner nie znajdzie ścieżki wejścia SPA, pozostaje F12 z modułu wiadomości otwartego
+  z menu synergii.
+
+### Implementation notes — HITL runda 7 (2026-10-14)
+
+- HITL: „reszta działa dobrze” — grupy, kosz, wiadomości, wysyłka OK. Otwarte: etykiety, odbiorcy.
+- Etykiety r.7: wszystkie 7 kodowań koloru (string±#””, liczba, colorRGB, [r,g,b], {r,g,b},
+  rgb()) odrzucone 422 MISSING_COLOR_RGB. Hipoteza (zgodna z sugestią użytkownika): Librus chce
+  ściślejszego formatu (Java-style: „#4285F4”, ARGB „#FF4285F4”, csv „66,133,244”) albo palety
+  z API. Tester próbuje GET /tags/colors i /tags/palette; zapis etykiet ma 11 kodowań.
+- Odbiorcy r.7: contacts/users/accounts (runda 4) też 404 — endpoint ludzi nadal nieznany.
+  NOWA ŚCIEŻKA: tester odczyta członków pierwszej grupy (GET /receivers/custom-groups/{id} i
+  …/{id}/receivers, gdy lista grup zwróci groupId) — kompozytor mógłby wtedy wybierać całe
+  grupy osób zamiast pojedynczych kategorii. Docelowo: F12 z modułu wiadomości (otwieranego
+  z menu synergii) dla pewnego URL-a.
+- Ulepszacz testera: dynamiczne próby członków grupy wstrzykiwane po odczycie listy grup.
+
+### Implementation notes — HITL runda 6 (2026-10-14, ground truth: tester r.2)
+
+- **Grupy ROZWIĄZANE**: tester pokazał `GET /receivers/custom-groups → {"groups":[{"groupId":..,
+  "name":..}]}` — czytnik z r.5 (klucze `groupId`/`groupName`) pasuje; istniejące grupy użytkownika
+  („siema”, „test grup”…) wyświetlą się na liście. Create potwierdzony (422 „Istnieje już…”).
+- **Etykiety**: tester odrzucił colorRgb jako string±„#”, liczbę i klucz `colorRGB` — wszystkie
+  422 MISSING_COLOR_RGB. Zapis próbuje teraz 7 kodowań tego samego koloru z palety (±„#”, liczba,
+  `colorRGB`, tablica [r,g,b], obiekt {r,g,b}, „rgb(r,g,b)”); finalny błąd preferuje 422 (z
+  fragmentem odpowiedzi), nie 404 z pierwszej kandydatki (wcześniej UI pokazywało „Nie znaleziono
+  zasobu.”). Tester ma osobne próby dla tablicy/obiektu/rgb().
+- **Odbiorcy**: 18 kandydatów z 3 rund → wszystkie 404; endpoint ludzi NIE jest pod /receivers*.
+  Tester: runda 4 (contacts?type=, contacts/{t}, users/{t}, accounts/{t}, receivers/types/{t}/users)
+  + oczekiwane F12 z modułu wiadomości (użytkownik otwiera wiadomości z menu synergii).
+- Tester okrojony z potwierdzonych 404 (23→14 prób).
+
+### Implementation notes — HITL runda 5 (2026-10-14)
+
+- Etykiety: `colorRgb: "#4285f4"` dalej 422 MISSING_COLOR_RGB mimo obecności pola — format lub
+  typ wartości jest inny (np. bez „#”, liczba 0xRRGGBB albo klucz `colorRGB`). Zapis etykiet jest
+  teraz **samoprawujący**: próbuje 4 wariantów ciała po kolei (422 spada na następny), skuteczny
+  wariant tworzy etykietę od razu; gdy żaden nie przejdzie, UI pokazuje błąd pierwszej próby.
+- Grupy: lista dalej pusta mimo utworzonych grup — czytnik poszerzony o `Groups`, `data.Groups`,
+  `data.items` i klucze `groupId`/`groupName`/`GroupId`/`GroupName`.
+- Tester diagnostyczny: fragmenty odpowiedzi 240→400 znaków (pełny kształt pozycji typu odbiorcy),
+  warianty koloru etykiety jako osobne próby, runda 3 kandydatów listy odbiorców (`receivers/all`,
+  `receivers/{t}/receivers`, `receivers/types/{t}/receivers`, `receivers/types/{t}/list`).
+- Kolor etykiety **wybiera użytkownik** (paleta 10 kolorów w sekcji Etykiety, `TAG_PALETTE`);
+  automatyczne warianty to tylko kodowania tego samego koloru (z „#”/bez/liczba/`colorRGB`).
+  Kontrakt: `POST /tags` przyjmuje `{name, colorRgb}` (schemat `TagWriteSchema` wymaga koloru).
+- Do rozstrzygnięcia w r.6: wynik testera (GET /tags = format koloru, GET /receivers/custom-groups
+  = kształt listy grup, nowi kandydaci receivers = prawdziwy endpoint ludzi).
+
+### Implementation notes — HITL runda 4 (2026-10-14, ground truth z testera)
+
+- Tester diagnostyczny dostarczył prawdziwe kontrakty (konto ucznia, M):
+  - `POST /tags` → 422 `MISSING_COLOR_RGB` — trasa dobra, body wymaga `colorRgb`;
+    create/update etykiety wysyłają teraz `{name, colorRgb: "#4285f4"}` (domyślny odcień).
+  - `POST /receivers/custom-groups` → 422 „Istnieje już grupa o podanej nazwie.” — trasa i body
+    `{name}` POPRAWNE; grupy tworzyły się, ale lista ich nie czytała. Czytnik grup czyta teraz
+    każdy rozsądny kształt (`groups`/`data`/`data.groups`/`data.list`). Błędy akcji Librusa
+    (4xx/5xx z `metadata.message`) idą wprost do UI (polski komunikat serwera).
+  - `GET /me` → `accessToAttachments: true`, ale `cloudStorageIsConfigured: false` — szkoła nie
+    ma skonfigurowanego dysku chmurowego, załączniki nie działają także w oficjalnym Librusie.
+    **Funkcja załączników usunięta z UI kompozytora** (na życzenie użytkownika); proxy API i
+    warstwa protokołu zostają (dla szkół z włączonym dyskiem).
+  - Wszystkie kandydaci listy odbiorców `/receivers*` → 404 — endpoint ludzi pozostaje
+    nieznany; tester ma rundę 2 kandydatów (`receivers/search` POST/GET, `receivers/{t}/list`,
+    `receivers/{t}/search`, `receivers/list?type=`) plus odczyty `GET /tags` i
+    `GET /receivers/custom-groups` (potwierdzenie kształtów list po naprawach).
+- Kompozytor: sekcja załączników, stany, hooki `use*Attachment*` usunięte; `storageId` zawsze
+  `null`. Odczyt załączników odebranych wiadomości zostaje (działa, osobna funkcja).
+
+### Implementation notes — HITL runda 3 (2026-10-14)
+
+- Etykiety/grupy/magazyn plików: zapisy przez **kandydatów tras** (404/405 spada na kolejną) —
+  tags: `/tags/create`→`/tags`, modyfikacja `/tags/modify/{id}`→`/tags/{id}`, usuwanie
+  `/tags/delete/{id}`→`/tags/{id}`; grupy analogicznie pod `/receivers/custom-groups/...`;
+  magazyn: `/files-storage/attachments`→`/attachments/storage`→`/files-storage`.
+- **Tester diagnostyczny** (`packages/librus-client/src/probe.ts`, `GET /api/messages/receivers/
+  probe?type=`, sekcja na ekranie ustawień wiadomości): odpytuje kandydujące endpointy żywą sesją M
+  i pokazuje statusy + fragmenty surowych odpowiedzi z przyciskiem kopiowania — zastępuje
+  przechwytywanie DevTools, którego użytkownik nie może zrobić (brak dostępu do oficjalnego
+  klienta wiadomości). POST-proby mogą utworzyć pozycje próbne „Probe-Aplaus” (UI ostrzega).
+- Pozostałe domyślne rzuty `UNEXPECTED_RESPONSE` (czytnik GET, multipart parse-fail) mają teraz
+  szczegółowe komunikaty ze statusem i ścieżką; 405 mapowane na NOT_FOUND (fall-through).
+- Grupy odbiorców: sekcja ma tekst objaśniający (czym są; wybieranie grupy w kompozytorze dopiero
+  po potwierdzeniu listy odbiorców). Napis podpisu w kompozytorze bez myślników („Wybierz podpis”).
+
+### Implementation notes — HITL runda 2 (2026-10-14)
+
+- Szkice nie zapisywały się, bo pusty picker wysyłał `receivers: {}`, a audyt potwierdził
+  wyłącznie `{"schoolReceivers": []}` — `receiversBodyOf([])` zwraca teraz kształt z audytu
+  (dotyczy szkiców, kontekstów reply/forward i wysyłki).
+- Tworzenie magazynu plików szło jako POST bez ciała i bez Content-Type (403 w HITL r.2) — teraz
+  jedzie pusty JSON `{}` jak każdy zaudytowany zapis M; 403 ma czytelny komunikat o uprawnieniach
+  konta do załączników (z sugestią weryfikacji w oryginalnym Librusie).
+- `LibrusError.userMessage` zwraca teraz szczegółowy komunikat (status/ścieżka/fragment
+  odpowiedzi), gdy został podany — wcześniej `toAppError` go gubił i UI widziało zawsze ogólnik
+  taksonomii; przy nieczytelnym echu zapisu błąd pokazuje fragment odpowiedzi Librusa (do 200
+  znaków), co pozwoli w następnej rundzie zobaczyć prawdziwą odpowiedź serwera.
+- Lista odbiorców: nowe kandydaty ścieżek (`receivers/types/{type}`, `receivers?type={type}`),
+  dopasowanie kluczy grouped bez wielkości liter (G-stylowe `SchoolReceivers`); jeśli lista nadal
+  jest pusta, prawdziwy endpoint trzeba odczytać z DevTools oficjalnego klienta — ścieżki są
+  wyprowadzone, nigdy nie zaaudytowane.
+- Zabezpieczenia: `draftFromEnvelope(null)` i `updateDraft(null)` nie rzucają już surowym
+  TypeError przy naprawdę pustym body; fallback tworzenia szkica sięga listy (limit 20) i
+  preferuje pozycję o zgodnym temacie/typie.
 
 ## Phase 11: Offline + instalacja PWA
 

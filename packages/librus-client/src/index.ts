@@ -24,6 +24,11 @@ export {
 } from "./classes";
 export { type Classroom, readClassrooms } from "./classrooms";
 export {
+	type ClientScanMatch,
+	type ClientScanResult,
+	scanMessagesClient,
+} from "./client-scan";
+export {
 	type ParentTeacherConference,
 	readParentTeacherConferences,
 } from "./conferences";
@@ -32,6 +37,23 @@ export {
 	type CookieJarDTO,
 	type CookieRecord,
 } from "./cookie-jar";
+export {
+	createContextDraft,
+	createDraft,
+	type DraftListPage,
+	type DraftRecord,
+	type DraftSummary,
+	type DraftVariant,
+	type DraftWriteInput,
+	deleteDraft,
+	listDrafts,
+	type MessageReceiver,
+	type MessageSendInput,
+	readDraft,
+	type SentMessage,
+	sendMessage,
+	updateDraft,
+} from "./drafts";
 export { isLibrusError, LibrusError, type LibrusErrorCode } from "./errors";
 export { type GatewayResponse, gatewayRequest } from "./gateway";
 export {
@@ -75,8 +97,43 @@ export {
 	type UnreadCounts,
 } from "./messages";
 export { establishMessagesSession } from "./messages-auth";
+export {
+	type AttachmentStorage,
+	createAttachmentStorage,
+	createReceiverGroup,
+	createSignature,
+	createTag,
+	deleteMessagePermanently,
+	deleteReceiverGroup,
+	deleteSignature,
+	deleteStoredAttachment,
+	deleteTag,
+	type MessageSignature,
+	moveMessageToTrash,
+	type ReceiverGroupWriteResult,
+	readSignatures,
+	readTrashMessages,
+	restoreMessageFromTrash,
+	type SignatureWriteInput,
+	type StoredAttachment,
+	type TagWriteInput,
+	type TagWriteResult,
+	updateReceiverGroup,
+	updateSignature,
+	updateTag,
+	uploadAttachment,
+} from "./messages-ops";
 export { type Note, readNotes } from "./notes";
 export { readSchoolNotices, type SchoolNotice } from "./notices";
+export {
+	type ProbeResult,
+	probeMessagesEndpoints,
+} from "./probe";
+export {
+	type ReceiverEntry,
+	readCustomGroupMembers,
+	readReceiversByType,
+} from "./receivers";
 export { readSchool, type School } from "./schools";
 export { readSubjects, type Subject } from "./subjects";
 export { readTeachers, type Teacher } from "./teachers";

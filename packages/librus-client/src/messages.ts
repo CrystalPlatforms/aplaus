@@ -9,7 +9,9 @@ import type { CookieJar } from "./cookie-jar";
 import { isLibrusError, LibrusError } from "./errors";
 import { defaultDeps, type HttpDeps, walkRedirects } from "./http";
 
-const USER_AGENT = "librus-api-verification/1.0";
+/** Shared with the sibling write modules (drafts, ops) — not in the barrel. */
+export const M_USER_AGENT = "librus-api-verification/1.0";
+const USER_AGENT = M_USER_AGENT;
 
 /** One inbox/outbox list item, normalized. */
 export interface MessageListItem {
@@ -52,6 +54,8 @@ export interface UnreadCounts {
 export interface MessageTag {
 	id: string;
 	name: string;
+	/** Hex BEZ „#” (format Librusa, np. "E6E6FA"); null gdy nie podany. */
+	color: string | null;
 }
 
 export interface ReceiverType {
@@ -64,7 +68,8 @@ export interface CustomReceiverGroup {
 	name: string;
 }
 
-async function messagesRequest(
+/** Shared with the sibling write modules — not in the barrel. */
+export async function messagesRequest(
 	jar: CookieJar,
 	path: string,
 	deps: HttpDeps = defaultDeps,
@@ -79,8 +84,16 @@ async function messagesRequest(
 	const { response } = walk;
 	if (response.status === 401) throw new LibrusError("SESSION_EXPIRED", 401);
 	if (response.status === 403) throw new LibrusError("FORBIDDEN", 403);
-	if (response.status === 404) throw new LibrusError("NOT_FOUND", 404);
-	if (!response.ok) throw new LibrusError("UNEXPECTED_RESPONSE", 502);
+	if (response.status === 404 || response.status === 405) {
+		throw new LibrusError("NOT_FOUND", response.status);
+	}
+	if (!response.ok) {
+		throw new LibrusError(
+			"UNEXPECTED_RESPONSE",
+			response.status,
+			`Librus odpowiedział ${response.status} (GET ${path}).`,
+		);
+	}
 	// A dead session can answer 200 with the login HTML after redirect hops —
 	// the M API only ever speaks JSON, so anything else means the session must
 	// be re-established (the proxy retries once with a fresh jar).
@@ -110,7 +123,8 @@ export function decodeMaybeBase64(value: string): string {
 	}
 }
 
-function normalizeListItem(raw: unknown): MessageListItem | null {
+/** Shared with the sibling write modules (trash list reuses it) — not in the barrel. */
+export function normalizeListItem(raw: unknown): MessageListItem | null {
 	if (typeof raw !== "object" || raw === null) return null;
 	const r = raw as Record<string, unknown>;
 	const id = typeof r.messageId === "string" ? r.messageId : null;
@@ -186,7 +200,8 @@ export function readOutboxMessages(
  * truncated preview cuts the envelope mid-way — the partial text after the
  * opening <Content>/<![CDATA[ marker is still worth showing, tags are not.
  */
-function unwrapContentEnvelope(text: string): string {
+/** Shared with the sibling write modules (draft bodies come wrapped too). */
+export function unwrapContentEnvelope(text: string): string {
 	const cdata = /<Content[^>]*><!\[CDATA\[([\s\S]*?)\]\]><\/Content>/i.exec(text);
 	if (cdata) return cdata[1] ?? "";
 	const plain = /<Content[^>]*>([\s\S]*?)<\/Content>/i.exec(text);
@@ -350,8 +365,8 @@ export function readUnreadMessagesCount(jar: CookieJar, deps?: HttpDeps): Promis
 	});
 }
 
-/** The M ids arrive as strings, but numbers are tolerated (defensive). */
-function idAsString(value: unknown): string | null {
+/** The M ids arrive as strings, but numbers are tolerated (defensive). Shared with siblings. */
+export function idAsString(value: unknown): string | null {
 	return typeof value === "string" ? value : typeof value === "number" ? String(value) : null;
 }
 
@@ -364,10 +379,13 @@ export function readTags(jar: CookieJar, deps?: HttpDeps): Promise<MessageTag[]>
 		for (const raw of list) {
 			if (typeof raw !== "object" || raw === null) continue;
 			const t = raw as Record<string, unknown>;
-			const id = idAsString(t.id);
-			const name = asString(t.name);
+			// Klient Librusa czyta tagId (skan r.12) — przyjmujemy oba klucze.
+			const id = idAsString(t.id) ?? idAsString(t.tagId) ?? idAsString(t.TagId);
+			const name = asString(t.name) ?? asString(t.Name);
+			// Ground truth r.15: {tagId, name, colorRGB: "E6E6FA"}.
+			const color = asString(t.colorRGB) ?? asString(t.colorRgb) ?? asString(t.ColorRGB);
 			if (id === null || name === null) continue;
-			tags.push({ id, name });
+			tags.push({ id, name, color });
 		}
 		return tags;
 	});
@@ -397,14 +415,40 @@ export function readCustomReceiverGroups(
 	deps?: HttpDeps,
 ): Promise<CustomReceiverGroup[]> {
 	return messagesRequest(jar, "receivers/custom-groups", deps).then((body) => {
-		const envelope = body as { groups?: unknown };
-		const list = Array.isArray(envelope.groups) ? envelope.groups : [];
+		// HITL r.3: grupy TWORZĄ się (422 „Istnieje już grupa…” na probe), ale
+		// lista po {groups:[...]} była pusta — czytamy każdy rozsądny kształt.
+		const envelope = body as {
+			groups?: unknown;
+			Groups?: unknown;
+			data?: unknown;
+		};
+		const nested = envelope.data as {
+			groups?: unknown;
+			Groups?: unknown;
+			list?: unknown;
+			items?: unknown;
+		} | null;
+		const list: unknown[] =
+			[
+				envelope.groups,
+				envelope.Groups,
+				envelope.data,
+				typeof nested === "object" && nested !== null ? nested.groups : null,
+				typeof nested === "object" && nested !== null ? nested.Groups : null,
+				typeof nested === "object" && nested !== null ? nested.list : null,
+				typeof nested === "object" && nested !== null ? nested.items : null,
+			].find(
+				(candidate): candidate is unknown[] => Array.isArray(candidate) && candidate.length > 0,
+			) ?? [];
 		const groups: CustomReceiverGroup[] = [];
 		for (const raw of list) {
 			if (typeof raw !== "object" || raw === null) continue;
 			const g = raw as Record<string, unknown>;
-			const id = idAsString(g.id);
-			const name = asString(g.name);
+			// Klucze szersze: grupa może wracać jako {id,name}, {groupId,...} itp.
+			const id =
+				idAsString(g.id) ?? idAsString(g.Id) ?? idAsString(g.groupId) ?? idAsString(g.GroupId);
+			const name =
+				asString(g.name) ?? asString(g.Name) ?? asString(g.groupName) ?? asString(g.GroupName);
 			if (id === null || name === null) continue;
 			groups.push({ id, name });
 		}
