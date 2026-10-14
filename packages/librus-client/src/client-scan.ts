@@ -14,7 +14,7 @@ export interface ClientScanMatch {
 	snippet: string;
 }
 
-export interface ClientScanCandidate {
+interface ClientScanCandidate {
 	path: string;
 	status: number;
 	title: string;
