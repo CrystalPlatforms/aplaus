@@ -61,15 +61,6 @@ export function useInvalidateMessages() {
 }
 
 /** GET /api/messages/receivers/types — receiver type dictionary for the composer. */
-/** GET /api/messages/receivers/student-subjects — kategorie odbiorców ucznia. */
-export function useStudentSubjects() {
-	return useQuery({
-		queryKey: [...MESSAGES_KEY, "student-subjects"],
-		queryFn: () => apiFetch<ReceiverType[]>("/api/messages/receivers/student-subjects"),
-		enabled: !!getToken(),
-	});
-}
-
 export function useReceiverTypes() {
 	return useQuery({
 		queryKey: ["messages", "receiver-types"],
@@ -190,18 +181,6 @@ export function useCreateSignature() {
 }
 
 /** PUT /api/messages/signatures/:id. */
-export function useUpdateSignature() {
-	const invalidate = useInvalidateMessages();
-	return useMutation({
-		mutationFn: (args: { id: string; body: SignatureFormBody }) =>
-			apiFetch<MessageSignature | null>(`/api/messages/signatures/${args.id}`, {
-				method: "PUT",
-				body: JSON.stringify(args.body),
-			}),
-		onSuccess: () => invalidate(),
-	});
-}
-
 /** DELETE /api/messages/signatures/:id. */
 export function useDeleteSignature() {
 	const invalidate = useInvalidateMessages();
@@ -226,18 +205,6 @@ export function useCreateTag() {
 }
 
 /** PUT /api/messages/tags/:id. */
-export function useUpdateTag() {
-	const invalidate = useInvalidateMessages();
-	return useMutation({
-		mutationFn: (args: { id: string; name: string; colorRgb: string }) =>
-			apiFetch<TagWriteResult>(`/api/messages/tags/${args.id}`, {
-				method: "PUT",
-				body: JSON.stringify({ name: args.name, colorRgb: args.colorRgb }),
-			}),
-		onSuccess: () => invalidate(),
-	});
-}
-
 /** DELETE /api/messages/tags/:id. */
 export function useDeleteTag() {
 	const invalidate = useInvalidateMessages();
@@ -289,18 +256,6 @@ export function useCreateGroup() {
 }
 
 /** PUT /api/messages/receivers/custom-groups/:id. */
-export function useUpdateGroup() {
-	const invalidate = useInvalidateMessages();
-	return useMutation({
-		mutationFn: (args: { id: string; name: string }) =>
-			apiFetch<ReceiverGroupWriteResult>(`/api/messages/receivers/custom-groups/${args.id}`, {
-				method: "PUT",
-				body: JSON.stringify({ name: args.name }),
-			}),
-		onSuccess: () => invalidate(),
-	});
-}
-
 /** DELETE /api/messages/receivers/custom-groups/:id. */
 export function useDeleteGroup() {
 	const invalidate = useInvalidateMessages();

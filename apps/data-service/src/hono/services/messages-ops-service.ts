@@ -67,7 +67,7 @@ export interface OpsMessagesDeps {
 	deleteMessagePermanently: typeof libDeleteMessagePermanently;
 }
 
-export const defaultOpsMessagesDeps: OpsMessagesDeps = {
+const defaultOpsMessagesDeps: OpsMessagesDeps = {
 	establishMessagesSession,
 	createAttachmentStorage,
 	uploadAttachment: libUploadAttachment,

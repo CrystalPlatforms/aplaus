@@ -7,7 +7,7 @@ export const MessagesPageQuerySchema = z.object({
 });
 
 /** One recipient: M receiver type id + the M accountId. */
-export const ReceiverEntrySchema = z.object({
+const ReceiverEntrySchema = z.object({
 	typeId: z.string().min(1).max(64),
 	accountId: z.string().min(1).max(32),
 });
@@ -32,7 +32,7 @@ export const SendMessageSchema = DraftCreateSchema.extend({
 });
 
 /** Variant of the draft being edited — keys the update route (newOne/reply/forward). */
-export const DraftVariantSchema = z.enum(["newOne", "reply", "forward"]);
+const DraftVariantSchema = z.enum(["newOne", "reply", "forward"]);
 
 /** GET /receivers?type= — which receiver type's people to list. */
 export const ReceiverListQuerySchema = z.object({ type: z.string().min(1).max(64) });

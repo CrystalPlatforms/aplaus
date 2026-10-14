@@ -214,9 +214,7 @@ function asString(value: unknown): string | null {
  * (kształt zweryfikowany audytem) — pusty obiekt `{}` był jedyną różnicą
  * między ciałem audytu a ciałem, które Librus odrzucił w HITL.
  */
-export function receiversBodyOf(
-	receivers: MessageReceiver[],
-): Record<string, { accountId: string }[]> {
+function receiversBodyOf(receivers: MessageReceiver[]): Record<string, { accountId: string }[]> {
 	if (receivers.length === 0) return { schoolReceivers: [] };
 	const grouped: Record<string, { accountId: string }[]> = {};
 	for (const receiver of receivers) {
@@ -228,7 +226,7 @@ export function receiversBodyOf(
 }
 
 /** The draft body: receivers grouped, topic/content Base64, storageId verbatim. */
-export function draftBodyOf(input: DraftWriteInput): Record<string, unknown> {
+function draftBodyOf(input: DraftWriteInput): Record<string, unknown> {
 	return {
 		receivers: receiversBodyOf(input.receivers),
 		topic: encodeBase64Utf8(input.topic),
@@ -320,7 +318,7 @@ function draftFromEnvelope(body: unknown): DraftRecord {
 }
 
 /** Polski komunikat akcji Librusa (metadata.message / message) z ciała 4xx/5xx. */
-export function librusActionMessageOf(raw: string): string {
+function librusActionMessageOf(raw: string): string {
 	try {
 		const parsed = JSON.parse(raw) as {
 			metadata?: { message?: unknown };
