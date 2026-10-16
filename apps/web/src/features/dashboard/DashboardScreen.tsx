@@ -164,13 +164,14 @@ function CardError({ label }: { label: string }) {
 }
 
 function GradeRows({ grades }: { grades: Grade[] }) {
-	if (grades.length === 0) return <p className="text-sm text-neutral-400">Brak ocen.</p>;
+	if (grades.length === 0)
+		return <p className="text-sm text-neutral-500 dark:text-neutral-400">Brak ocen.</p>;
 	return (
 		<ul className="flex flex-col gap-1.5">
 			{grades.map((g) => (
 				<li key={g.id} className="text-sm flex justify-between gap-3">
 					<span className="truncate">{g.subjectName ?? "-"}</span>
-					<span className="shrink-0 text-neutral-500">
+					<span className="shrink-0 text-neutral-500 dark:text-neutral-400">
 						{g.grade} · {g.dateAdded.slice(0, 10)}
 					</span>
 				</li>
@@ -180,7 +181,8 @@ function GradeRows({ grades }: { grades: Grade[] }) {
 }
 
 function LessonRows({ lessons }: { lessons: TimetableLesson[] }) {
-	if (lessons.length === 0) return <p className="text-sm text-neutral-400">Brak lekcji na dziś.</p>;
+	if (lessons.length === 0)
+		return <p className="text-sm text-neutral-500 dark:text-neutral-400">Brak lekcji na dziś.</p>;
 	return (
 		<ul className="flex flex-col gap-1.5">
 			{lessons.map((l) => (
@@ -189,7 +191,7 @@ function LessonRows({ lessons }: { lessons: TimetableLesson[] }) {
 					className="text-sm flex justify-between gap-3"
 				>
 					<span className="truncate">{l.subjectName ?? "-"}</span>
-					<span className="shrink-0 text-neutral-500">
+					<span className="shrink-0 text-neutral-500 dark:text-neutral-400">
 						{l.hourFrom}–{l.hourTo}
 					</span>
 				</li>
@@ -199,13 +201,16 @@ function LessonRows({ lessons }: { lessons: TimetableLesson[] }) {
 }
 
 function AssignmentRows({ assignments }: { assignments: HomeWorkAssignment[] }) {
-	if (assignments.length === 0) return <p className="text-sm text-neutral-400">Brak zadań.</p>;
+	if (assignments.length === 0)
+		return <p className="text-sm text-neutral-500 dark:text-neutral-400">Brak zadań.</p>;
 	return (
 		<ul className="flex flex-col gap-1.5">
 			{assignments.map((a) => (
 				<li key={a.id} className="text-sm flex justify-between gap-3">
 					<span className="truncate">{a.topic || "Praca domowa"}</span>
-					<span className="shrink-0 text-neutral-500">{a.dueDate.slice(0, 10)}</span>
+					<span className="shrink-0 text-neutral-500 dark:text-neutral-400">
+						{a.dueDate.slice(0, 10)}
+					</span>
 				</li>
 			))}
 		</ul>
@@ -213,13 +218,14 @@ function AssignmentRows({ assignments }: { assignments: HomeWorkAssignment[] }) 
 }
 
 function NoticeRows({ notices }: { notices: SchoolNotice[] }) {
-	if (notices.length === 0) return <p className="text-sm text-neutral-400">Brak ogłoszeń.</p>;
+	if (notices.length === 0)
+		return <p className="text-sm text-neutral-500 dark:text-neutral-400">Brak ogłoszeń.</p>;
 	return (
 		<ul className="flex flex-col gap-1.5">
 			{notices.map((n) => (
 				<li key={n.id} className="text-sm flex justify-between gap-3">
 					<span className="truncate">{n.subject}</span>
-					<span className="shrink-0 text-neutral-500">
+					<span className="shrink-0 text-neutral-500 dark:text-neutral-400">
 						{n.startDate.slice(0, 10)}–{n.endDate.slice(0, 10)}
 					</span>
 				</li>

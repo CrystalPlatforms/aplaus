@@ -24,7 +24,9 @@ export function JustificationsScreen() {
 
 	const justifications = data ?? [];
 	if (justifications.length === 0) {
-		return <p className="py-6 text-sm text-neutral-400">Brak usprawiedliwień.</p>;
+		return (
+			<p className="py-6 text-sm text-neutral-500 dark:text-neutral-400">Brak usprawiedliwień.</p>
+		);
 	}
 
 	return (
@@ -43,34 +45,36 @@ function JustificationItem({ justification }: { justification: Justification }) 
 				<span className="text-xs rounded-full px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
 					{justification.justificationStatus ?? "-"}
 				</span>
-				<span className="text-xs text-neutral-500">
+				<span className="text-xs text-neutral-500 dark:text-neutral-400">
 					{justification.postDate?.slice(0, 10) ?? "-"}
 				</span>
 			</div>
 			{justification.messageFromParent && (
 				<p className="mt-2 text-sm whitespace-pre-line">{justification.messageFromParent}</p>
 			)}
-			<p className="mt-1 text-xs text-neutral-500">
+			<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
 				od {justification.dateFrom ?? "-"} do {justification.dateTo ?? "-"}
 			</p>
 			{justification.lessons.length > 0 && (
-				<p className="mt-1 text-xs text-neutral-500">
+				<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
 					{justification.lessons
 						.map((lesson) => `lekcja ${lesson.number ?? "?"} (${lesson.date ?? "?"})`)
 						.join(", ")}
 				</p>
 			)}
 			{justification.notifiedTeachers.length > 0 && (
-				<p className="mt-1 text-xs text-neutral-500">
+				<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
 					Powiadomieni nauczyciele: {justification.notifiedTeachers.join(", ")}
 				</p>
 			)}
 			{justification.justifiedAbsences !== null && (
-				<p className="mt-1 text-xs text-neutral-500">
+				<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
 					Usprawiedliwione nieobecności: {justification.justifiedAbsences}
 				</p>
 			)}
-			{justification.hasAttachment && <p className="mt-1 text-xs text-neutral-500">Załącznik</p>}
+			{justification.hasAttachment && (
+				<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Załącznik</p>
+			)}
 		</li>
 	);
 }

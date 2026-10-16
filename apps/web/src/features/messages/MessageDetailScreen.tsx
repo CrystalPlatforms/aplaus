@@ -140,7 +140,7 @@ export function MessageDetailScreen({ folder, id }: { folder: "inbox" | "outbox"
 		}
 		if (data === null) {
 			return (
-				<p className="py-16 text-center text-sm text-neutral-400">
+				<p className="py-16 text-center text-sm text-neutral-500 dark:text-neutral-400">
 					Wiadomość nie została znaleziona.
 				</p>
 			);
@@ -174,18 +174,20 @@ function MessageCard({
 	const body = content ?? message.content;
 	return (
 		<div className="flex flex-col gap-4">
-			<p className="text-xs text-neutral-400">
+			<p className="text-xs text-neutral-500 dark:text-neutral-400">
 				Otwarcie wiadomości oznacza ją jako przeczytaną w Librusie.
 			</p>
 			<article className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4 flex flex-col gap-2">
 				<h2 className="text-lg font-semibold">{message.topic || "(bez tematu)"}</h2>
-				<p className="text-xs text-neutral-500">
+				<p className="text-xs text-neutral-500 dark:text-neutral-400">
 					{message.senderName ?? "-"} · {message.sendDate?.slice(0, 16).replace("T", " ") ?? ""}
 				</p>
 				<p className="text-sm whitespace-pre-wrap">{body}</p>
 				{attachments !== null && attachments.length > 0 && (
 					<section>
-						<h3 className="text-xs font-semibold text-neutral-500 mb-1">Załączniki</h3>
+						<h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1">
+							Załączniki
+						</h3>
 						<ul className="flex flex-col gap-1">
 							{attachments.map((a, index) => {
 								const name = a.fileName ?? `Załącznik ${index + 1}`;
@@ -214,7 +216,7 @@ function MessageCard({
 					</section>
 				)}
 				{message.hasAttachments && attachments !== null && attachments.length === 0 && (
-					<p className="text-xs text-neutral-400">
+					<p className="text-xs text-neutral-500 dark:text-neutral-400">
 						Wiadomość ma załącznik — pobieranie plików dojdzie z pełnym obiegiem wiadomości.
 					</p>
 				)}

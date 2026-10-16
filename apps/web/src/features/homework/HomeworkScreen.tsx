@@ -33,7 +33,7 @@ export function HomeworkScreen() {
 			>
 				<h2 className="px-4 pt-3 pb-1 text-sm font-semibold">Zadania w terminarzu</h2>
 				{!isLoading && homeWorks.length === 0 && (
-					<p className="px-4 py-6 text-sm text-neutral-400">Brak zadań.</p>
+					<p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">Brak zadań.</p>
 				)}
 				<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
 					{homeWorks.map((w) => (
@@ -44,7 +44,7 @@ export function HomeworkScreen() {
 								className="w-full px-4 py-2.5 text-left"
 							>
 								<p className="text-sm font-medium">{w.subjectName ?? "Inne"}</p>
-								<p className="text-xs text-neutral-500">
+								<p className="text-xs text-neutral-500 dark:text-neutral-400">
 									{w.date.slice(0, 10)} {w.createdByName ? `· ${w.createdByName}` : ""}
 								</p>
 								{w.content && (
@@ -63,7 +63,9 @@ export function HomeworkScreen() {
 			>
 				<h2 className="px-4 pt-3 pb-1 text-sm font-semibold">Prace domowe</h2>
 				{!isLoading && assignments.length === 0 && (
-					<p className="px-4 py-6 text-sm text-neutral-400">Brak prac domowych.</p>
+					<p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">
+						Brak prac domowych.
+					</p>
 				)}
 				<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
 					{assignments.map((a) => (
@@ -74,7 +76,7 @@ export function HomeworkScreen() {
 								className="w-full px-4 py-2.5 text-left"
 							>
 								<p className="text-sm font-medium">{a.topic || "Praca domowa"}</p>
-								<p className="text-xs text-neutral-500">
+								<p className="text-xs text-neutral-500 dark:text-neutral-400">
 									{a.dueDate.slice(0, 10)} {a.teacherName ? `· ${a.teacherName}` : ""}
 								</p>
 								{a.text && (
@@ -129,25 +131,27 @@ function HomeworkSheet({ detail, onClose }: { detail: Detail; onClose: () => voi
 					</button>
 				</div>
 				<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-					<dt className="text-neutral-500">{homework ? "Na lekcji" : "Termin"}</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">
+						{homework ? "Na lekcji" : "Termin"}
+					</dt>
 					<dd>{(homework ? homework.date : assignment?.dueDate)?.slice(0, 10) || "—"}</dd>
-					<dt className="text-neutral-500">Nauczyciel</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Nauczyciel</dt>
 					<dd>{(homework?.createdByName ?? assignment?.teacherName) || "—"}</dd>
 					{homework?.categoryName && (
 						<>
-							<dt className="text-neutral-500">Kategoria</dt>
+							<dt className="text-neutral-500 dark:text-neutral-400">Kategoria</dt>
 							<dd>{homework.categoryName}</dd>
 						</>
 					)}
 				</dl>
 				{(homework?.content || assignment?.text) && (
 					<div className="mt-4">
-						<p className="text-xs text-neutral-500 mb-1">Treść</p>
+						<p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Treść</p>
 						<p className="text-sm whitespace-pre-line">{homework?.content ?? assignment?.text}</p>
 					</div>
 				)}
 				{assignment?.mustSendAttachFile && (
-					<p className="mt-4 text-xs text-neutral-500">
+					<p className="mt-4 text-xs text-neutral-500 dark:text-neutral-400">
 						Praca wymaga załączenia pliku (oddawanie prac nie jest dostępne w aplikacji).
 					</p>
 				)}

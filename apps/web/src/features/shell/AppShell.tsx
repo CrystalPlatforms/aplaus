@@ -83,7 +83,6 @@ export function AppShell() {
 						<button
 							type="button"
 							onClick={() => setSwitcherOpen(true)}
-							aria-label="Przełącz konto"
 							className="min-w-0 text-left flex items-center gap-1"
 						>
 							<LoginBanner
@@ -91,10 +90,14 @@ export function AppShell() {
 								lastName={account.lastName}
 								roleLabel={account.role}
 							/>
+							{/* Name-from-content satisfies WCAG 2.5.3 (label in name): an
+							    aria-label here can drift from the rendered text and fail
+							    the audit. The sr-only span adds the action to the a11y name. */}
+							<span className="sr-only">Przełącz konto</span>
 							<svg
 								aria-hidden="true"
 								viewBox="0 0 12 12"
-								className="w-3.5 h-3.5 shrink-0 text-neutral-400"
+								className="w-3.5 h-3.5 shrink-0 text-neutral-500 dark:text-neutral-400"
 							>
 								<path
 									d="M2 4l4 4 4-4"
@@ -160,7 +163,9 @@ export function AppShell() {
 							type="button"
 							onClick={() => navigate(t.path)}
 							className={`flex-1 py-3 text-xs font-medium relative ${
-								activeTab === t.id ? "text-blue-600 dark:text-blue-400" : "text-neutral-500"
+								activeTab === t.id
+									? "text-blue-600 dark:text-blue-400"
+									: "text-neutral-500 dark:text-neutral-400"
 							}`}
 						>
 							{t.label}
@@ -168,7 +173,7 @@ export function AppShell() {
 								<span
 									role="img"
 									aria-label={`${badge} nieprzeczytanych`}
-									className="absolute top-1 right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4 font-semibold"
+									className="absolute top-1 right-2 min-w-4 h-4 px-1 rounded-full bg-red-600 text-white text-[10px] leading-4 font-semibold"
 								>
 									{badge > 99 ? "99+" : badge}
 								</span>

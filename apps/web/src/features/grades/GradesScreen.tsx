@@ -48,7 +48,7 @@ export function GradesScreen() {
 							key={s}
 							type="button"
 							onClick={() => setSemester(s)}
-							className={`flex-1 py-2 text-sm font-medium rounded-lg ${activeSemester === s ? "bg-white dark:bg-neutral-800 shadow" : "text-neutral-500"}`}
+							className={`flex-1 py-2 text-sm font-medium rounded-lg ${activeSemester === s ? "bg-white dark:bg-neutral-800 shadow" : "text-neutral-500 dark:text-neutral-400"}`}
 						>
 							Semestr {s}
 						</button>
@@ -60,7 +60,9 @@ export function GradesScreen() {
 				semester={activeSemester ? perSemester[String(activeSemester)] : undefined}
 			/>
 			{grouped.length === 0 && (
-				<p className="py-12 text-center text-sm text-neutral-400">Brak ocen w tym semestrze.</p>
+				<p className="py-12 text-center text-sm text-neutral-500 dark:text-neutral-400">
+					Brak ocen w tym semestrze.
+				</p>
 			)}
 			{grouped.map(([subject, list]) => (
 				<section
@@ -80,7 +82,7 @@ export function GradesScreen() {
 										<span className="block text-sm font-medium">
 											{categoryOf(grade.categoryId)?.name ?? "Ocena"}
 										</span>
-										<span className="block text-xs text-neutral-500">
+										<span className="block text-xs text-neutral-500 dark:text-neutral-400">
 											{grade.dateOccurred} {grade.addedByName ? `· ${grade.addedByName}` : ""}
 										</span>
 									</span>
@@ -115,19 +117,19 @@ function StatsCard({
 	return (
 		<div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4 flex gap-6">
 			<div>
-				<p className="text-xs text-neutral-500">Średnia ogólna</p>
+				<p className="text-xs text-neutral-500 dark:text-neutral-400">Średnia ogólna</p>
 				<p className="text-2xl font-bold">
 					{overall.average === null ? "-" : overall.average.toFixed(2)}
 				</p>
 			</div>
 			<div>
-				<p className="text-xs text-neutral-500">W tym semestrze</p>
+				<p className="text-xs text-neutral-500 dark:text-neutral-400">W tym semestrze</p>
 				<p className="text-2xl font-bold">
 					{semester?.average == null ? "-" : semester.average.toFixed(2)}
 				</p>
 			</div>
 			<div>
-				<p className="text-xs text-neutral-500">Ocen liczących się</p>
+				<p className="text-xs text-neutral-500 dark:text-neutral-400">Ocen liczących się</p>
 				<p className="text-2xl font-bold">{overall.count}</p>
 			</div>
 		</div>

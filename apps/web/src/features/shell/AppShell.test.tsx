@@ -78,7 +78,7 @@ describe("AppShell account switching", () => {
 		renderShell();
 		await waitFor(() => expect(screen.getByTestId("login-banner").textContent).toContain("Adam"));
 
-		fireEvent.click(screen.getByLabelText("Przełącz konto"));
+		fireEvent.click(screen.getByRole("button", { name: /Przełącz konto/ }));
 		await waitFor(() => expect(screen.getByRole("dialog", { name: "Konta" })).toBeTruthy());
 
 		fireEvent.click(screen.getByText("Filip Drugi"));

@@ -44,9 +44,9 @@ export function GradeDetailSheet({
 					</button>
 				</div>
 				<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-					<dt className="text-neutral-500">Ocena</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Ocena</dt>
 					<dd className="font-semibold">{g.grade}</dd>
-					<dt className="text-neutral-500">Przedmiot</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Przedmiot</dt>
 					<dd>
 						{g.subjectId !== null ? (
 							<button
@@ -60,13 +60,13 @@ export function GradeDetailSheet({
 							(g.subjectName ?? "—")
 						)}
 					</dd>
-					<dt className="text-neutral-500">Kategoria</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Kategoria</dt>
 					<dd>{category?.name ?? "—"}</dd>
-					<dt className="text-neutral-500">Nauczyciel</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Nauczyciel</dt>
 					<dd>{g.addedByName || "—"}</dd>
-					<dt className="text-neutral-500">Data</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Data</dt>
 					<dd>{g.dateOccurred || "—"}</dd>
-					<dt className="text-neutral-500">Dodano</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Dodano</dt>
 					<dd>{g.dateAdded || "—"}</dd>
 				</dl>
 				<div className="mt-4 flex flex-wrap gap-2">
@@ -78,7 +78,7 @@ export function GradeDetailSheet({
 				</div>
 				{comments.length > 0 && (
 					<div className="mt-4">
-						<p className="text-xs text-neutral-500 mb-1">Komentarze</p>
+						<p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Komentarze</p>
 						{comments.map((c) => (
 							<p key={c.id} className="text-sm py-1">
 								{c.text ?? "—"}

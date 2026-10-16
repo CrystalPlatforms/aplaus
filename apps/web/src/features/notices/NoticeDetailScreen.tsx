@@ -15,13 +15,17 @@ export function NoticeDetailScreen({ id }: { id: string }) {
 
 	const notice = (data ?? []).find((n) => n.id === id) ?? null;
 	if (notice === null) {
-		return <p className="py-16 text-center text-sm text-neutral-400">Nie ma takiego ogłoszenia.</p>;
+		return (
+			<p className="py-16 text-center text-sm text-neutral-500 dark:text-neutral-400">
+				Nie ma takiego ogłoszenia.
+			</p>
+		);
 	}
 
 	return (
 		<article className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4 flex flex-col gap-2">
 			<h2 className="text-lg font-bold">{notice.subject}</h2>
-			<p className="text-xs text-neutral-500">
+			<p className="text-xs text-neutral-500 dark:text-neutral-400">
 				od {notice.startDate} do {notice.endDate} · dodał: {notice.addedByName ?? "-"}
 			</p>
 			<div className="mt-2 text-sm whitespace-pre-line">{notice.content}</div>

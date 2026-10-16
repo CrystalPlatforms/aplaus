@@ -102,7 +102,9 @@ export function MessagesScreen() {
 							setPage(1);
 						}}
 						className={`flex-1 py-2 text-sm font-medium rounded-lg ${
-							folder === f ? "bg-white dark:bg-neutral-800 shadow" : "text-neutral-500"
+							folder === f
+								? "bg-white dark:bg-neutral-800 shadow"
+								: "text-neutral-600 dark:text-neutral-400"
 						}`}
 					>
 						{FOLDER_LABELS[f]}
@@ -112,7 +114,9 @@ export function MessagesScreen() {
 
 			<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800">
 				{messages.length === 0 ? (
-					<p className="px-4 py-6 text-sm text-neutral-400">Brak wiadomości.</p>
+					<p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">
+						Brak wiadomości.
+					</p>
 				) : (
 					<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
 						{messages.map((m) => {
@@ -143,11 +147,11 @@ export function MessagesScreen() {
 													</span>
 												)}
 											</span>
-											<span className="block text-xs text-neutral-500">
+											<span className="block text-xs text-neutral-500 dark:text-neutral-400">
 												{m.sendDate?.slice(0, 16).replace("T", " ") ?? ""}
 											</span>
 										</span>
-										<span className="text-neutral-400 shrink-0">&gt;</span>
+										<span className="text-neutral-500 dark:text-neutral-400 shrink-0">&gt;</span>
 									</button>
 									{folder === "trash" && (
 										<div className="flex gap-2 px-4 pb-2.5 -mt-1">
@@ -169,7 +173,7 @@ export function MessagesScreen() {
 											</button>
 											{confirmId === m.messageId ? (
 												<>
-													<span className="text-xs text-neutral-500">
+													<span className="text-xs text-neutral-500 dark:text-neutral-400">
 														Trwale usunąć? Bezpowrotne.
 													</span>
 													<button
@@ -191,7 +195,7 @@ export function MessagesScreen() {
 													<button
 														type="button"
 														onClick={() => setConfirmId(null)}
-														className="text-xs font-medium text-neutral-500"
+														className="text-xs font-medium text-neutral-500 dark:text-neutral-400"
 													>
 														Anuluj
 													</button>
@@ -223,7 +227,7 @@ export function MessagesScreen() {
 				>
 					Starsze
 				</button>
-				<span className="text-sm text-neutral-500">
+				<span className="text-sm text-neutral-500 dark:text-neutral-400">
 					Strona {page} z {totalPages}
 				</span>
 				<button

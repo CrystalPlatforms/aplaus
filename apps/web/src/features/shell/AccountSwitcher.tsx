@@ -25,12 +25,14 @@ function AccountRow({
 			>
 				<span className="min-w-0">
 					<span className="block text-sm font-medium">{name}</span>
-					<span className="block text-xs text-neutral-500">{account.role}</span>
+					<span className="block text-xs text-neutral-500 dark:text-neutral-400">
+						{account.role}
+					</span>
 				</span>
 				{active ? (
 					<span className="text-xs font-medium text-green-600 dark:text-green-400">Aktywne</span>
 				) : (
-					<span className="text-xs text-neutral-400">Przełącz</span>
+					<span className="text-xs text-neutral-500 dark:text-neutral-400">Przełącz</span>
 				)}
 			</button>
 		</li>

@@ -90,7 +90,9 @@ function FreeDaysCard({
 				{freeDays.map((day, i) => (
 					<li key={`${day.date}-${i}`} className="text-sm flex justify-between">
 						<span>{day.date}</span>
-						<span className="text-neutral-500">{day.name ?? "Dzień wolny"}</span>
+						<span className="text-neutral-500 dark:text-neutral-400">
+							{day.name ?? "Dzień wolny"}
+						</span>
 					</li>
 				))}
 			</ul>
@@ -119,11 +121,13 @@ function DayCard({
 		>
 			<div className="px-4 pt-3 pb-1 flex items-center justify-between">
 				<h2 className="text-sm font-semibold">{label}</h2>
-				<span className="text-xs text-neutral-500">
+				<span className="text-xs text-neutral-500 dark:text-neutral-400">
 					{date.slice(8, 10)}.{date.slice(5, 7)}
 				</span>
 			</div>
-			{!hasContent && <p className="px-4 py-3 text-xs text-neutral-400">Brak lekcji</p>}
+			{!hasContent && (
+				<p className="px-4 py-3 text-xs text-neutral-500 dark:text-neutral-400">Brak lekcji</p>
+			)}
 			<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
 				{lessons.map((lesson, i) => (
 					<LessonRow key={`${lesson.id ?? i}-${i}`} lesson={lesson} onOpen={onLesson} />
@@ -151,7 +155,7 @@ function LessonRow({
 				<div className="flex items-start justify-between gap-3">
 					<div className="min-w-0">
 						<p className="text-sm font-medium">{lesson.subjectName ?? "Lekcja"}</p>
-						<p className="text-xs text-neutral-500">
+						<p className="text-xs text-neutral-500 dark:text-neutral-400">
 							{lesson.hourFrom}–{lesson.hourTo}
 							{lesson.classroomSymbol ? ` · sala ${lesson.classroomSymbol}` : ""}
 						</p>
@@ -164,7 +168,9 @@ function LessonRow({
 						{lesson.isSubstitutionClass && (lesson.orgTeacherName || lesson.teacherName) && (
 							<p className="mt-1 text-xs">
 								{lesson.orgTeacherName && (
-									<span className="line-through text-neutral-400">{lesson.orgTeacherName}</span>
+									<span className="line-through text-neutral-500 dark:text-neutral-400">
+										{lesson.orgTeacherName}
+									</span>
 								)}
 								{lesson.orgTeacherName && lesson.teacherName && <span className="mx-1">→</span>}
 								{lesson.teacherName && (
@@ -175,7 +181,7 @@ function LessonRow({
 							</p>
 						)}
 						{!lesson.isSubstitutionClass && lesson.teacherName && (
-							<p className="text-xs text-neutral-500">{lesson.teacherName}</p>
+							<p className="text-xs text-neutral-500 dark:text-neutral-400">{lesson.teacherName}</p>
 						)}
 						{lesson.isCanceled && (
 							<p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Odwołana</p>
@@ -243,7 +249,7 @@ function LessonSheet({
 					</div>
 				</div>
 				<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-					<dt className="text-neutral-500">Przedmiot</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Przedmiot</dt>
 					<dd>
 						{lesson.subjectId !== null ? (
 							<button
@@ -257,15 +263,17 @@ function LessonSheet({
 							(lesson.subjectName ?? "—")
 						)}
 					</dd>
-					<dt className="text-neutral-500">Godziny</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Godziny</dt>
 					<dd>
 						{lesson.hourFrom}–{lesson.hourTo}
 					</dd>
-					<dt className="text-neutral-500">Nauczyciel</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Nauczyciel</dt>
 					<dd>
 						{lesson.isSubstitutionClass && lesson.orgTeacherName ? (
 							<>
-								<span className="line-through text-neutral-400">{lesson.orgTeacherName}</span>
+								<span className="line-through text-neutral-500 dark:text-neutral-400">
+									{lesson.orgTeacherName}
+								</span>
 								<span className="mx-1">→</span>
 								{lesson.teacherName ?? "—"}
 							</>
@@ -273,11 +281,11 @@ function LessonSheet({
 							(lesson.teacherName ?? "—")
 						)}
 					</dd>
-					<dt className="text-neutral-500">Sala</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Sala</dt>
 					<dd>{lesson.classroomSymbol ?? "—"}</dd>
-					<dt className="text-neutral-500">Numer lekcji</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Numer lekcji</dt>
 					<dd>{lesson.lessonNo ?? "—"}</dd>
-					<dt className="text-neutral-500">Data</dt>
+					<dt className="text-neutral-500 dark:text-neutral-400">Data</dt>
 					<dd>{lesson.dateFrom.slice(0, 10)}</dd>
 				</dl>
 				{(lesson.isCanceled || lesson.isSubstitutionClass || lesson.substitutionNote) && (

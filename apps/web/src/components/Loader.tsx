@@ -1,13 +1,13 @@
 export function Loader() {
 	return (
-		<output className="uib-dot-loader" aria-label="Loading">
+		<output className="uib-dot-loader" aria-label="Ładowanie">
 			<div className="uib-dot" />
 			<div className="uib-dot" />
 			<div className="uib-dot" />
 			<div className="uib-dot" />
 			<div className="uib-dot" />
 			<div className="uib-dot" />
-			<span className="sr-only">Loading...</span>
+			<span className="sr-only">Ładowanie…</span>
 
 			<style>{`
         .uib-dot-loader {

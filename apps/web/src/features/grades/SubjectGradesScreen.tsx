@@ -37,14 +37,14 @@ export function SubjectGradesScreen({ subjectId }: { subjectId: string }) {
 				<h1 className="text-lg font-bold">{subjectName}</h1>
 				<div className="mt-3 flex gap-6">
 					<div>
-						<p className="text-xs text-neutral-500">Średnia ogólna</p>
+						<p className="text-xs text-neutral-500 dark:text-neutral-400">Średnia ogólna</p>
 						<p className="text-2xl font-bold">
 							{overall.average === null ? "-" : overall.average.toFixed(2)}
 						</p>
 					</div>
 					{semesters.map((s) => (
 						<div key={s}>
-							<p className="text-xs text-neutral-500">Semestr {s}</p>
+							<p className="text-xs text-neutral-500 dark:text-neutral-400">Semestr {s}</p>
 							<p className="text-2xl font-bold">
 								{perSemester[String(s)]?.average == null
 									? "-"
@@ -56,7 +56,9 @@ export function SubjectGradesScreen({ subjectId }: { subjectId: string }) {
 			</div>
 
 			{grades.length === 0 && (
-				<p className="py-12 text-center text-sm text-neutral-400">Brak ocen z tego przedmiotu.</p>
+				<p className="py-12 text-center text-sm text-neutral-500 dark:text-neutral-400">
+					Brak ocen z tego przedmiotu.
+				</p>
 			)}
 			{grades.length > 0 && (
 				<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800">
@@ -72,7 +74,7 @@ export function SubjectGradesScreen({ subjectId }: { subjectId: string }) {
 										<span className="block text-sm font-medium">
 											{categoryOf(g.categoryId)?.name ?? "Ocena"}
 										</span>
-										<span className="block text-xs text-neutral-500">
+										<span className="block text-xs text-neutral-500 dark:text-neutral-400">
 											{g.dateOccurred} {g.addedByName ? `· ${g.addedByName}` : ""}
 										</span>
 									</span>

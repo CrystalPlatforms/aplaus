@@ -772,7 +772,7 @@ Przegląd `/apple-design` wszystkich widoków: system tokenów (kolory, typograf
 
 - [x] Przełącznik motywów: jasny/ciemny/system; wybór przeżywa restart apki; tryb systemowy podąża za OS — [test: komponentowy + HITL] (theme.test.tsx: 4/4; HITL: przegląd wzrokowy)
 - [x] Żadnych „na sztywno" wpisanych kolorów w widokach poza tokenami — [command: `grep` na hardcoded hex poza plikami tokenów] (zero trafień w .tsx poza fixtures testowymi colorHex)
-- [ ] Lighthouse: a11y ≥ 90 na głównych widokach — [command]
+- [x] Lighthouse: a11y ≥ 90 na głównych widokach — [command] (100/100 na logowaniu + /start, /grades, /timetable, /messages, /more, w OBU motywach; poprawki: warianty dark dla text-neutral-500/400, kontrast nieaktywnych segmentów, badge bg-red-600, sr-only „Przełącz konto" zamiast aria-label na bannerze konta, polskie „Ładowanie" w loaderze)
 - [ ] HITL: przegląd wszystkich widoków w obu motywach wg checklisty (stany ładowanie/pusto/błąd/offline) — [observable: checklista HITL]
 
 ---

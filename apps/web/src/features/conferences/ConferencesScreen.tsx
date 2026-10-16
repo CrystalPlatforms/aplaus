@@ -17,7 +17,7 @@ export function ConferencesScreen() {
 
 	const conferences = data ?? [];
 	if (conferences.length === 0) {
-		return <p className="py-6 text-sm text-neutral-400">Brak zebrań.</p>;
+		return <p className="py-6 text-sm text-neutral-500 dark:text-neutral-400">Brak zebrań.</p>;
 	}
 
 	return (
@@ -30,7 +30,7 @@ export function ConferencesScreen() {
 					className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4 text-left w-full"
 				>
 					<p className="text-sm font-medium">{conference.name}</p>
-					<p className="text-xs text-neutral-500">
+					<p className="text-xs text-neutral-500 dark:text-neutral-400">
 						{[
 							conference.teacherName ?? "-",
 							conference.date.slice(0, 10),
@@ -41,7 +41,9 @@ export function ConferencesScreen() {
 							.join(" · ")}
 					</p>
 					{conference.topic && (
-						<p className="mt-1 text-xs text-neutral-500 line-clamp-2">{conference.topic}</p>
+						<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
+							{conference.topic}
+						</p>
 					)}
 				</button>
 			))}

@@ -33,7 +33,9 @@ export function NoticesScreen() {
 
 	return (
 		<div className="flex flex-col gap-3">
-			{notices.length === 0 && <p className="py-6 text-sm text-neutral-400">Brak ogłoszeń.</p>}
+			{notices.length === 0 && (
+				<p className="py-6 text-sm text-neutral-500 dark:text-neutral-400">Brak ogłoszeń.</p>
+			)}
 			{notices.map((notice) => (
 				<NoticeItem
 					key={notice.id}
@@ -65,11 +67,13 @@ function NoticeItem({
 				<p className="text-sm font-medium">{notice.subject}</p>
 				<StatusBadge status={status} />
 			</div>
-			<p className="text-xs text-neutral-500">
+			<p className="text-xs text-neutral-500 dark:text-neutral-400">
 				od {notice.startDate} do {notice.endDate}
 			</p>
 			<p className="mt-1 text-sm whitespace-pre-line line-clamp-3">{notice.content}</p>
-			<p className="mt-1 text-xs text-neutral-500">{notice.addedByName ?? "-"}</p>
+			<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+				{notice.addedByName ?? "-"}
+			</p>
 		</button>
 	);
 }
@@ -78,13 +82,13 @@ function StatusBadge({ status }: { status: NoticeStatus }) {
 	if (status === "active") return null;
 	if (status === "future") {
 		return (
-			<span className="text-xs text-blue-700 bg-blue-50 dark:bg-blue-900/30 rounded-full px-2 py-0.5 shrink-0">
+			<span className="text-xs text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 rounded-full px-2 py-0.5 shrink-0">
 				Nadchodzące
 			</span>
 		);
 	}
 	return (
-		<span className="text-xs text-neutral-600 bg-neutral-100 dark:bg-neutral-800 rounded-full px-2 py-0.5 shrink-0">
+		<span className="text-xs text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-full px-2 py-0.5 shrink-0">
 			Zakończone
 		</span>
 	);

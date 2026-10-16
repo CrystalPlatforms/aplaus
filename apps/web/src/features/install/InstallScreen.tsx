@@ -77,7 +77,7 @@ export function InstallScreen() {
 					<li>Dotknij przycisku „Udostępnij" (kwadrat ze strzałką w górę).</li>
 					<li>Wybierz „Dodaj do ekranu głównego", potem „Dodaj".</li>
 				</ol>
-				<p className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">
+				<p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
 					Powiadomienia push na iPhonie działają dopiero z zainstalowanej aplikacji.
 				</p>
 			</section>

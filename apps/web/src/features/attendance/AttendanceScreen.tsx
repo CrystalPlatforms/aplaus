@@ -34,7 +34,9 @@ export function AttendanceScreen() {
 							type="button"
 							onClick={() => setSemester(s)}
 							className={`flex-1 py-2 text-sm font-medium rounded-lg ${
-								activeSemester === s ? "bg-white dark:bg-neutral-800 shadow" : "text-neutral-500"
+								activeSemester === s
+									? "bg-white dark:bg-neutral-800 shadow"
+									: "text-neutral-500 dark:text-neutral-400"
 							}`}
 						>
 							Semestr {s}
@@ -64,7 +66,9 @@ export function AttendanceScreen() {
 				{!isLoading &&
 					attendances.filter((a) => activeSemester === null || a.semester === activeSemester)
 						.length === 0 && (
-						<p className="px-4 py-6 text-sm text-neutral-400">Brak wpisów w tym semestrze.</p>
+						<p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">
+							Brak wpisów w tym semestrze.
+						</p>
 					)}
 				<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
 					{attendances
@@ -73,7 +77,7 @@ export function AttendanceScreen() {
 							<li key={a.id} className="px-4 py-2.5 flex items-center justify-between">
 								<span>
 									<span className="block text-sm font-medium">{typeOf(types, a.typeId)}</span>
-									<span className="block text-xs text-neutral-500">
+									<span className="block text-xs text-neutral-500 dark:text-neutral-400">
 										{a.date.slice(0, 10)} {a.lessonNo ? `· lekcja ${a.lessonNo}` : ""}
 									</span>
 								</span>
@@ -106,7 +110,7 @@ function StatsCard({ stats }: { stats: ReturnType<typeof computeAttendanceStats>
 function Stat({ label, value }: { label: string; value: number }) {
 	return (
 		<div>
-			<p className="text-xs text-neutral-500">{label}</p>
+			<p className="text-xs text-neutral-500 dark:text-neutral-400">{label}</p>
 			<p className="text-2xl font-bold">{value}</p>
 		</div>
 	);

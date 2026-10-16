@@ -46,7 +46,7 @@ export function DraftsScreen() {
 			)}
 			<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800">
 				{list.length === 0 ? (
-					<p className="px-4 py-6 text-sm text-neutral-400">Brak szkiców.</p>
+					<p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">Brak szkiców.</p>
 				) : (
 					<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
 						{list.map((d) => (
@@ -59,7 +59,7 @@ export function DraftsScreen() {
 									<span className="block text-sm font-medium truncate">
 										{d.topic || "(bez tematu)"}
 									</span>
-									<span className="block text-xs text-neutral-500">
+									<span className="block text-xs text-neutral-500 dark:text-neutral-400">
 										{d.dateAdded?.slice(0, 16).replace("T", " ") ?? ""}
 									</span>
 								</button>
@@ -93,7 +93,7 @@ export function DraftsScreen() {
 				>
 					Starsze
 				</button>
-				<span className="text-sm text-neutral-500">
+				<span className="text-sm text-neutral-500 dark:text-neutral-400">
 					Strona {page} z {totalPages}
 				</span>
 				<button

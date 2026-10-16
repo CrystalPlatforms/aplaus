@@ -224,7 +224,10 @@ export function ComposeScreen({
 
 			<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4 flex flex-col gap-3">
 				<div>
-					<label htmlFor="rcv-type" className="block text-xs font-semibold text-neutral-500 mb-1">
+					<label
+						htmlFor="rcv-type"
+						className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1"
+					>
 						Typ odbiorcy
 					</label>
 					<select
@@ -249,7 +252,7 @@ export function ComposeScreen({
 						className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm mt-2"
 					/>
 					{receiversList.isLoading ? (
-						<p className="text-xs text-neutral-400 mt-2">
+						<p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
 							<ButtonSpinner />
 							Ładowanie odbiorców…
 						</p>
@@ -282,7 +285,7 @@ export function ComposeScreen({
 								);
 							})}
 							{filteredReceivers().length === 0 && (
-								<li className="px-3 py-3 text-sm text-neutral-400">
+								<li className="px-3 py-3 text-sm text-neutral-500 dark:text-neutral-400">
 									Brak odbiorców dla tej kategorii (Librus nie udostępnia jej z tego konta).
 								</li>
 							)}
@@ -310,7 +313,10 @@ export function ComposeScreen({
 				</div>
 
 				<div>
-					<label htmlFor="topic" className="block text-xs font-semibold text-neutral-500 mb-1">
+					<label
+						htmlFor="topic"
+						className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1"
+					>
 						Temat
 					</label>
 					<input
@@ -322,7 +328,10 @@ export function ComposeScreen({
 				</div>
 
 				<div>
-					<label htmlFor="content" className="block text-xs font-semibold text-neutral-500 mb-1">
+					<label
+						htmlFor="content"
+						className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1"
+					>
 						Treść
 					</label>
 					<textarea
@@ -337,7 +346,10 @@ export function ComposeScreen({
 				{/* Podpis: wybór wstawia treść podpisu pod wiadomością (select resetuje się po wyborze). */}
 				{(signatures.data?.length ?? 0) > 0 && (
 					<div>
-						<label htmlFor="sig" className="block text-xs font-semibold text-neutral-500 mb-1">
+						<label
+							htmlFor="sig"
+							className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1"
+						>
 							Podpis
 						</label>
 						<select

@@ -123,7 +123,9 @@ function SignaturesSection() {
 					<li key={s.id} className="px-4 py-2.5 flex items-center gap-2">
 						<div className="min-w-0 flex-1">
 							<p className="text-sm font-medium truncate">{s.name}</p>
-							<p className="text-xs text-neutral-500 truncate">{s.content ?? ""}</p>
+							<p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+								{s.content ?? ""}
+							</p>
 						</div>
 						<button
 							type="button"
@@ -144,7 +146,9 @@ function SignaturesSection() {
 					</li>
 				))}
 				{(signatures.data?.length ?? 0) === 0 && (
-					<li className="px-4 py-3 text-sm text-neutral-400">Brak podpisów.</li>
+					<li className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">
+						Brak podpisów.
+					</li>
 				)}
 			</ul>
 		</SectionCard>
@@ -291,7 +295,9 @@ function TagsSection() {
 					</li>
 				))}
 				{(tags.data?.length ?? 0) === 0 && (
-					<li className="px-4 py-3 text-sm text-neutral-400">Brak etykiet.</li>
+					<li className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">
+						Brak etykiet.
+					</li>
 				)}
 			</ul>
 		</SectionCard>
@@ -329,7 +335,7 @@ function GroupsSection() {
 
 	return (
 		<SectionCard title="Grupy odbiorców">
-			<p className="px-4 py-2 text-xs text-neutral-500">
+			<p className="px-4 py-2 text-xs text-neutral-500 dark:text-neutral-400">
 				Grupa zapisuje zestaw odbiorców pod jedną nazwą. Tworzenie i usuwanie grup działa tutaj —
 				wybieranie całej grupy w kompozytorze dodamy, gdy Librus potwierdzi listę odbiorców (testem
 				poniżej).
@@ -382,7 +388,7 @@ function GroupsSection() {
 					</li>
 				))}
 				{(groups.data?.length ?? 0) === 0 && (
-					<li className="px-4 py-3 text-sm text-neutral-400">Brak grup.</li>
+					<li className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">Brak grup.</li>
 				)}
 			</ul>
 		</SectionCard>
@@ -424,7 +430,7 @@ function ProbeSection() {
 	return (
 		<SectionCard title="Tester diagnostyczny Librusa">
 			<div className="px-4 py-3 flex flex-col gap-2">
-				<p className="text-xs text-neutral-500">
+				<p className="text-xs text-neutral-500 dark:text-neutral-400">
 					Sprawdza, które endpointy Librusa odpowiadają na tym koncie (lista odbiorców, etykiety,
 					grupy). Test może utworzyć pozycje próbne „Probe-Aplaus” — usuń je potem z list powyżej.
 				</p>
@@ -491,7 +497,7 @@ function ProbeSection() {
 					</div>
 				)}
 				<hr className="border-neutral-200 dark:border-neutral-800" />
-				<p className="text-xs text-neutral-500">
+				<p className="text-xs text-neutral-500 dark:text-neutral-400">
 					Skaner kodu klienta Librusa pobiera paczkę JS oficjalnej aplikacji wiadomości (Twoją
 					sesją) i szuka w niej prawdziwych endpointów odbiorców oraz formatu koloru etykiet —
 					dokładnie to samo źródło, z którego korzystał audyt.
