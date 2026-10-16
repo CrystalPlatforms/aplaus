@@ -169,9 +169,6 @@ importers:
       '@biomejs/biome':
         specifier: 2.4.4
         version: 2.4.4
-      '@rollup/pluginutils':
-        specifier: ^5.4.0
-        version: 5.4.0(rollup@4.60.3)
       '@semantic-release/changelog':
         specifier: ^6.0.3
         version: 6.0.3(semantic-release@25.0.9(supports-color@10.2.2)(typescript@5.9.3))
@@ -261,9 +258,6 @@ importers:
         specifier: ^19.2.0
         version: 19.3.0(react@19.3.0)
     devDependencies:
-      '@rollup/pluginutils':
-        specifier: ^5.4.0
-        version: 5.4.0(rollup@4.60.3)
       '@tailwindcss/vite':
         specifier: ^4.1.0
         version: 4.3.3(vite@7.3.1(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.43.1)(tsx@4.23.15)(yaml@2.9.0))

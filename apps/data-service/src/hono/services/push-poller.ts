@@ -68,7 +68,7 @@ export interface PushPayload {
 	url: string;
 }
 
-export interface PollerReaders {
+interface PollerReaders {
 	grades: typeof readGrades;
 	messagesUnread: typeof readUnreadMessagesCount;
 	messagesInbox: typeof readInboxMessages;
@@ -84,7 +84,7 @@ export interface PollerReaders {
  * The push-send boundary. Returns gone=true when the push service answered
  * 404/410 (subscription expired — caller removes it from KV).
  */
-export type SendPush = (
+type SendPush = (
 	env: Env,
 	subscription: PushSubscriptionRecord,
 	payload: PushPayload,
@@ -99,7 +99,7 @@ export interface PollerDeps {
 }
 
 /** djb2 over a string — short stable fingerprints for the diff. */
-export function fingerprintOf(value: string): string {
+function fingerprintOf(value: string): string {
 	let hash = 5381;
 	for (let i = 0; i < value.length; i++) {
 		hash = ((hash << 5) + hash + value.charCodeAt(i)) | 0;
@@ -118,7 +118,7 @@ function idsFingerprint(ids: Array<string | number>): string {
  * counter plus the ids of the first inbox page; the timetable contributes
  * the whole normalized week (a lesson swap changes the hash).
  */
-export async function readFingerprint(
+async function readFingerprint(
 	jar: CookieJar,
 	type: PushType,
 	readers: PollerReaders,
@@ -272,7 +272,7 @@ export async function runPollingCycle(kv: KVNamespace, env: Env, deps: PollerDep
 }
 
 /** Monday (UTC) of the week containing `now`, YYYY-MM-DD — Librus weekStart. */
-export function mondayOf(now: Date): string {
+function mondayOf(now: Date): string {
 	const date = new Date(now);
 	const diff = (date.getUTCDay() + 6) % 7;
 	date.setUTCDate(date.getUTCDate() - diff);

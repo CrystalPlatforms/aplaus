@@ -36,7 +36,7 @@ export interface CronState {
 	sessionNotified: boolean;
 }
 
-export function defaultPushPreferences(): PushPreferences {
+function defaultPushPreferences(): PushPreferences {
 	return {
 		grades: true,
 		messages: true,
@@ -66,7 +66,7 @@ const cronStateKey = (accountId: string) => `${CRONSTATE_PREFIX}${accountId}`;
  * Stable short hash of a subscription endpoint (djb2). Not security — just a
  * KV key: the full endpoint stays inside the record.
  */
-export function endpointHash(endpoint: string): string {
+function endpointHash(endpoint: string): string {
 	let hash = 5381;
 	for (let i = 0; i < endpoint.length; i++) {
 		hash = ((hash << 5) + hash + endpoint.charCodeAt(i)) | 0;
