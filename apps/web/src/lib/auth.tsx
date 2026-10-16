@@ -9,6 +9,7 @@ import {
 	setCredentials,
 	setLoggedOut,
 } from "./credentials";
+import { offlineCacheClear } from "./offline-cache";
 
 /** Account meta the shell needs for the login banner and switcher. */
 export interface AccountView {
@@ -70,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		const handler = () => {
 			// The device token survives (api.ts already flagged "logged out"),
 			// so re-login re-attaches to the same device and its account list.
+			void offlineCacheClear();
 			void queryClient.resetQueries({ queryKey: ME_KEY });
 			void queryClient.resetQueries({ queryKey: ACCOUNTS_QUERY_KEY });
 		};
@@ -103,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		// Logout is a UI state, not a device wipe: the token stays so the next
 		// login re-attaches to the same device and every account on it.
 		setLoggedOut(true);
+		void offlineCacheClear();
 		clearAllCredentials();
 		clearActiveAccountId();
 		// clear() alone leaves the mounted ["me"] observer without a refetch,

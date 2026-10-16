@@ -23,7 +23,21 @@ export function RouterProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		const onPop = () => setPath(currentPath());
 		window.addEventListener("popstate", onPop);
-		return () => window.removeEventListener("popstate", onPop);
+		// Push taps arrive as postMessage from the service worker
+		// (focusOrNavigate in sw.ts): change the route without a reload.
+		const onNavigateMessage = (event: MessageEvent) => {
+			const data = event.data as { type?: string; url?: string } | null;
+			if (data?.type === "aplaus:navigate" && typeof data.url === "string") {
+				window.history.pushState({}, "", data.url);
+				setPath(data.url);
+				window.scrollTo(0, 0);
+			}
+		};
+		window.addEventListener("message", onNavigateMessage);
+		return () => {
+			window.removeEventListener("popstate", onPop);
+			window.removeEventListener("message", onNavigateMessage);
+		};
 	}, []);
 
 	const navigate = useCallback((to: string) => {

@@ -74,7 +74,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 					<button
 						type="submit"
 						disabled={busy}
-						className="mt-4 rounded-xl bg-blue-600 dark:bg-blue-500 text-white py-3 text-base font-semibold disabled:opacity-50"
+						className="mt-4 rounded-xl bg-white border border-neutral-200 dark:border-neutral-700 shadow-sm text-neutral-900 py-3 text-base font-semibold disabled:opacity-50"
 					>
 						{busy ? (
 							<span className="flex items-center justify-center">

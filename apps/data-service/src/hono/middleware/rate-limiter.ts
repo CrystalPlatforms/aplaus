@@ -1,7 +1,9 @@
 import type { Context, MiddlewareHandler } from "hono";
 
+/** -? strips the optionality optional env fields (secrets) would otherwise
+ * leak into the key union as undefined. */
 type RateLimitBindingKey = {
-	[K in keyof Env]: Env[K] extends RateLimit ? K : never;
+	[K in keyof Env]-?: Env[K] extends RateLimit ? K : never;
 }[keyof Env];
 
 type RateLimiterOptions = {

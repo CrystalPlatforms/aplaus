@@ -716,8 +716,8 @@ Odpowiedź i przekazanie (szkice reply/forward z `repliedToMessageId`/`forwarded
 ### Acceptance criteria
 
 - [ ] Lighthouse: PWA „installable" = yes, manifest bez błędów — [command: audyt Lighthouse na buildzie]
-- [ ] Warstwa offline: przy nieudanym fetch widok renderuje ostatnie dane + baner (brak crasha, brak pustego ekranu) — [test: integracyjny web]
-- [ ] HITL: tryb samolotowy — ostatnie dane widoczne, baner widoczny — [observable: checklista HITL]
+- [x] Warstwa offline: przy nieudanym fetch widok renderuje ostatnie dane + baner (brak crasha, brak pustego ekranu) — [test: integracyjny web] (api.offline.test.ts: 5/5, OfflineBanner.test: 3/3; baner złapał przy okazji realny bug pustego tekstu)
+- [x] HITL: tryb samolotowy — ostatnie dane widoczne, baner widoczny — [observable: checklista HITL] (potwierdzone przez właściciela, 2026-10-16)
 - [ ] HITL: instalacja na Androidzie i iPhonie; ikona i nazwa poprawne — [observable: checklista HITL]
 
 ---
@@ -742,10 +742,10 @@ Klucze VAPID (secrets), rejestracja subskrypcji per urządzenie w KV, preferencj
 
 ### Acceptance criteria
 
-- [ ] Diff: 8 scenariuszy fixture → poprawne powiadomienie per typ; drugi poll tego samego stanu = zero powiadomień (bez duplikatów) — [test: unit]
+- [x] Diff: 8 scenariuszy fixture → poprawne powiadomienie per typ; drugi poll tego samego stanu = zero powiadomień (bez duplikatów) — [test: unit] (push-poller.test.ts)
 - [ ] Przełącznik typu na „off" wycisza dany typ; pozostałe działają — [test: unit]
-- [ ] Wygasły słoik → dokładnie jeden push „sesja wygasła", konto wstrzymane do odnowienia — [test: unit]
-- [ ] Zestaw endpointów używanych przez cron to podzbiór list/metryk (treść wiadomości wykluczona) — [test: unit na rejestr wywołań]
+- [x] Wygasły słoik → dokładnie jeden push „sesja wygasła", konto wstrzymane do odnowienia — [test: unit] (plus wznowienie po resetCronSuspension)
+- [x] Zestaw endpointów używanych przez cron to podzbiór list/metryk (treść wiadomości wykluczona) — [test: unit na rejestr wywołań] (rejestr czytników = wyłącznie metadane; interfejs deps nie ma readera treści)
 - [ ] HITL: nowa ocena wpisana w Librusie → push ≤ 5 min na urządzeniu; tapnięcie otwiera właściwy widok — [observable: checklista HITL]
 - [ ] HITL: push „sesja wygasła" po sztucznym skasowaniu słoika — [observable: checklista HITL]
 
@@ -770,8 +770,8 @@ Przegląd `/apple-design` wszystkich widoków: system tokenów (kolory, typograf
 
 ### Acceptance criteria
 
-- [ ] Przełącznik motywów: jasny/ciemny/system; wybór przeżywa restart apki; tryb systemowy podąża za OS — [test: komponentowy + HITL]
-- [ ] Żadnych „na sztywno" wpisanych kolorów w widokach poza tokenami — [command: `grep` na hardcoded hex poza plikami tokenów]
+- [x] Przełącznik motywów: jasny/ciemny/system; wybór przeżywa restart apki; tryb systemowy podąża za OS — [test: komponentowy + HITL] (theme.test.tsx: 4/4; HITL: przegląd wzrokowy)
+- [x] Żadnych „na sztywno" wpisanych kolorów w widokach poza tokenami — [command: `grep` na hardcoded hex poza plikami tokenów] (zero trafień w .tsx poza fixtures testowymi colorHex)
 - [ ] Lighthouse: a11y ≥ 90 na głównych widokach — [command]
 - [ ] HITL: przegląd wszystkich widoków w obu motywach wg checklisty (stany ładowanie/pusto/błąd/offline) — [observable: checklista HITL]
 

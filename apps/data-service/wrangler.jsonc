@@ -29,6 +29,9 @@
 		 */
 		"dev": {
 			"name": "aplaus-ds-dev",
+			// Poll every 5 minutes (phase 12): the cron diffs the 8 tracked
+			// resources per account and sends web push on changes.
+			"triggers": { "crons": ["*/5 * * * *"] },
 			"vars": {
 				"CLOUDFLARE_ENV": "dev",
 				// Local development uses a fixed localhost allowlist, so this stays empty.
@@ -89,6 +92,9 @@
 			//   }
 			// ],
 			"name": "aplaus-ds-staging",
+			// Poll every 5 minutes (phase 12): the cron diffs the 8 tracked
+			// resources per account and sends web push on changes.
+			"triggers": { "crons": ["*/5 * * * *"] },
 			"vars": {
 				"CLOUDFLARE_ENV": "staging",
 				"ALLOWED_ORIGINS": "https://staging.YOUR_DOMAIN.COM"
@@ -141,6 +147,9 @@
 			//   }
 			// ],
 			"name": "aplaus-ds-production",
+			// Poll every 5 minutes (phase 12): the cron diffs the 8 tracked
+			// resources per account and sends web push on changes.
+			"triggers": { "crons": ["*/5 * * * *"] },
 			"vars": {
 				"CLOUDFLARE_ENV": "production",
 				"ALLOWED_ORIGINS": "https://YOUR_DOMAIN.COM"

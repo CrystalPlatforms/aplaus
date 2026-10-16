@@ -47,7 +47,7 @@
 	},
 	"overrides": [
 		{
-			"includes": ["scripts/**"],
+			"includes": ["**/scripts/**"],
 			"linter": {
 				"rules": {
 					"suspicious": {
@@ -84,7 +84,8 @@
 			"!.claude/settings.local.json",
 			"!.claude/skills",
 			"!.codex",
-			"!plugins/**/.claude-plugin"
+			"!plugins/**/.claude-plugin",
+			"!apps/web/src/index.css"
 		]
 	},
 	"plugins": [

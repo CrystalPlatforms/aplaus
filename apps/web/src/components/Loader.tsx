@@ -37,7 +37,7 @@ export function Loader() {
           height: 6.80px;
           width: 6.80px;
           border-radius: 50%;
-          background-color: #2563eb;
+          background-color: var(--aplaus-loader-blue);
         }
 
         .uib-dot-loader .uib-dot:nth-child(2) {
@@ -82,8 +82,8 @@ export function Loader() {
 /**
  * Mały wariant loadera do przycisków w trakcie akcji — ten sam pierścień
  * kropek co wyżej, 14px, ustawiany PRZED tekstem statusu. Kolory kropek
- * z klas Tailwind (bg-neutral-800 dark:bg-neutral-200) — ten sam mechanizm
- * motywu co resztta aplikacji, więc przełączają się identycznie.
+ * z klasy Tailwind bg-blue-600 — ten sam odcień co --aplaus-loader-blue
+ * (r.21), stały w każdym motywie.
  */
 export function ButtonSpinner() {
 	return (

@@ -13,14 +13,14 @@ describe("no dead scheduled-handler surface", () => {
 		expect(existsSync(join(ROOT, "apps/data-service/src/scheduled"))).toBe(false);
 	});
 
-	it("the entrypoint declares no scheduled export", () => {
+	it("the entrypoint wires the real scheduled handler, not a stub", () => {
 		const entrypoint = read("apps/data-service/src/index.ts");
-		expect(entrypoint).not.toMatch(/scheduled/i);
+		expect(entrypoint).toMatch(/runPollingCycle/);
 	});
 
-	it("wrangler.jsonc declares no cron trigger", () => {
+	it("wrangler.jsonc declares the cron trigger for all three environments", () => {
 		const config = read("apps/data-service/wrangler.jsonc");
-		expect(config).not.toMatch(/crons|triggers/i);
+		expect(config.match(/"crons"/g)).toHaveLength(3);
 	});
 });
 

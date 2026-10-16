@@ -17,17 +17,21 @@
 		"react-dom": "^19.2.0"
 	},
 	"devDependencies": {
+		"@rollup/pluginutils": "^5.4.0",
 		"@tailwindcss/vite": "^4.1.0",
+		"@testing-library/react": "^16.3.0",
 		"@types/node": "^22.20.5",
 		"@types/react": "^19.2.0",
 		"@types/react-dom": "^19.2.0",
 		"@vitejs/plugin-react": "^5.1.0",
+		"jsdom": "^27.0.0",
 		"tailwindcss": "^4.1.0",
 		"typescript": "^5.9.3",
 		"vite": "^7.1.0",
 		"vite-plugin-pwa": "^1.0.0",
-		"jsdom": "^27.0.0",
-		"@testing-library/react": "^16.3.0",
-		"vitest": "^4.1.11"
+		"vitest": "^4.1.11",
+		"workbox-core": "^7.4.1",
+		"workbox-precaching": "^7.4.1",
+		"workbox-window": "^7.4.1"
 	}
 }

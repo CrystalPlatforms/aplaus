@@ -8,6 +8,7 @@
 		"cf-typegen": "wrangler types --env-interface BaseEnv --env dev",
 		"types": "tsc --noEmit",
 		"test": "vitest run",
+		"send:push": "node scripts/send-test-push.mjs",
 		"test:watch": "vitest"
 	},
 	"devDependencies": {
@@ -21,6 +22,7 @@
 		"@hono/zod-validator": "^0.7.6",
 		"@repo/librus-client": "workspace:*",
 		"hono": "^4.13.13",
+		"webpush-webcrypto": "^1.0.5",
 		"zod": "^4.6.5"
 	}
 }

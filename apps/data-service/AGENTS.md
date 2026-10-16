@@ -95,6 +95,21 @@ src/
 The messages routes keep the M cookie jar per account (`AccountRecord.mJar`); when absent or
 expired it is re-established once from the stored G jar (no credentials involved).
 
+## Push (cron)
+
+- `GET /api/push/public-key` - device-token -> VAPID public key; 503 when the secrets are absent
+- `POST /api/push/subscriptions` - device-token + browser `PushSubscription` JSON -> registers the device under the active account
+- `DELETE /api/push/subscriptions?endpoint=<url>` - device-token -> removes one subscription
+- `GET /api/push/preferences` - device-token -> the 8 per-type switches (defaults: all on)
+- `PUT /api/push/preferences` - device-token + the 8 switches -> saved per account
+
+The cron (`*/5 * * * *`, `triggers` in wrangler.jsonc) runs `scheduled()` in `src/index.ts`:
+for every account it polls METADATA of 8 resources via librus-client readers
+(`services/push-poller.ts` — lists and counters only, never message content), diffs against
+`cronstate:{accountId}` in KV and pushes with a deep link. Expired jar -> exactly one "sesja
+wygasła" push, account suspended until login/refresh (`resetCronSuspension` in auth-service).
+Without VAPID secrets the cron and `/api/push/public-key` degrade to a skip/503, never a failure.
+
 ## Device auth
 
 `requireDevice()` from `middleware/device-auth.ts` reads `Authorization: Bearer <token>`,
@@ -114,6 +129,7 @@ validation are per route.
 
 ```bash
 pnpm run dev                # local dev server (port 8788)
+pnpm run send:push          # testowy web push do lokalnych subskrypcji (opcjonalnie: url, tytuł, treść)
 ```
 
 Deployment is CI-only - see the Deployment section of the root `AGENTS.md`.
@@ -135,8 +151,9 @@ stubbing. Rate-limit assertions track whatever `ratelimits` says.
 - `CLOUDFLARE_ENV` - dev | staging | production
 - `ALLOWED_ORIGINS` - comma-separated origins (staging/production; dev uses a fixed localhost list)
 
-**Secrets** - none yet. The push phase adds VAPID keys via `./sync-secrets.sh <env>`, which
-pushes the whole `.example.vars`-fanned file in one `wrangler secret bulk` call.
+**Secrets** - `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (web push). Copy `.example.vars` to
+`.staging.vars` / `.production.vars`, fill the keys (generation command inside) and push with
+`./sync-secrets.sh <env>`. Local dev: `.dev.vars` (gitignored).
 
 **KV namespaces** - one per environment under `env.<name>.kv_namespaces`. Local dev and tests
 use the workerd simulation; the committed ids are placeholders. Before the first deploy, create

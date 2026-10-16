@@ -4,6 +4,7 @@ import { AppShell } from "@/features/shell/AppShell";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { isLoggedOut } from "@/lib/credentials";
 import { RouterProvider } from "@/lib/router";
+import { ThemeProvider } from "@/lib/theme";
 
 function Gate() {
 	const { account, isLoading } = useAuth();
@@ -15,10 +16,12 @@ function Gate() {
 
 export default function App() {
 	return (
-		<RouterProvider>
-			<AuthProvider>
-				<Gate />
-			</AuthProvider>
-		</RouterProvider>
+		<ThemeProvider>
+			<RouterProvider>
+				<AuthProvider>
+					<Gate />
+				</AuthProvider>
+			</RouterProvider>
+		</ThemeProvider>
 	);
 }

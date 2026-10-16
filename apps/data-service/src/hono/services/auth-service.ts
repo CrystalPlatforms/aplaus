@@ -8,6 +8,7 @@
  */
 import { isLibrusError, loginToLibrus } from "@repo/librus-client";
 import { isLoginThrottled, registerFailedLogin, resetFailedLogins } from "@/kv/login-throttle";
+import { resetCronSuspension } from "@/kv/push-store";
 import {
 	type AccountRecord,
 	activeAccountIdOf,
@@ -79,6 +80,9 @@ export async function login(
 		await resetFailedLogins(env.KV, input.login);
 		const account = accountRecordFrom(outcome);
 		await saveAccount(env.KV, account);
+		// A fresh jar un-suspends the push cron (the poller paused this account
+		// when the old jar expired).
+		await resetCronSuspension(env.KV, account.id);
 		// An existing device gains the account; a fresh login mints a device.
 		let token = deviceToken;
 		if (token && (await loadDevice(env.KV, token))) {
@@ -150,6 +154,9 @@ export async function refreshAccount(
 			};
 		}
 		await saveAccount(env.KV, account);
+		// A fresh jar un-suspends the push cron (the poller paused this account
+		// when the old jar expired).
+		await resetCronSuspension(env.KV, account.id);
 		await setDeviceActiveAccount(env.KV, deviceToken, account.id);
 		return { ok: true, data: toView(account) };
 	} catch (error) {

@@ -9,8 +9,14 @@ export default defineConfig({
 		react(),
 		tailwindcss(),
 		VitePWA({
+			// injectManifest: the service worker source lives in src/sw.ts so it can
+			// handle web push (issue #13) on top of the precached app shell.
+			strategies: "injectManifest",
+			srcDir: "src",
+			filename: "sw.ts",
 			registerType: "autoUpdate",
 			manifest: {
+				id: "/",
 				name: "Aplaus",
 				short_name: "Aplaus",
 				description: "Nieoficjalny klient Librusa Synergia",
@@ -18,8 +24,28 @@ export default defineConfig({
 				theme_color: "#0a84ff",
 				background_color: "#ffffff",
 				display: "standalone",
-				icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
+				icons: [
+					{ src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+					{ src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+					{
+						src: "/icon-maskable-512.png",
+						sizes: "512x512",
+						type: "image/png",
+						purpose: "maskable",
+					},
+				],
 			},
+			injectManifest: {
+				// Precache the app shell only. API responses live in the IndexedDB
+				// offline cache (lib/offline-cache.ts), never in the precache.
+				globPatterns: ["**/*.{js,css,html,png,woff2}"],
+			},
+			// Serve the worker in dev too — push subscription (serviceWorker.ready)
+			// would otherwise wait forever during local testing. type: "module" is
+			// required: the dev worker keeps its ESM imports, and the plugin's
+			// default registration would try to load it as a classic script and
+			// die silently on the import statement.
+			devOptions: { enabled: true, type: "module" },
 		}),
 	],
 	resolve: { alias: { "@": resolve(import.meta.dirname, "src") } },

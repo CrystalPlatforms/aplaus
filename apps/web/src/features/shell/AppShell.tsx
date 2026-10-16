@@ -2,7 +2,10 @@
  * Shell: tabs (Start = kokpit, Oceny, Plan, Wiadomości, Więcej), banner,
  * account switcher and the sub-routes under /more and /messages.
  */
-import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
+import { Loader } from "@/components/Loader";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { AttendanceScreen } from "@/features/attendance/AttendanceScreen";
 import { ConferenceDetailScreen } from "@/features/conferences/ConferenceDetailScreen";
 import { ConferencesScreen } from "@/features/conferences/ConferencesScreen";
@@ -10,6 +13,7 @@ import { DashboardScreen } from "@/features/dashboard/DashboardScreen";
 import { GradesScreen } from "@/features/grades/GradesScreen";
 import { SubjectGradesScreen } from "@/features/grades/SubjectGradesScreen";
 import { HomeworkScreen } from "@/features/homework/HomeworkScreen";
+import { InstallScreen } from "@/features/install/InstallScreen";
 import { JustificationsScreen } from "@/features/justifications/JustificationsScreen";
 import { ComposeScreen } from "@/features/messages/ComposeScreen";
 import { DraftsScreen } from "@/features/messages/DraftsScreen";
@@ -20,12 +24,15 @@ import { useUnreadCount } from "@/features/messages/queries";
 import { NotesScreen } from "@/features/notes/NotesScreen";
 import { NoticeDetailScreen } from "@/features/notices/NoticeDetailScreen";
 import { NoticesScreen } from "@/features/notices/NoticesScreen";
+import { NotificationsScreen } from "@/features/notifications/NotificationsScreen";
 import { SchoolScreen } from "@/features/school/SchoolScreen";
 import { TimetableScreen } from "@/features/timetable/TimetableScreen";
 import { useAuth } from "@/lib/auth";
 import { useRoute } from "@/lib/router";
+import { usePullToRefresh } from "@/lib/usePullToRefresh";
 import { AccountSwitcher } from "./AccountSwitcher";
 import { LoginBanner } from "./LoginBanner";
+import { ThemeSwitch } from "./ThemeSwitch";
 
 const TABS = [
 	{ id: "start", label: "Start", path: "/start" },
@@ -50,6 +57,9 @@ export function AppShell() {
 	const { account, logout } = useAuth();
 	const { path, navigate } = useRoute();
 	const [switcherOpen, setSwitcherOpen] = useState(false);
+	const queryClient = useQueryClient();
+	const refresh = useCallback(() => queryClient.invalidateQueries(), [queryClient]);
+	const { progress, refreshing } = usePullToRefresh(refresh);
 
 	useEffect(() => {
 		if (path === "/") navigate("/start");
@@ -66,8 +76,8 @@ export function AppShell() {
 	const badge = account ? (unread.data?.inbox ?? 0) : 0;
 
 	return (
-		<div className="min-h-dvh bg-neutral-50 dark:bg-black text-neutral-900 dark:text-neutral-100">
-			<header className="sticky top-0 z-10 backdrop-blur bg-white/70 dark:bg-black/70 border-b border-neutral-200 dark:border-neutral-800">
+		<div className="min-h-dvh bg-bg text-ink">
+			<header className="sticky top-0 z-10 backdrop-blur bg-surface/70 border-b border-line">
 				<div className="px-4 py-2.5 flex items-center justify-between h-14">
 					{account ? (
 						<button
@@ -106,6 +116,18 @@ export function AppShell() {
 					</button>
 				</div>
 			</header>
+			<OfflineBanner />
+			{progress > 0 || refreshing ? (
+				<div
+					className="sticky top-14 z-[5] flex justify-center py-2"
+					style={{ opacity: refreshing ? 1 : progress }}
+					aria-hidden={!refreshing}
+				>
+					<div style={{ transform: refreshing ? undefined : `scale(${0.4 + progress * 0.6})` }}>
+						<Loader />
+					</div>
+				</div>
+			) : null}
 			<main className="pb-24 px-4 pt-4 max-w-xl mx-auto">
 				{isSubject ? (
 					<SubjectGradesRoute />
@@ -130,7 +152,7 @@ export function AppShell() {
 					</>
 				)}
 			</main>
-			<nav className="fixed bottom-0 inset-x-0 z-10 border-t border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-black/90 backdrop-blur pb-[env(safe-area-inset-bottom)]">
+			<nav className="fixed bottom-0 inset-x-0 z-10 border-t border-line bg-surface/90 backdrop-blur pb-[env(safe-area-inset-bottom)]">
 				<div className="flex">
 					{TABS.map((t) => (
 						<button
@@ -237,6 +259,22 @@ function MoreRoutes() {
 			</div>
 		);
 	}
+	if (path.startsWith("/more/install")) {
+		return (
+			<div>
+				<StickyBack to="/more" label="Więcej" />
+				<InstallScreen />
+			</div>
+		);
+	}
+	if (path.startsWith("/more/notifications")) {
+		return (
+			<div>
+				<StickyBack to="/more" label="Więcej" />
+				<NotificationsScreen />
+			</div>
+		);
+	}
 	if (path.startsWith("/more/messages-settings")) {
 		return (
 			<div>
@@ -252,65 +290,82 @@ function MoreMenu() {
 	const { account } = useAuth();
 	const isParent = account?.groupId === 5;
 	return (
-		<div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
-			<button
-				type="button"
-				onClick={() => navigate("/more/homework")}
-				className="w-full px-4 py-4 text-left text-sm font-medium"
-			>
-				Zadania domowe
-			</button>
-			<button
-				type="button"
-				onClick={() => navigate("/more/attendance")}
-				className="w-full px-4 py-4 text-left text-sm font-medium"
-			>
-				Frekwencja
-			</button>
-			<button
-				type="button"
-				onClick={() => navigate("/more/notices")}
-				className="w-full px-4 py-4 text-left text-sm font-medium"
-			>
-				Ogłoszenia
-			</button>
-			<button
-				type="button"
-				onClick={() => navigate("/more/notes")}
-				className="w-full px-4 py-4 text-left text-sm font-medium"
-			>
-				Uwagi
-			</button>
-			<button
-				type="button"
-				onClick={() => navigate("/more/conferences")}
-				className="w-full px-4 py-4 text-left text-sm font-medium"
-			>
-				Zebrania z rodzicami
-			</button>
-			<button
-				type="button"
-				onClick={() => navigate("/more/school")}
-				className="w-full px-4 py-4 text-left text-sm font-medium"
-			>
-				Szkoła i klasa
-			</button>
-			<button
-				type="button"
-				onClick={() => navigate("/more/messages-settings")}
-				className="w-full px-4 py-4 text-left text-sm font-medium"
-			>
-				Wiadomości — ustawienia (podpisy, etykiety, grupy)
-			</button>
-			{isParent ? (
+		<div className="space-y-4">
+			<ThemeSwitch />
+			<div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
 				<button
 					type="button"
-					onClick={() => navigate("/more/justifications")}
+					onClick={() => navigate("/more/homework")}
 					className="w-full px-4 py-4 text-left text-sm font-medium"
 				>
-					Usprawiedliwienia
+					Zadania domowe
 				</button>
-			) : null}
+				<button
+					type="button"
+					onClick={() => navigate("/more/attendance")}
+					className="w-full px-4 py-4 text-left text-sm font-medium"
+				>
+					Frekwencja
+				</button>
+				<button
+					type="button"
+					onClick={() => navigate("/more/notices")}
+					className="w-full px-4 py-4 text-left text-sm font-medium"
+				>
+					Ogłoszenia
+				</button>
+				<button
+					type="button"
+					onClick={() => navigate("/more/notes")}
+					className="w-full px-4 py-4 text-left text-sm font-medium"
+				>
+					Uwagi
+				</button>
+				<button
+					type="button"
+					onClick={() => navigate("/more/conferences")}
+					className="w-full px-4 py-4 text-left text-sm font-medium"
+				>
+					Zebrania z rodzicami
+				</button>
+				<button
+					type="button"
+					onClick={() => navigate("/more/school")}
+					className="w-full px-4 py-4 text-left text-sm font-medium"
+				>
+					Szkoła i klasa
+				</button>
+				<button
+					type="button"
+					onClick={() => navigate("/more/messages-settings")}
+					className="w-full px-4 py-4 text-left text-sm font-medium"
+				>
+					Wiadomości — ustawienia (podpisy, etykiety, grupy)
+				</button>
+				<button
+					type="button"
+					onClick={() => navigate("/more/install")}
+					className="w-full px-4 py-4 text-left text-sm font-medium"
+				>
+					Instalacja aplikacji
+				</button>
+				<button
+					type="button"
+					onClick={() => navigate("/more/notifications")}
+					className="w-full px-4 py-4 text-left text-sm font-medium"
+				>
+					Powiadomienia push
+				</button>
+				{isParent ? (
+					<button
+						type="button"
+						onClick={() => navigate("/more/justifications")}
+						className="w-full px-4 py-4 text-left text-sm font-medium"
+					>
+						Usprawiedliwienia
+					</button>
+				) : null}
+			</div>
 		</div>
 	);
 }
