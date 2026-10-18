@@ -1,0 +1,6 @@
+# Repo sources are LF (biome enforces lf); eol=lf keeps Windows checkouts
+# from converting them to CRLF and breaking lint:ci on the working tree.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.heic binary
