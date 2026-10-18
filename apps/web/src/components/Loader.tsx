@@ -37,7 +37,7 @@ export function Loader() {
           height: 6.80px;
           width: 6.80px;
           border-radius: 50%;
-          background-color: var(--aplaus-loader-blue);
+          background-color: var(--primary);
         }
 
         .uib-dot-loader .uib-dot:nth-child(2) {
@@ -81,9 +81,8 @@ export function Loader() {
 
 /**
  * Mały wariant loadera do przycisków w trakcie akcji — ten sam pierścień
- * kropek co wyżej, 14px, ustawiany PRZED tekstem statusu. Kolory kropek
- * z klasy Tailwind bg-blue-600 — ten sam odcień co --aplaus-loader-blue
- * (r.21), stały w każdym motywie.
+ * kropek co wyżej, 14px, ustawiany PRZED tekstem statusu. Kropki w kolorze
+ * --primary (decyzja właściciela: akcent motywu zamiast stałego niebieskiego).
  */
 export function ButtonSpinner() {
 	return (
@@ -91,7 +90,7 @@ export function ButtonSpinner() {
 			{[0, 1, 2, 3, 4, 5].map((i) => (
 				<span
 					key={i}
-					className="btn-dot-spinner-dot size-[4px] rounded-full bg-blue-600"
+					className="btn-dot-spinner-dot size-[4px] rounded-full bg-primary"
 					style={{ animationDelay: `${i === 0 ? 0 : -(0.5 - i * 0.0833)}s` }}
 				/>
 			))}

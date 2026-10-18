@@ -13,3 +13,16 @@ vi.stubGlobal("matchMedia", (query: string) => ({
 	addListener: () => {},
 	removeListener: () => {},
 }));
+
+/**
+ * jsdom has no ResizeObserver; Radix primitives (and anything measuring
+ * elements) need it on mount. The stub is a silent no-op — tests that care
+ * about measurements override it with vi.stubGlobal.
+ */
+class ResizeObserverStub {
+	observe(): void {}
+	unobserve(): void {}
+	disconnect(): void {}
+}
+
+vi.stubGlobal("ResizeObserver", ResizeObserverStub);

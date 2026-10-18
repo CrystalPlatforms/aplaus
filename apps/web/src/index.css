@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 /* Manual theme override: the .dark class on <html> (set by the boot script
    in index.html and kept in sync by lib/theme.tsx) drives dark utilities.
@@ -6,45 +7,154 @@
    not via the media query, so all three modes share one mechanism. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Semantic tokens — views use utilities like bg-surface / text-ink / border-line
-   instead of raw palette colors. Values live in :root/.dark below. */
+/* ---------------------------------------------------------------------------
+   CRS-Theme (tweakcn) — the shadcn token layer. Only colors + radius from the
+   owner's export (fonts, shadows, tracking and spacing are intentionally NOT
+   imported). :root = light block, .dark = dark block. Swapping this block for
+   another tweakcn theme recolors every component without touching them.
+   --------------------------------------------------------------------------- */
+:root {
+	--radius: 0.8rem;
+	--background: #e8e8e8;
+	--foreground: #171717;
+	--card: #d1d1d1;
+	--card-foreground: #171717;
+	--popover: #e0e0e0;
+	--popover-foreground: #525252;
+	--primary: #2bc585;
+	--primary-foreground: #212b27;
+	--secondary: #479fff;
+	--secondary-foreground: #171717;
+	--muted: #ededed;
+	--muted-foreground: #202020;
+	--accent: #bababa;
+	--accent-foreground: #202020;
+	--destructive: #de3716;
+	--destructive-foreground: #ffffff;
+	--border: #dfdfdf;
+	--input: #f6f6f6;
+	--ring: #8ee9be;
+	--chart-1: #8ee9be;
+	--chart-2: #5895f7;
+	--chart-3: #a27cf8;
+	--chart-4: #f6a824;
+	--chart-5: #12cc8e;
+	--sidebar: #e8e8e8;
+	--sidebar-foreground: #000000;
+	--sidebar-primary: #000000;
+	--sidebar-primary-foreground: #212b27;
+	--sidebar-accent: #cccccc;
+	--sidebar-accent-foreground: #000000;
+	--sidebar-border: #dfdfdf;
+	--sidebar-ring: #8ee9be;
+}
+
+.dark {
+	--background: #171717;
+	--foreground: #e8e8e8;
+	--card: #212b27;
+	--card-foreground: #e8e8e8;
+	--popover: #212b27;
+	--popover-foreground: #e0e0e0;
+	/* Owner's call (2026-10-18): the CRS green leads in BOTH themes — the
+	   tweakcn export had blue (#5895f7) as the dark primary. Foreground drops
+	   to the light block's dark green-tinted text for contrast on the green;
+	   the ring follows the light block's green so focus stays in the family. */
+	--primary: #2bc585;
+	--primary-foreground: #212b27;
+	--secondary: #a27cf8;
+	--secondary-foreground: #e8e8e8;
+	--muted: #202020;
+	--muted-foreground: #ededed;
+	--accent: #8ee9be;
+	--accent-foreground: #e8e8e8;
+	--destructive: #f6a824;
+	--destructive-foreground: #e8e8e8;
+	--border: #202020;
+	--input: #171717;
+	--ring: #8ee9be;
+	--chart-1: #12cc8e;
+	--chart-2: #8ee9be;
+	--chart-3: #f6a824;
+	--chart-4: #a27cf8;
+	--chart-5: #5895f7;
+	--sidebar: #171717;
+	--sidebar-foreground: #e8e8e8;
+	--sidebar-primary: #e8e8e8;
+	--sidebar-primary-foreground: #e8e8e8;
+	--sidebar-accent: #202020;
+	--sidebar-accent-foreground: #e8e8e8;
+	--sidebar-border: #202020;
+	--sidebar-ring: #5895f7;
+}
+
+/* shadcn token utilities: bg-background, text-foreground, bg-primary, … */
 @theme inline {
-	--color-bg: var(--aplaus-bg);
-	--color-surface: var(--aplaus-surface);
-	--color-line: var(--aplaus-line);
-	--color-ink: var(--aplaus-ink);
-	--color-ink-soft: var(--aplaus-ink-soft);
-	--color-accent: var(--aplaus-accent);
-	/* r.21: the loader dots stay this exact blue in every theme. */
-	--color-loader: var(--aplaus-loader-blue);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ---------------------------------------------------------------------------
+   Legacy app tokens — kept until every consumer outside the login screen is
+   migrated to the shadcn layer above. Views use utilities like bg-surface /
+   text-ink / border-line instead of raw palette colors; the values now follow
+   the CRS theme so the whole app recolors together with it.
+   --------------------------------------------------------------------------- */
+@theme inline {
+	--color-bg: var(--background);
+	--color-surface: var(--card);
+	--color-line: var(--border);
+	--color-ink: var(--foreground);
+	--color-ink-soft: var(--muted-foreground);
 }
 
 :root {
 	color-scheme: light;
-	--aplaus-bg: #fafafa; /* neutral-50 */
-	--aplaus-surface: #ffffff;
-	--aplaus-line: #e5e5e5; /* neutral-200 */
-	--aplaus-ink: #171717; /* neutral-900 */
-	--aplaus-ink-soft: #737373; /* neutral-500 */
-	--aplaus-accent: #2563eb; /* blue-600 */
-	--aplaus-loader-blue: #2563eb;
 }
 
 .dark {
 	color-scheme: dark;
-	--aplaus-bg: #000000;
-	--aplaus-surface: #171717; /* neutral-900 */
-	--aplaus-line: #262626; /* neutral-800 */
-	--aplaus-ink: #f5f5f5; /* neutral-100 */
-	--aplaus-ink-soft: #a3a3a3; /* neutral-400 */
-	--aplaus-accent: #3b82f6; /* blue-500 */
 }
 
 body {
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 	-webkit-font-smoothing: antialiased;
-	background-color: var(--aplaus-bg);
-	color: var(--aplaus-ink);
+	background-color: var(--background);
+	color: var(--foreground);
 }
 
 /* Splash title font (loaded in index.html). */

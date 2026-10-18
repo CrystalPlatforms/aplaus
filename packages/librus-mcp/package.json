@@ -1,0 +1,26 @@
+{
+	"name": "@repo/librus-mcp",
+	"version": "0.1.0",
+	"description": "Lokalny serwer MCP (stdio) nad @repo/librus-client: oceny, plan lekcji, nieprzeczytane wiadomości, zadania, ogłoszenia",
+	"private": true,
+	"license": "MIT",
+	"type": "module",
+	"main": "./src/index.ts",
+	"scripts": {
+		"start": "tsx src/index.ts",
+		"types": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.32.1",
+		"@repo/librus-client": "workspace:*",
+		"zod": "^4.6.5"
+	},
+	"devDependencies": {
+		"@types/node": "^22.20.5",
+		"tsx": "^4.23.15",
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.11"
+	}
+}

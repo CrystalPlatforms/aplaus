@@ -5,6 +5,9 @@
 		".": {
 			"entry": ["scripts/*.ts", "taze.config.ts"],
 			"ignore": ["crs-assets/**"]
+		},
+		"apps/web": {
+			"entry": ["src/components/ui/**"]
 		}
 	}
 }

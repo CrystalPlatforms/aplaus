@@ -4,6 +4,7 @@ export default defineConfig({
 	test: {
 		projects: [
 			"packages/librus-client",
+			"packages/librus-mcp",
 			"apps/web",
 			"apps/data-service",
 			{
