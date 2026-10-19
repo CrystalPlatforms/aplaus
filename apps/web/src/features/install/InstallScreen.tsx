@@ -55,7 +55,7 @@ export function InstallScreen() {
 				<button
 					type="button"
 					onClick={() => void install()}
-					className="w-full rounded-2xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white"
+					className="w-full rounded-2xl bg-primary px-4 py-3.5 text-sm font-semibold text-white"
 				>
 					Zainstaluj aplikację
 				</button>

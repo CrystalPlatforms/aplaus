@@ -76,7 +76,9 @@ describe("auth gate reactivity", () => {
 		fireEvent.change(screen.getByPlaceholderText("Hasło"), { target: { value: "secret" } });
 		fireEvent.click(screen.getByRole("button", { name: "Zaloguj się" }));
 		// The deliberate 1 s loader stay delays the switch past the default timeout.
-		await waitFor(() => expect(screen.getByText(/Zalogowano jako Adam/)).toBeTruthy(), {
+		// Both banner variants (mobile top bar + desktop sidebar) live in the
+		// DOM; the CSS media queries decide which is visible.
+		await waitFor(() => expect(screen.getAllByText(/Adam/).length).toBeGreaterThan(0), {
 			timeout: 3000,
 		});
 	});
@@ -84,8 +86,12 @@ describe("auth gate reactivity", () => {
 	it("shows the login screen right after logout, without a manual refresh", async () => {
 		storage.set("aplaus.deviceToken", "tok-1");
 		renderApp();
-		await waitFor(() => expect(screen.getByText(/Zalogowano jako Adam/)).toBeTruthy());
-		fireEvent.click(screen.getByRole("button", { name: "Wyloguj" }));
+		await waitFor(() => expect(screen.getAllByText(/Adam/).length).toBeGreaterThan(0));
+		// Two Wyloguj buttons exist (mobile top bar + desktop sidebar); both
+		// trigger the same logout.
+		const wyloguj = screen.getAllByRole("button", { name: "Wyloguj" }).at(0);
+		expect(wyloguj).toBeTruthy();
+		fireEvent.click(wyloguj as HTMLElement);
 		await waitFor(() => expect(screen.getByPlaceholderText("Login Librusa")).toBeTruthy());
 	});
 });

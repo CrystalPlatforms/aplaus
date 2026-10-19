@@ -86,7 +86,7 @@ export function GradesScreen() {
 											{grade.dateOccurred} {grade.addedByName ? `· ${grade.addedByName}` : ""}
 										</span>
 									</span>
-									<span className="ml-3 shrink-0 w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
+									<span className="ml-3 shrink-0 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
 										{grade.grade}
 									</span>
 								</button>

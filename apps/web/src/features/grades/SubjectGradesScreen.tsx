@@ -78,7 +78,7 @@ export function SubjectGradesScreen({ subjectId }: { subjectId: string }) {
 											{g.dateOccurred} {g.addedByName ? `· ${g.addedByName}` : ""}
 										</span>
 									</span>
-									<span className="ml-3 shrink-0 w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
+									<span className="ml-3 shrink-0 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
 										{g.grade}
 									</span>
 								</button>

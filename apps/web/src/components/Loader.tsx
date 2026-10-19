@@ -1,6 +1,12 @@
-export function Loader() {
+import type { CSSProperties } from "react";
+
+export function Loader({ dotColor }: { dotColor?: string }) {
 	return (
-		<output className="uib-dot-loader" aria-label="Ładowanie">
+		<output
+			className="uib-dot-loader"
+			aria-label="Ładowanie"
+			style={dotColor ? ({ "--loader-dot-color": dotColor } as CSSProperties) : undefined}
+		>
 			<div className="uib-dot" />
 			<div className="uib-dot" />
 			<div className="uib-dot" />
@@ -15,8 +21,8 @@ export function Loader() {
           display: flex;
           align-items: center;
           justify-content: flex-start;
-          height: 40px;
-          width: 40px;
+          height: 2.5rem;
+          width: 2.5rem;
           animation: uib-smoothRotate 1.80s linear infinite;
         }
 
@@ -34,10 +40,10 @@ export function Loader() {
 
         .uib-dot-loader .uib-dot::before {
           content: "";
-          height: 6.80px;
-          width: 6.80px;
+          height: 0.425rem;
+          width: 0.425rem;
           border-radius: 50%;
-          background-color: var(--primary);
+          background-color: var(--loader-dot-color, var(--aplaus-loader-blue));
         }
 
         .uib-dot-loader .uib-dot:nth-child(2) {
@@ -81,8 +87,8 @@ export function Loader() {
 
 /**
  * Mały wariant loadera do przycisków w trakcie akcji — ten sam pierścień
- * kropek co wyżej, 14px, ustawiany PRZED tekstem statusu. Kropki w kolorze
- * --primary (decyzja właściciela: akcent motywu zamiast stałego niebieskiego).
+ * kropek co wyżej, 14px, ustawiany PRZED tekstem statusu. Kolor kropek idzie
+ * za --primary (bg-primary) — j.w., kropki podążają za akcentem motywu.
  */
 export function ButtonSpinner() {
 	return (
@@ -90,7 +96,7 @@ export function ButtonSpinner() {
 			{[0, 1, 2, 3, 4, 5].map((i) => (
 				<span
 					key={i}
-					className="btn-dot-spinner-dot size-[4px] rounded-full bg-primary"
+					className="btn-dot-spinner-dot size-[0.25rem] rounded-full bg-primary"
 					style={{ animationDelay: `${i === 0 ? 0 : -(0.5 - i * 0.0833)}s` }}
 				/>
 			))}
@@ -100,9 +106,9 @@ export function ButtonSpinner() {
           display: inline-flex;
           align-items: center;
           justify-content: flex-start;
-          height: 14px;
-          width: 14px;
-          margin-right: 6px;
+          height: 0.875rem;
+          width: 0.875rem;
+          margin-right: 0.375rem;
           vertical-align: -2px;
           animation: btn-smoothRotate 1.8s linear infinite;
         }

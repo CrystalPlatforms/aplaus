@@ -126,6 +126,9 @@ function renderTimetable() {
 
 describe("TimetableScreen", () => {
 	beforeEach(() => {
+		// The screen renders the current week; pin the clock to the middle of
+		// the fixture week (2026-10-12…18) so the test is calendar-independent.
+		vi.setSystemTime(new Date("2026-10-14T10:00:00"));
 		apiFetchMock.mockReset();
 		apiFetchMock.mockImplementation(async (path: string) => {
 			if (path.startsWith("/api/timetable")) return TIMETABLE_FIXTURE;

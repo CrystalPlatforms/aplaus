@@ -44,19 +44,38 @@ describe("apiFetch silent renewal", () => {
 		const fetchMock = vi
 			.fn()
 			.mockResolvedValueOnce(SESSION_EXPIRED_401())
+			.mockResolvedValueOnce(OK({ accounts: [], activeAccountId: "librus:7" })) // stale-account probe
 			.mockResolvedValueOnce(OK({ ok: true })) // POST /api/accounts/refresh
 			.mockResolvedValueOnce(OK({ grades: [] })); // retry
 		vi.spyOn(window, "fetch").mockImplementation(fetchMock);
 
 		const data = await apiFetch<{ grades: number[] }>("/api/grades");
 		expect(data).toEqual({ grades: [] });
-		// Exactly one renewal + one retry — never more.
-		expect(fetchMock).toHaveBeenCalledTimes(3);
-		expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/api/accounts/refresh");
-		expect(String(fetchMock.mock.calls[2]?.[0])).toContain("/api/grades");
+		// Probe + one renewal + one retry — never more.
+		expect(fetchMock).toHaveBeenCalledTimes(4);
+		expect(String(fetchMock.mock.calls[2]?.[0])).toContain("/api/accounts/refresh");
+		expect(String(fetchMock.mock.calls[3]?.[0])).toContain("/api/grades");
 		// The renewal carries the device-held credentials.
-		const refreshInit = fetchMock.mock.calls[1]?.[1] as RequestInit;
+		const refreshInit = fetchMock.mock.calls[2]?.[1] as RequestInit;
 		expect(String(refreshInit.body)).toContain("secret");
+	});
+
+	it("renews the server-active account when the browser pointer disagrees", async () => {
+		// The browser still points at librus:7, but the server switched to
+		// librus:9 — renewing 7 would "succeed" forever while requests die.
+		setCredentials("librus:9", { login: "filip", password: "pass9" });
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce(SESSION_EXPIRED_401())
+			.mockResolvedValueOnce(OK({ accounts: [], activeAccountId: "librus:9" })) // probe
+			.mockResolvedValueOnce(OK({ ok: true })) // refresh
+			.mockResolvedValueOnce(OK({ grades: [] })); // retry
+		vi.spyOn(window, "fetch").mockImplementation(fetchMock);
+
+		const data = await apiFetch<{ grades: number[] }>("/api/grades");
+		expect(data).toEqual({ grades: [] });
+		const refreshInit = fetchMock.mock.calls[2]?.[1] as RequestInit;
+		expect(String(refreshInit.body)).toContain("pass9");
 	});
 
 	it("shares one renewal between concurrent requests", async () => {
@@ -64,6 +83,7 @@ describe("apiFetch silent renewal", () => {
 			.fn()
 			.mockResolvedValueOnce(SESSION_EXPIRED_401())
 			.mockResolvedValueOnce(SESSION_EXPIRED_401())
+			.mockResolvedValueOnce(OK({ accounts: [], activeAccountId: "librus:7" })) // probe
 			.mockResolvedValueOnce(OK({ ok: true })) // shared renewal
 			.mockResolvedValueOnce(OK({ a: 1 })) // retry grades
 			.mockResolvedValueOnce(OK({ b: 2 })); // retry me
@@ -72,7 +92,7 @@ describe("apiFetch silent renewal", () => {
 		const [first, second] = await Promise.all([apiFetch("/api/grades"), apiFetch("/api/me")]);
 		expect(first).toEqual({ a: 1 });
 		expect(second).toEqual({ b: 2 });
-		// 2 originals + 1 shared renewal + 2 retries; renewal ran exactly once.
+		// 2 originals + 1 probe + 1 shared renewal + 2 retries; renewal ran exactly once.
 		expect(fetchMock.mock.calls.filter((c) => String(c[0]).includes("refresh"))).toHaveLength(1);
 	});
 
@@ -80,6 +100,7 @@ describe("apiFetch silent renewal", () => {
 		const fetchMock = vi
 			.fn()
 			.mockResolvedValueOnce(SESSION_EXPIRED_401())
+			.mockResolvedValueOnce(OK({ accounts: [], activeAccountId: "librus:7" })) // probe
 			.mockResolvedValueOnce(
 				new Response(JSON.stringify({ error: "Złe hasło", code: "WRONG_CREDENTIALS" }), {
 					status: 401,
@@ -88,8 +109,8 @@ describe("apiFetch silent renewal", () => {
 		vi.spyOn(window, "fetch").mockImplementation(fetchMock);
 
 		await expect(apiFetch("/api/grades")).rejects.toThrow();
-		// Original + failed renewal; no retry.
-		expect(fetchMock).toHaveBeenCalledTimes(2);
+		// Original + probe + failed renewal; no retry.
+		expect(fetchMock).toHaveBeenCalledTimes(3);
 		// The session drops (the gate shows the login screen), but the device
 		// token survives: the next login re-attaches to the same device, so
 		// the account list is not lost.

@@ -476,7 +476,7 @@ function ProbeSection() {
 				)}
 				{rows.length > 0 && (
 					<div className="flex flex-col gap-2">
-						<pre className="max-h-72 overflow-auto whitespace-pre-wrap break-all rounded-xl bg-neutral-100 p-3 text-[10px] leading-4 dark:bg-neutral-800">
+						<pre className="max-h-72 overflow-auto whitespace-pre-wrap break-all rounded-xl bg-neutral-100 p-3 text-[0.625rem] leading-4 dark:bg-neutral-800">
 							{report}
 						</pre>
 						<button

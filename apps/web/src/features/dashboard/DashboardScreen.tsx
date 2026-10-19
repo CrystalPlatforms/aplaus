@@ -148,11 +148,7 @@ function Card({
 		<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4">
 			<h2 className="text-sm font-semibold mb-2">{title}</h2>
 			{children}
-			<button
-				type="button"
-				onClick={() => navigate(link.to)}
-				className="mt-3 text-sm text-blue-600 dark:text-blue-400"
-			>
+			<button type="button" onClick={() => navigate(link.to)} className="mt-3 text-sm text-primary">
 				{link.label}
 			</button>
 		</section>

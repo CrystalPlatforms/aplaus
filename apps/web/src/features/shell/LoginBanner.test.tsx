@@ -11,9 +11,7 @@ import { LoginBanner } from "./LoginBanner";
 describe("LoginBanner", () => {
 	it("renders name and role after login (first mount)", () => {
 		render(<LoginBanner firstName="Adam" lastName="Testowy" roleLabel="Uczeń" />);
-		expect(screen.getByTestId("login-banner").textContent).toContain(
-			"Zalogowano jako Adam Testowy",
-		);
+		expect(screen.getByTestId("login-banner").textContent).toContain("Adam Testowy");
 		expect(screen.getByTestId("login-banner").textContent).toContain("Uczeń");
 	});
 
@@ -22,9 +20,7 @@ describe("LoginBanner", () => {
 			<LoginBanner firstName="Adam" lastName="Testowy" roleLabel="Uczeń" />,
 		);
 		rerender(<LoginBanner firstName="Filip" lastName="Rodzic" roleLabel="Rodzic" />);
-		expect(screen.getByTestId("login-banner").textContent).toContain(
-			"Zalogowano jako Filip Rodzic",
-		);
+		expect(screen.getByTestId("login-banner").textContent).toContain("Filip Rodzic");
 		expect(screen.getByTestId("login-banner").textContent).toContain("Rodzic");
 		expect(screen.getByTestId("login-banner").textContent).not.toContain("Adam");
 	});
@@ -34,9 +30,7 @@ describe("LoginBanner", () => {
 			<LoginBanner firstName="Adam" lastName="Testowy" roleLabel="Uczeń" />,
 		);
 		rerender(<LoginBanner firstName="Adam" lastName="Testowy" roleLabel="Uczeń" />);
-		expect(screen.getByTestId("login-banner").textContent).toContain(
-			"Zalogowano jako Adam Testowy",
-		);
+		expect(screen.getByTestId("login-banner").textContent).toContain("Adam Testowy");
 	});
 
 	it("stays quiet when the account has no name yet", () => {

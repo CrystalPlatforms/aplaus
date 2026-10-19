@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth";
 import { AddAccountModal } from "./AddAccountModal";
 
-/** One account row of the switcher sheet. */
+/** One account row of the switcher dialog. */
 function AccountRow({
 	account,
 	active,
@@ -21,18 +22,18 @@ function AccountRow({
 				type="button"
 				disabled={busy}
 				onClick={() => onSwitch(account.id)}
-				className="w-full py-3 flex items-center justify-between text-left disabled:opacity-50"
+				className={`w-full my-1 px-3 py-3 flex items-center justify-between text-left rounded-lg border disabled:opacity-50 ${
+					active ? "border-primary/40 bg-muted" : "border-transparent hover:bg-muted"
+				}`}
 			>
 				<span className="min-w-0">
 					<span className="block text-sm font-medium">{name}</span>
-					<span className="block text-xs text-neutral-500 dark:text-neutral-400">
-						{account.role}
-					</span>
+					<span className="text-muted-foreground block text-xs">{account.role}</span>
 				</span>
 				{active ? (
-					<span className="text-xs font-medium text-green-600 dark:text-green-400">Aktywne</span>
+					<span className="text-primary text-xs font-medium">Aktywne</span>
 				) : (
-					<span className="text-xs text-neutral-500 dark:text-neutral-400">Przełącz</span>
+					<span className="text-muted-foreground text-xs">Przełącz</span>
 				)}
 			</button>
 		</li>
@@ -40,15 +41,13 @@ function AccountRow({
 }
 
 /**
- * Account switcher sheet: lists the device's accounts, switches the active
- * one, opens the add-account form, logs out.
+ * Account switcher as a centered dialog on every width: lists the device's
+ * accounts, switches the active one, opens the add-account form, logs out.
  */
 export function AccountSwitcher({ open, onClose }: { open: boolean; onClose: () => void }) {
 	const { accounts, activeAccountId, switchAccount, logout } = useAuth();
 	const [adding, setAdding] = useState(false);
 	const [busy, setBusy] = useState(false);
-
-	if (!open) return null;
 
 	async function handleSwitch(id: string) {
 		setBusy(true);
@@ -61,32 +60,12 @@ export function AccountSwitcher({ open, onClose }: { open: boolean; onClose: () 
 	}
 
 	return (
-		<button
-			type="button"
-			aria-label="Zamknij przełącznik kont"
-			className="fixed inset-0 z-20 flex items-end justify-center bg-black/30 cursor-default"
-			onClick={onClose}
-		>
-			<div
-				role="dialog"
-				aria-modal="true"
-				aria-label="Konta"
-				className="w-full max-w-xl rounded-t-3xl bg-white dark:bg-neutral-900 p-6 pb-10 max-h-[80dvh] overflow-y-auto"
-				onClick={(e) => e.stopPropagation()}
-				onKeyDown={(e) => e.stopPropagation()}
-			>
-				<div className="flex items-center justify-between mb-4">
-					<h3 className="text-lg font-bold">Konta</h3>
-					<button
-						type="button"
-						onClick={onClose}
-						className="text-sm text-blue-600 dark:text-blue-400"
-					>
-						Zamknij
-					</button>
-				</div>
-
-				<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+		<Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+			<DialogContent aria-describedby={undefined} className="max-w-md">
+				<DialogHeader>
+					<DialogTitle>Konta</DialogTitle>
+				</DialogHeader>
+				<ul className="flex flex-col">
 					{accounts.map((a) => (
 						<AccountRow
 							key={a.id}
@@ -97,12 +76,11 @@ export function AccountSwitcher({ open, onClose }: { open: boolean; onClose: () 
 						/>
 					))}
 				</ul>
-
-				<div className="mt-4 flex flex-col gap-2">
+				<div className="flex flex-col gap-1">
 					<button
 						type="button"
 						onClick={() => setAdding(true)}
-						className="py-3 text-sm font-medium text-blue-600 dark:text-blue-400 text-left"
+						className="text-primary py-2 px-2 rounded-md text-left text-sm font-medium transition-colors hover:bg-muted"
 					>
 						+ Dodaj konto
 					</button>
@@ -112,14 +90,13 @@ export function AccountSwitcher({ open, onClose }: { open: boolean; onClose: () 
 							logout();
 							onClose();
 						}}
-						className="py-3 text-sm font-medium text-red-500 text-left"
+						className="text-destructive py-2 px-2 rounded-md text-left text-sm font-medium transition-colors hover:bg-muted"
 					>
 						Wyloguj się
 					</button>
 				</div>
-
 				{adding && <AddAccountModal open onClose={() => setAdding(false)} />}
-			</div>
-		</button>
+			</DialogContent>
+		</Dialog>
 	);
 }

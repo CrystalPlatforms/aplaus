@@ -190,3 +190,43 @@ body {
 		scroll-behavior: auto !important;
 	}
 }
+
+/* Mobile scale: below md the document base font-size is bumped ~106%, so
+   every rem-based Tailwind size (fonts, spacing, touch targets) grows with
+   it; from md up the standard 100% applies. The md breakpoint itself is
+   untouched — this rule sits on html, not in the breakpoint scale. */
+html {
+	font-size: 106.25%;
+}
+
+@media (min-width: 768px) {
+	html {
+		font-size: 100%;
+	}
+}
+
+/* Dedicated login-button loader color — the CRS-Theme blue (#5895f7 from the
+   tweakcn export), used ONLY on the login submit button (owner decision). */
+:root {
+	--loader-login: #5895f7;
+}
+
+.dark {
+	--loader-login: #5895f7;
+}
+
+/* Messages folder switch: the list fades in with a slight sideways nudge. */
+.animate-folder-in {
+	animation: folder-in 0.2s ease-out;
+}
+
+@keyframes folder-in {
+	from {
+		opacity: 0;
+		transform: translateX(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}

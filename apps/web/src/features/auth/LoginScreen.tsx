@@ -95,7 +95,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 						>
 							{busy ? (
 								<span className="flex items-center justify-center">
-									<Loader />
+									<Loader dotColor="var(--loader-login)" />
 								</span>
 							) : (
 								"Zaloguj się"

@@ -44,7 +44,7 @@ function SchoolCard({ school }: { school: School | null }) {
 					{school.email && (
 						<p className="text-sm">
 							E-mail:{" "}
-							<a className="text-blue-600 dark:text-blue-400" href={`mailto:${school.email}`}>
+							<a className="text-primary" href={`mailto:${school.email}`}>
 								{school.email}
 							</a>
 						</p>

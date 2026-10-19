@@ -89,7 +89,7 @@ export function DraftsScreen() {
 					type="button"
 					onClick={() => setPage((p) => p + 1)}
 					disabled={page * PAGE_LIMIT >= total}
-					className="text-sm font-medium text-blue-600 dark:text-blue-400 disabled:text-neutral-400 px-3 py-2"
+					className="text-sm font-medium text-primary disabled:text-neutral-400 px-3 py-2"
 				>
 					Starsze
 				</button>
@@ -100,7 +100,7 @@ export function DraftsScreen() {
 					type="button"
 					onClick={() => setPage((p) => p - 1)}
 					disabled={page <= 1}
-					className="text-sm font-medium text-blue-600 dark:text-blue-400 disabled:text-neutral-400 px-3 py-2"
+					className="text-sm font-medium text-primary disabled:text-neutral-400 px-3 py-2"
 				>
 					Nowsze
 				</button>

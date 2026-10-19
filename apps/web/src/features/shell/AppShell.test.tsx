@@ -76,14 +76,22 @@ describe("AppShell account switching", () => {
 
 	it("banner shows the logged-in account; switching re-renders the other one", async () => {
 		renderShell();
-		await waitFor(() => expect(screen.getByTestId("login-banner").textContent).toContain("Adam"));
+		// The banner renders twice (mobile top bar + desktop sidebar variant);
+		// both update when the account switches.
+		await waitFor(() =>
+			expect(screen.getAllByTestId("login-banner")[0]?.textContent).toContain("Adam"),
+		);
 
-		fireEvent.click(screen.getByRole("button", { name: /Przełącz konto/ }));
+		const przelacz = screen.getAllByRole("button", { name: /Przełącz konto/ }).at(0);
+		expect(przelacz).toBeTruthy();
+		fireEvent.click(przelacz as HTMLElement);
 		await waitFor(() => expect(screen.getByRole("dialog", { name: "Konta" })).toBeTruthy());
 
 		fireEvent.click(screen.getByText("Filip Drugi"));
-		await waitFor(() => expect(screen.getByTestId("login-banner").textContent).toContain("Filip"));
+		await waitFor(() =>
+			expect(screen.getAllByTestId("login-banner")[0]?.textContent).toContain("Filip"),
+		);
 		// The banner carries the switched account's role too.
-		expect(screen.getByTestId("login-banner").textContent).toContain("Rodzic");
+		expect(screen.getAllByTestId("login-banner")[0]?.textContent).toContain("Rodzic");
 	});
 });

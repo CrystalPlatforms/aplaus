@@ -127,12 +127,12 @@ export function NotificationsScreen() {
 					<span
 						aria-hidden="true"
 						className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-							enabled ? "bg-blue-600" : "bg-neutral-300 dark:bg-neutral-700"
+							enabled ? "bg-primary" : "bg-neutral-300 dark:bg-neutral-700"
 						}`}
 					>
 						<span
 							className={`inline-block size-5 rounded-full bg-white shadow transition-transform ${
-								enabled ? "translate-x-[22px]" : "translate-x-0.5"
+								enabled ? "translate-x-[1.375rem]" : "translate-x-0.5"
 							}`}
 						/>
 					</span>
@@ -159,12 +159,12 @@ export function NotificationsScreen() {
 							<span
 								aria-hidden="true"
 								className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-									prefs[type] ? "bg-blue-600" : "bg-neutral-300 dark:bg-neutral-700"
+									prefs[type] ? "bg-primary" : "bg-neutral-300 dark:bg-neutral-700"
 								}`}
 							>
 								<span
 									className={`inline-block size-5 rounded-full bg-white shadow transition-transform ${
-										prefs[type] ? "translate-x-[22px]" : "translate-x-0.5"
+										prefs[type] ? "translate-x-[1.375rem]" : "translate-x-0.5"
 									}`}
 								/>
 							</span>

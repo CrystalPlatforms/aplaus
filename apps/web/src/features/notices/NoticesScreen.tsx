@@ -82,7 +82,7 @@ function StatusBadge({ status }: { status: NoticeStatus }) {
 	if (status === "active") return null;
 	if (status === "future") {
 		return (
-			<span className="text-xs text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 rounded-full px-2 py-0.5 shrink-0">
+			<span className="text-xs text-primary bg-secondary dark:bg-secondary rounded-full px-2 py-0.5 shrink-0">
 				Nadchodzące
 			</span>
 		);

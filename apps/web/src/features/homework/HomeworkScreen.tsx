@@ -122,11 +122,7 @@ function HomeworkSheet({ detail, onClose }: { detail: Detail; onClose: () => voi
 			>
 				<div className="flex items-center justify-between mb-4">
 					<h3 className="text-lg font-bold">{title}</h3>
-					<button
-						type="button"
-						onClick={onClose}
-						className="text-sm text-blue-600 dark:text-blue-400"
-					>
+					<button type="button" onClick={onClose} className="text-sm text-primary">
 						Zamknij
 					</button>
 				</div>

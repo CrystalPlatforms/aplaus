@@ -43,6 +43,7 @@ export function RouterProvider({ children }: { children: ReactNode }) {
 	const navigate = useCallback((to: string) => {
 		window.history.pushState({}, "", to);
 		setPath(to);
+		window.scrollTo(0, 0);
 	}, []);
 
 	return <RouterContext.Provider value={{ path, navigate }}>{children}</RouterContext.Provider>;

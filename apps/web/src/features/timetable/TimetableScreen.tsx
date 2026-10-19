@@ -161,9 +161,7 @@ function LessonRow({
 						</p>
 						{/* Substitution: original teacher struck through, new one after the arrow. */}
 						{lesson.isSubstitutionClass && (
-							<p className="mt-1 text-xs font-medium text-blue-600 dark:text-blue-400">
-								Zastępstwo
-							</p>
+							<p className="mt-1 text-xs font-medium text-primary">Zastępstwo</p>
 						)}
 						{lesson.isSubstitutionClass && (lesson.orgTeacherName || lesson.teacherName) && (
 							<p className="mt-1 text-xs">
@@ -174,9 +172,7 @@ function LessonRow({
 								)}
 								{lesson.orgTeacherName && lesson.teacherName && <span className="mx-1">→</span>}
 								{lesson.teacherName && (
-									<span className="font-medium text-blue-600 dark:text-blue-400">
-										{lesson.teacherName}
-									</span>
+									<span className="font-medium text-primary">{lesson.teacherName}</span>
 								)}
 							</p>
 						)}
@@ -231,19 +227,11 @@ function LessonSheet({
 					<h3 className="text-lg font-bold">{lesson.subjectName ?? "Lekcja"}</h3>
 					<div className="flex items-center gap-4">
 						{lesson.subjectId !== null && (
-							<button
-								type="button"
-								onClick={onSubjectGrades}
-								className="text-sm text-blue-600 dark:text-blue-400"
-							>
+							<button type="button" onClick={onSubjectGrades} className="text-sm text-primary">
 								Oceny
 							</button>
 						)}
-						<button
-							type="button"
-							onClick={onClose}
-							className="text-sm text-blue-600 dark:text-blue-400"
-						>
+						<button type="button" onClick={onClose} className="text-sm text-primary">
 							Zamknij
 						</button>
 					</div>
@@ -252,11 +240,7 @@ function LessonSheet({
 					<dt className="text-neutral-500 dark:text-neutral-400">Przedmiot</dt>
 					<dd>
 						{lesson.subjectId !== null ? (
-							<button
-								type="button"
-								onClick={onSubjectGrades}
-								className="text-blue-600 dark:text-blue-400"
-							>
+							<button type="button" onClick={onSubjectGrades} className="text-primary">
 								{lesson.subjectName ?? "—"}
 							</button>
 						) : (
@@ -302,8 +286,6 @@ function LessonSheet({
 
 function Flag({ label }: { label: string }) {
 	return (
-		<span className="text-xs px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
-			{label}
-		</span>
+		<span className="text-xs px-2.5 py-1 rounded-full bg-secondary text-primary">{label}</span>
 	);
 }

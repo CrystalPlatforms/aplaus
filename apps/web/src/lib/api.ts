@@ -8,7 +8,13 @@
  * failure (offline, dead server) keeps the session and falls back to the
  * IndexedDB offline cache — never a logout while offline.
  */
-import { clearCredentials, getActiveAccountId, getCredentials, setLoggedOut } from "./credentials";
+import {
+	clearCredentials,
+	getActiveAccountId,
+	getCredentials,
+	setActiveAccountId,
+	setLoggedOut,
+} from "./credentials";
 import { offlineCacheClear, offlineCacheGet, offlineCachePut } from "./offline-cache";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
@@ -84,7 +90,30 @@ type RenewalOutcome = "renewed" | "rejected" | "offline";
 let renewalInFlight: Promise<RenewalOutcome> | null = null;
 
 /**
- * One silent renewal for the active account. Concurrent callers share the
+ * The account whose jar actually died — per the server, not the browser.
+ * The two can disagree (a login/switch on another tab, a stale localStorage
+ * pointer): renewing the wrong account "succeeds" forever while every data
+ * request keeps dying. /api/accounts never touches Librus, so it answers
+ * even with a dead jar.
+ */
+async function resolveStaleAccountId(): Promise<string | null> {
+	try {
+		const response = await plainFetch("/api/accounts");
+		if (!response.ok) return getActiveAccountId();
+		const state = (await response.json()) as { activeAccountId?: string | null };
+		const serverActive = state.activeAccountId ?? null;
+		if (serverActive && serverActive !== getActiveAccountId()) {
+			// Re-sync the browser pointer with the server's reality.
+			setActiveAccountId(serverActive);
+		}
+		return serverActive ?? getActiveAccountId();
+	} catch {
+		return getActiveAccountId();
+	}
+}
+
+/**
+ * One silent renewal for the stale account. Concurrent callers share the
  * promise. Tri-state: "renewed" — retry makes sense; "rejected" — the server
  * refused or there is nothing to renew with (drops the session); "offline" —
  * the network itself failed, the session stays untouched.
@@ -92,7 +121,7 @@ let renewalInFlight: Promise<RenewalOutcome> | null = null;
 async function renewSession(): Promise<RenewalOutcome> {
 	if (renewalInFlight) return renewalInFlight;
 	renewalInFlight = (async () => {
-		const accountId = getActiveAccountId();
+		const accountId = await resolveStaleAccountId();
 		const credentials = accountId ? getCredentials(accountId) : null;
 		if (!accountId || !credentials) return "rejected";
 		try {

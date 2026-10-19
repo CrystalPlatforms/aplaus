@@ -205,7 +205,7 @@ function MessageCard({
 											onClick={() => {
 												void apiDownload(`/api/messages/attachments/${a.id}/${messageId}`, name);
 											}}
-											className="text-sm text-blue-600 dark:text-blue-400 underline"
+											className="text-sm text-primary underline"
 										>
 											📎 {name}
 										</button>

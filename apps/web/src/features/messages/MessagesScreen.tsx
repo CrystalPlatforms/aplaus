@@ -112,7 +112,10 @@ export function MessagesScreen() {
 				))}
 			</div>
 
-			<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800">
+			<section
+				key={folder}
+				className="animate-folder-in rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800"
+			>
 				{messages.length === 0 ? (
 					<p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">
 						Brak wiadomości.
@@ -137,7 +140,7 @@ export function MessagesScreen() {
 													<span
 														role="img"
 														aria-label="Nieprzeczytana"
-														className="w-2 h-2 rounded-full bg-blue-500 inline-block mr-1.5"
+														className="w-2 h-2 rounded-full bg-secondary inline-block mr-1.5"
 													/>
 												)}
 												{m.topic}
@@ -159,7 +162,7 @@ export function MessagesScreen() {
 												type="button"
 												onClick={() => void onRestore(m.messageId)}
 												disabled={restoreFromTrash.isPending}
-												className="text-xs font-medium text-blue-600 dark:text-blue-400"
+												className="text-xs font-medium text-primary"
 											>
 												{restoreFromTrash.isPending &&
 												restoreFromTrash.variables === m.messageId ? (
@@ -223,7 +226,7 @@ export function MessagesScreen() {
 					type="button"
 					onClick={() => setPage((p) => p + 1)}
 					disabled={page * PAGE_LIMIT >= total}
-					className="text-sm font-medium text-blue-600 dark:text-blue-400 disabled:text-neutral-400 px-3 py-2"
+					className="text-sm font-medium text-primary disabled:text-neutral-400 px-3 py-2"
 				>
 					Starsze
 				</button>
@@ -234,7 +237,7 @@ export function MessagesScreen() {
 					type="button"
 					onClick={() => setPage((p) => p - 1)}
 					disabled={page <= 1}
-					className="text-sm font-medium text-blue-600 dark:text-blue-400 disabled:text-neutral-400 px-3 py-2"
+					className="text-sm font-medium text-primary disabled:text-neutral-400 px-3 py-2"
 				>
 					Nowsze
 				</button>
