@@ -172,12 +172,14 @@ describe("TimetableScreen", () => {
 		expect(screen.getByText("Boże Narodzenie")).toBeTruthy();
 	});
 
-	it("opens the lesson detail sheet on tap", async () => {
+	it("opens the lesson detail overlay on tap", async () => {
 		renderTimetable();
 		await waitFor(() => expect(screen.getByText("Matematyka")).toBeTruthy());
 		fireEvent.click(screen.getByText("Matematyka"));
-		const dialog = await waitFor(() => screen.getByRole("dialog"));
-		expect(dialog.getAttribute("aria-label")).toContain("Matematyka");
+		// The dialog's accessible name comes from the visible title (Radix
+		// aria-labelledby), not an aria-label.
+		const dialog = await waitFor(() => screen.getByRole("dialog", { name: "Matematyka" }));
+		expect(dialog).toBeTruthy();
 		expect(screen.getByText("Nauczyciel")).toBeTruthy();
 		expect(screen.getByText("Sala")).toBeTruthy();
 		fireEvent.click(screen.getByText("Oceny"));

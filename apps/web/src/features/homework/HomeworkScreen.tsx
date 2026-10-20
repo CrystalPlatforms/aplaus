@@ -1,5 +1,6 @@
 import type { HomeWork, HomeWorkAssignment } from "@repo/librus-client";
 import { useMemo, useState } from "react";
+import { DetailOverlay } from "@/components/DetailOverlay";
 import { ViewLoader } from "@/components/ViewLoader";
 import { useHomework } from "./queries";
 
@@ -106,52 +107,30 @@ function HomeworkSheet({ detail, onClose }: { detail: Detail; onClose: () => voi
 		? (homework.subjectName ?? "Zadanie domowe")
 		: assignment?.topic || "Praca domowa";
 	return (
-		<button
-			type="button"
-			aria-label="Zamknij szczegóły zadania"
-			className="fixed inset-0 z-20 flex items-end justify-center bg-black/30 cursor-default"
-			onClick={onClose}
-		>
-			<div
-				role="dialog"
-				aria-modal="true"
-				aria-label={`Szczegóły: ${title}`}
-				className="w-full max-w-xl rounded-t-3xl bg-white dark:bg-neutral-900 p-6 pb-10 max-h-[80dvh] overflow-y-auto"
-				onClick={(e) => e.stopPropagation()}
-				onKeyDown={(e) => e.stopPropagation()}
-			>
-				<div className="flex items-center justify-between mb-4">
-					<h3 className="text-lg font-bold">{title}</h3>
-					<button type="button" onClick={onClose} className="text-sm text-primary">
-						Zamknij
-					</button>
+		<DetailOverlay open onOpenChange={(o) => !o && onClose()} title={title}>
+			<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+				<dt className="text-muted-foreground">{homework ? "Na lekcji" : "Termin"}</dt>
+				<dd>{(homework ? homework.date : assignment?.dueDate)?.slice(0, 10) || "—"}</dd>
+				<dt className="text-muted-foreground">Nauczyciel</dt>
+				<dd>{(homework?.createdByName ?? assignment?.teacherName) || "—"}</dd>
+				{homework?.categoryName && (
+					<>
+						<dt className="text-muted-foreground">Kategoria</dt>
+						<dd>{homework.categoryName}</dd>
+					</>
+				)}
+			</dl>
+			{(homework?.content || assignment?.text) && (
+				<div className="mt-4">
+					<p className="text-xs text-muted-foreground mb-1">Treść</p>
+					<p className="text-sm whitespace-pre-line">{homework?.content ?? assignment?.text}</p>
 				</div>
-				<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-					<dt className="text-neutral-500 dark:text-neutral-400">
-						{homework ? "Na lekcji" : "Termin"}
-					</dt>
-					<dd>{(homework ? homework.date : assignment?.dueDate)?.slice(0, 10) || "—"}</dd>
-					<dt className="text-neutral-500 dark:text-neutral-400">Nauczyciel</dt>
-					<dd>{(homework?.createdByName ?? assignment?.teacherName) || "—"}</dd>
-					{homework?.categoryName && (
-						<>
-							<dt className="text-neutral-500 dark:text-neutral-400">Kategoria</dt>
-							<dd>{homework.categoryName}</dd>
-						</>
-					)}
-				</dl>
-				{(homework?.content || assignment?.text) && (
-					<div className="mt-4">
-						<p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Treść</p>
-						<p className="text-sm whitespace-pre-line">{homework?.content ?? assignment?.text}</p>
-					</div>
-				)}
-				{assignment?.mustSendAttachFile && (
-					<p className="mt-4 text-xs text-neutral-500 dark:text-neutral-400">
-						Praca wymaga załączenia pliku (oddawanie prac nie jest dostępne w aplikacji).
-					</p>
-				)}
-			</div>
-		</button>
+			)}
+			{assignment?.mustSendAttachFile && (
+				<p className="mt-4 text-xs text-muted-foreground">
+					Praca wymaga załączenia pliku (oddawanie prac nie jest dostępne w aplikacji).
+				</p>
+			)}
+		</DetailOverlay>
 	);
 }

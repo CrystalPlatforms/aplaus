@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { apiFetch, setToken } from "@/lib/api";
 import type { AccountView } from "@/lib/auth";
 import { setActiveAccountId, setCredentials, setLoggedOut } from "@/lib/credentials";
+import { cn } from "@/lib/utils";
 
 export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 	const [login, setLogin] = useState("");
@@ -55,18 +56,30 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 
 	return (
 		<div className="min-h-dvh flex flex-col items-center justify-center px-6 bg-background">
-			<Card className="w-full max-w-sm py-8">
+			{/* The login box is a permanent CRS dark island: black surface, and the
+		    `dark` class scopes the EXACT dark-block tokens of the theme to
+		    everything inside (labels, input, button, loader, rings). */}
+			<Card className="dark w-full max-w-sm py-8 bg-black">
 				<CardHeader className="text-center">
 					{/* Logo Aplaus (ikona PWA) jako dekoracyjny znak logowania. */}
 					<img src="/icon-192.png" alt="" className="mx-auto size-16 rounded-xl" />
 					<h1 className="font-display text-3xl font-bold tracking-tight">Aplaus</h1>
 				</CardHeader>
 				<CardContent>
-					<form id="login-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+					{/* action+method make the login form discoverable for password
+					    managers; onSubmit still prevents the native navigation. */}
+					<form
+						id="login-form"
+						action="/api/login"
+						method="post"
+						onSubmit={handleSubmit}
+						className="flex flex-col gap-4"
+					>
 						<div className="flex flex-col gap-2">
 							<Label htmlFor="login">Login Librusa</Label>
 							<Input
 								id="login"
+								name="login"
 								placeholder="Login Librusa"
 								autoComplete="username"
 								className="h-12 rounded-xl"
@@ -79,6 +92,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 							<Label htmlFor="password">Hasło</Label>
 							<Input
 								id="password"
+								name="password"
 								type="password"
 								placeholder="Hasło"
 								autoComplete="current-password"
@@ -91,11 +105,16 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 						<Button
 							type="submit"
 							disabled={busy}
-							className="mt-2 h-12 w-full rounded-xl text-base font-semibold"
+							className={cn(
+								"mt-2 h-12 w-full rounded-xl text-base font-semibold",
+								// While loading: WHITE button with the green CRS loader
+								// inside (opacity stays 1 — no dimming on the black card).
+								busy && "bg-white opacity-100 disabled:opacity-100",
+							)}
 						>
 							{busy ? (
 								<span className="flex items-center justify-center">
-									<Loader dotColor="var(--loader-login)" />
+									<Loader />
 								</span>
 							) : (
 								"Zaloguj się"

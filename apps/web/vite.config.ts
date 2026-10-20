@@ -21,7 +21,7 @@ export default defineConfig({
 				short_name: "Aplaus",
 				description: "Nieoficjalny klient Librusa Synergia",
 				lang: "pl",
-				theme_color: "#0a84ff",
+				theme_color: "#167c51",
 				background_color: "#ffffff",
 				display: "standalone",
 				icons: [

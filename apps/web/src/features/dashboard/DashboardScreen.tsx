@@ -1,7 +1,8 @@
 /**
  * Kokpit: greeting plus four summary cards (grades, today's lessons, upcoming
- * homework, active notices). Each card loads and fails on its own — a single
- * failing query never breaks the whole screen.
+ * homework, active notices) on the shared Card component, two columns from md
+ * up and a single column below. Each card loads and fails on its own — a
+ * single failing query never breaks the whole screen.
  */
 
 import type {
@@ -14,6 +15,8 @@ import type {
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { Loader } from "@/components/Loader";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { ViewLoader } from "@/components/ViewLoader";
 import type { GradesView } from "@/features/grades/queries";
 import { useGrades } from "@/features/grades/queries";
@@ -47,17 +50,24 @@ export function DashboardScreen() {
 	return (
 		<div className="flex flex-col gap-4">
 			<h1 className="text-xl font-bold">{account ? `Cześć, ${account.firstName}` : "Kokpit"}</h1>
-			<GradesCard query={grades} />
-			<TimetableCard query={timetable} today={today} />
-			<HomeworkCard query={homework} today={today} />
-			<NoticesCard query={notices} today={today} />
+			{/* Two columns from md up, one below — the grid owns the layout, the
+			    cards only fill their cell. */}
+			{/* min-w-0 on the grid items: a grid/flex item refuses to shrink below
+				    its content by default — without it a wide row inflates the whole
+				    tile past the mobile frame. */}
+			<div className="grid gap-3 md:grid-cols-2 md:gap-4">
+				<GradesCard query={grades} />
+				<TimetableCard query={timetable} today={today} />
+				<HomeworkCard query={homework} today={today} />
+				<NoticesCard query={notices} today={today} />
+			</div>
 		</div>
 	);
 }
 
 function GradesCard({ query }: { query: UseQueryResult<GradesView, Error> }) {
 	return (
-		<Card title="Najnowsze oceny" link={{ label: "Zobacz wszystkie", to: "/grades" }}>
+		<SummaryCard title="Najnowsze oceny" link={{ label: "Zobacz wszystkie", to: "/grades" }}>
 			{query.isError ? (
 				<CardError label="Nie udało się pobrać ocen." />
 			) : query.isLoading ? (
@@ -65,7 +75,7 @@ function GradesCard({ query }: { query: UseQueryResult<GradesView, Error> }) {
 			) : (
 				<GradeRows grades={latestGrades(query.data?.grades ?? [], 5)} />
 			)}
-		</Card>
+		</SummaryCard>
 	);
 }
 
@@ -77,7 +87,7 @@ function TimetableCard({
 	today: string;
 }) {
 	return (
-		<Card title="Dzisiejszy plan" link={{ label: "Zobacz wszystkie", to: "/timetable" }}>
+		<SummaryCard title="Dzisiejszy plan" link={{ label: "Zobacz wszystkie", to: "/timetable" }}>
 			{query.isError ? (
 				<CardError label="Nie udało się pobrać planu lekcji." />
 			) : query.isLoading ? (
@@ -85,7 +95,7 @@ function TimetableCard({
 			) : (
 				<LessonRows lessons={todayLessons(query.data ?? null, today)} />
 			)}
-		</Card>
+		</SummaryCard>
 	);
 }
 
@@ -97,7 +107,7 @@ function HomeworkCard({
 	today: string;
 }) {
 	return (
-		<Card
+		<SummaryCard
 			title="Zadania na najbliższy czas"
 			link={{ label: "Zobacz wszystkie", to: "/more/homework" }}
 		>
@@ -110,7 +120,7 @@ function HomeworkCard({
 					assignments={upcomingAssignments(query.data?.assignments ?? [], today, 5)}
 				/>
 			)}
-		</Card>
+		</SummaryCard>
 	);
 }
 
@@ -122,7 +132,7 @@ function NoticesCard({
 	today: string;
 }) {
 	return (
-		<Card title="Ogłoszenia" link={{ label: "Zobacz wszystkie", to: "/more/notices" }}>
+		<SummaryCard title="Ogłoszenia" link={{ label: "Zobacz wszystkie", to: "/more/notices" }}>
 			{query.isError ? (
 				<CardError label="Nie udało się pobrać ogłoszeń." />
 			) : query.isLoading ? (
@@ -130,11 +140,12 @@ function NoticesCard({
 			) : (
 				<NoticeRows notices={activeNotices(query.data ?? [], today).slice(0, 3)} />
 			)}
-		</Card>
+		</SummaryCard>
 	);
 }
 
-function Card({
+/** One kokpit card: title, content, "see all" link — on the shared Card. */
+function SummaryCard({
 	title,
 	link,
 	children,
@@ -145,29 +156,32 @@ function Card({
 }) {
 	const { navigate } = useRoute();
 	return (
-		<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4">
-			<h2 className="text-sm font-semibold mb-2">{title}</h2>
-			{children}
-			<button type="button" onClick={() => navigate(link.to)} className="mt-3 text-sm text-primary">
+		<Card className="min-w-0 gap-2 p-3 md:gap-3 md:p-4">
+			<CardTitle className="text-sm">{title}</CardTitle>
+			<CardContent className="min-w-0 px-0">{children}</CardContent>
+			<Button
+				variant="link"
+				className="h-auto self-start p-0 text-sm"
+				onClick={() => navigate(link.to)}
+			>
 				{link.label}
-			</button>
-		</section>
+			</Button>
+		</Card>
 	);
 }
 
 function CardError({ label }: { label: string }) {
-	return <p className="text-sm text-red-500">{label}</p>;
+	return <p className="text-sm text-destructive">{label}</p>;
 }
 
 function GradeRows({ grades }: { grades: Grade[] }) {
-	if (grades.length === 0)
-		return <p className="text-sm text-neutral-500 dark:text-neutral-400">Brak ocen.</p>;
+	if (grades.length === 0) return <p className="text-sm text-muted-foreground">Brak ocen.</p>;
 	return (
 		<ul className="flex flex-col gap-1.5">
 			{grades.map((g) => (
 				<li key={g.id} className="text-sm flex justify-between gap-3">
-					<span className="truncate">{g.subjectName ?? "-"}</span>
-					<span className="shrink-0 text-neutral-500 dark:text-neutral-400">
+					<span className="min-w-0 truncate">{g.subjectName ?? "-"}</span>
+					<span className="shrink-0 text-muted-foreground">
 						{g.grade} · {g.dateAdded.slice(0, 10)}
 					</span>
 				</li>
@@ -178,7 +192,7 @@ function GradeRows({ grades }: { grades: Grade[] }) {
 
 function LessonRows({ lessons }: { lessons: TimetableLesson[] }) {
 	if (lessons.length === 0)
-		return <p className="text-sm text-neutral-500 dark:text-neutral-400">Brak lekcji na dziś.</p>;
+		return <p className="text-sm text-muted-foreground">Brak lekcji na dziś.</p>;
 	return (
 		<ul className="flex flex-col gap-1.5">
 			{lessons.map((l) => (
@@ -186,8 +200,8 @@ function LessonRows({ lessons }: { lessons: TimetableLesson[] }) {
 					key={l.lessonNo ?? `${l.hourFrom}-${l.subjectName ?? ""}`}
 					className="text-sm flex justify-between gap-3"
 				>
-					<span className="truncate">{l.subjectName ?? "-"}</span>
-					<span className="shrink-0 text-neutral-500 dark:text-neutral-400">
+					<span className="min-w-0 truncate">{l.subjectName ?? "-"}</span>
+					<span className="shrink-0 text-muted-foreground">
 						{l.hourFrom}–{l.hourTo}
 					</span>
 				</li>
@@ -197,16 +211,13 @@ function LessonRows({ lessons }: { lessons: TimetableLesson[] }) {
 }
 
 function AssignmentRows({ assignments }: { assignments: HomeWorkAssignment[] }) {
-	if (assignments.length === 0)
-		return <p className="text-sm text-neutral-500 dark:text-neutral-400">Brak zadań.</p>;
+	if (assignments.length === 0) return <p className="text-sm text-muted-foreground">Brak zadań.</p>;
 	return (
 		<ul className="flex flex-col gap-1.5">
 			{assignments.map((a) => (
 				<li key={a.id} className="text-sm flex justify-between gap-3">
-					<span className="truncate">{a.topic || "Praca domowa"}</span>
-					<span className="shrink-0 text-neutral-500 dark:text-neutral-400">
-						{a.dueDate.slice(0, 10)}
-					</span>
+					<span className="min-w-0 truncate">{a.topic || "Praca domowa"}</span>
+					<span className="shrink-0 text-muted-foreground">{a.dueDate.slice(0, 10)}</span>
 				</li>
 			))}
 		</ul>
@@ -214,14 +225,13 @@ function AssignmentRows({ assignments }: { assignments: HomeWorkAssignment[] }) 
 }
 
 function NoticeRows({ notices }: { notices: SchoolNotice[] }) {
-	if (notices.length === 0)
-		return <p className="text-sm text-neutral-500 dark:text-neutral-400">Brak ogłoszeń.</p>;
+	if (notices.length === 0) return <p className="text-sm text-muted-foreground">Brak ogłoszeń.</p>;
 	return (
 		<ul className="flex flex-col gap-1.5">
 			{notices.map((n) => (
 				<li key={n.id} className="text-sm flex justify-between gap-3">
-					<span className="truncate">{n.subject}</span>
-					<span className="shrink-0 text-neutral-500 dark:text-neutral-400">
+					<span className="min-w-0 truncate">{n.subject}</span>
+					<span className="shrink-0 text-muted-foreground">
 						{n.startDate.slice(0, 10)}–{n.endDate.slice(0, 10)}
 					</span>
 				</li>

@@ -45,4 +45,13 @@ describe("BottomBar", () => {
 		renderBar("start", 0);
 		expect(screen.queryByRole("img", { name: /nieprzeczytanych/ })).toBeNull();
 	});
+
+	it("gives the tab icon a pressed scale (group-active) for click feedback", () => {
+		renderBar("start", 0);
+		const start = screen.getByRole("button", { name: "Start" });
+		expect(start.className).toContain("group");
+		const iconWrapper = start.querySelector("span.relative") as HTMLElement | null;
+		expect(iconWrapper?.className).toContain("group-active:scale-90");
+		expect(iconWrapper?.className).toContain("transition-transform");
+	});
 });

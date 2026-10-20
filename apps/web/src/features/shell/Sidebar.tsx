@@ -35,7 +35,12 @@ export function Sidebar({
 				<ul className="flex flex-col gap-1">
 					{TABS.filter((t) => t.id !== "more").map((t) => (
 						<li key={t.id}>
-							<SidebarLink item={t} active={active === t.tab} unread={unread} />
+							<SidebarLink
+								item={t}
+								active={active === t.tab}
+								// Unread count belongs to Wiadomości only.
+								unread={t.id === "messages" ? unread : 0}
+							/>
 						</li>
 					))}
 				</ul>
@@ -125,7 +130,7 @@ function SidebarLink({ item, active, unread }: { item: NavItem; active: boolean;
 			type="button"
 			onClick={() => navigate(item.path)}
 			className={cn(
-				"w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
+				"w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all active:scale-[0.98] [-webkit-tap-highlight-color:transparent]",
 				active ? "bg-primary text-primary-foreground" : "text-sidebar-foreground hover:bg-muted",
 			)}
 		>

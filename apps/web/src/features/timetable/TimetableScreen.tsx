@@ -1,5 +1,10 @@
 import { shiftWeekStart, type TimetableLesson } from "@repo/librus-client";
 import { useState } from "react";
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
+import { DetailOverlay } from "@/components/DetailOverlay";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { ViewLoader } from "@/components/ViewLoader";
 import { useRoute } from "@/lib/router";
 import { useClassFreeDays, useTimetable } from "./queries";
@@ -14,36 +19,38 @@ export function TimetableScreen() {
 	const { navigate } = useRoute();
 
 	if (isError) {
-		return <p className="py-16 text-center text-sm text-red-500">Nie udało się pobrać planu.</p>;
+		return (
+			<p className="py-16 text-center text-sm text-destructive">Nie udało się pobrać planu.</p>
+		);
 	}
 	if (isLoading) return <ViewLoader />;
 
 	return (
 		<div className="flex flex-col gap-4">
-			<div className="flex items-center justify-between rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 px-3 py-2">
-				<button
-					type="button"
+			<div className="flex items-center justify-between rounded-xl bg-card px-3 py-2">
+				<Button
+					variant="outline"
+					size="icon"
 					onClick={() => {
 						const next = shiftWeekStart(weekStart, -1);
 						if (next) setWeekStart(next);
 					}}
 					aria-label="Poprzedni tydzień"
-					className="w-9 h-9 rounded-full border border-neutral-200 dark:border-neutral-700 text-lg leading-none"
 				>
-					‹
-				</button>
+					<LuChevronLeft aria-hidden="true" />
+				</Button>
 				<p className="text-sm font-semibold">{weekRangeLabel(weekStart)}</p>
-				<button
-					type="button"
+				<Button
+					variant="outline"
+					size="icon"
 					onClick={() => {
 						const next = shiftWeekStart(weekStart, 1);
 						if (next) setWeekStart(next);
 					}}
 					aria-label="Następny tydzień"
-					className="w-9 h-9 rounded-full border border-neutral-200 dark:border-neutral-700 text-lg leading-none"
 				>
-					›
-				</button>
+					<LuChevronRight aria-hidden="true" />
+				</Button>
 			</div>
 			{freeDaysData && freeDaysData.freeDays.length > 0 && (
 				<FreeDaysCard freeDays={freeDaysData.freeDays} />
@@ -81,22 +88,17 @@ function FreeDaysCard({
 	freeDays: { id: unknown; date: string; name: string | null }[];
 }) {
 	return (
-		<div
-			className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4"
-			data-testid="free-days-card"
-		>
+		<Card className="gap-2 p-4" data-testid="free-days-card">
 			<h2 className="text-sm font-semibold mb-2">Dni wolne</h2>
 			<ul className="flex flex-col gap-1">
 				{freeDays.map((day, i) => (
 					<li key={`${day.date}-${i}`} className="text-sm flex justify-between">
 						<span>{day.date}</span>
-						<span className="text-neutral-500 dark:text-neutral-400">
-							{day.name ?? "Dzień wolny"}
-						</span>
+						<span className="text-muted-foreground">{day.name ?? "Dzień wolny"}</span>
 					</li>
 				))}
 			</ul>
-		</div>
+		</Card>
 	);
 }
 
@@ -114,26 +116,20 @@ function DayCard({
 	const lessons = slots.flat();
 	const hasContent = lessons.length > 0;
 	return (
-		<section
-			className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800"
-			data-testid="timetable-day"
-			data-date={date}
-		>
+		<Card className="gap-0 py-0" data-testid="timetable-day" data-date={date}>
 			<div className="px-4 pt-3 pb-1 flex items-center justify-between">
 				<h2 className="text-sm font-semibold">{label}</h2>
-				<span className="text-xs text-neutral-500 dark:text-neutral-400">
+				<span className="text-xs text-muted-foreground">
 					{date.slice(8, 10)}.{date.slice(5, 7)}
 				</span>
 			</div>
-			{!hasContent && (
-				<p className="px-4 py-3 text-xs text-neutral-500 dark:text-neutral-400">Brak lekcji</p>
-			)}
-			<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+			{!hasContent && <p className="px-4 py-3 text-xs text-muted-foreground">Brak lekcji</p>}
+			<ul>
 				{lessons.map((lesson, i) => (
 					<LessonRow key={`${lesson.id ?? i}-${i}`} lesson={lesson} onOpen={onLesson} />
 				))}
 			</ul>
-		</section>
+		</Card>
 	);
 }
 
@@ -146,7 +142,7 @@ function LessonRow({
 }) {
 	return (
 		<li
-			className={lesson.isCanceled ? "bg-neutral-100/60 dark:bg-neutral-800/40" : ""}
+			className={lesson.isCanceled ? "bg-muted/60" : ""}
 			data-flag={
 				lesson.isCanceled ? "canceled" : lesson.isSubstitutionClass ? "substitution" : "normal"
 			}
@@ -155,7 +151,7 @@ function LessonRow({
 				<div className="flex items-start justify-between gap-3">
 					<div className="min-w-0">
 						<p className="text-sm font-medium">{lesson.subjectName ?? "Lekcja"}</p>
-						<p className="text-xs text-neutral-500 dark:text-neutral-400">
+						<p className="text-xs text-muted-foreground">
 							{lesson.hourFrom}–{lesson.hourTo}
 							{lesson.classroomSymbol ? ` · sala ${lesson.classroomSymbol}` : ""}
 						</p>
@@ -166,7 +162,7 @@ function LessonRow({
 						{lesson.isSubstitutionClass && (lesson.orgTeacherName || lesson.teacherName) && (
 							<p className="mt-1 text-xs">
 								{lesson.orgTeacherName && (
-									<span className="line-through text-neutral-500 dark:text-neutral-400">
+									<span className="line-through text-muted-foreground">
 										{lesson.orgTeacherName}
 									</span>
 								)}
@@ -177,19 +173,17 @@ function LessonRow({
 							</p>
 						)}
 						{!lesson.isSubstitutionClass && lesson.teacherName && (
-							<p className="text-xs text-neutral-500 dark:text-neutral-400">{lesson.teacherName}</p>
+							<p className="text-xs text-muted-foreground">{lesson.teacherName}</p>
 						)}
 						{lesson.isCanceled && (
-							<p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Odwołana</p>
+							<p className="mt-1 text-xs font-medium text-destructive">Odwołana</p>
 						)}
 						{lesson.substitutionNote && (
-							<p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
-								{lesson.substitutionNote}
-							</p>
+							<p className="mt-1 text-xs text-muted-foreground">{lesson.substitutionNote}</p>
 						)}
 					</div>
 					{lesson.lessonNo && (
-						<span className="ml-3 shrink-0 w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-800 text-xs flex items-center justify-center font-semibold">
+						<span className="ml-3 shrink-0 w-7 h-7 rounded-full bg-muted text-xs flex items-center justify-center font-semibold">
 							{lesson.lessonNo}
 						</span>
 					)}
@@ -209,83 +203,59 @@ function LessonSheet({
 	onSubjectGrades: () => void;
 }) {
 	return (
-		<button
-			type="button"
-			aria-label="Zamknij szczegóły lekcji"
-			className="fixed inset-0 z-20 flex items-end justify-center bg-black/30 cursor-default"
-			onClick={onClose}
+		<DetailOverlay
+			open
+			onOpenChange={(o) => !o && onClose()}
+			title={lesson.subjectName ?? "Lekcja"}
+			action={
+				lesson.subjectId !== null ? (
+					<Button variant="link" size="sm" className="h-auto p-0 text-sm" onClick={onSubjectGrades}>
+						Oceny
+					</Button>
+				) : undefined
+			}
 		>
-			<div
-				role="dialog"
-				aria-modal="true"
-				aria-label={`Szczegóły lekcji: ${lesson.subjectName ?? "Lekcja"}`}
-				className="w-full max-w-xl rounded-t-3xl bg-white dark:bg-neutral-900 p-6 pb-10 max-h-[80dvh] overflow-y-auto"
-				onClick={(e) => e.stopPropagation()}
-				onKeyDown={(e) => e.stopPropagation()}
-			>
-				<div className="flex items-center justify-between mb-4">
-					<h3 className="text-lg font-bold">{lesson.subjectName ?? "Lekcja"}</h3>
-					<div className="flex items-center gap-4">
-						{lesson.subjectId !== null && (
-							<button type="button" onClick={onSubjectGrades} className="text-sm text-primary">
-								Oceny
-							</button>
-						)}
-						<button type="button" onClick={onClose} className="text-sm text-primary">
-							Zamknij
+			<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+				<dt className="text-muted-foreground">Przedmiot</dt>
+				<dd>
+					{lesson.subjectId !== null ? (
+						<button type="button" onClick={onSubjectGrades} className="text-primary">
+							{lesson.subjectName ?? "—"}
 						</button>
-					</div>
+					) : (
+						(lesson.subjectName ?? "—")
+					)}
+				</dd>
+				<dt className="text-muted-foreground">Godziny</dt>
+				<dd>
+					{lesson.hourFrom}–{lesson.hourTo}
+				</dd>
+				<dt className="text-muted-foreground">Nauczyciel</dt>
+				<dd>
+					{lesson.isSubstitutionClass && lesson.orgTeacherName ? (
+						<>
+							<span className="line-through text-muted-foreground">{lesson.orgTeacherName}</span>
+							<span className="mx-1">→</span>
+							{lesson.teacherName ?? "—"}
+						</>
+					) : (
+						(lesson.teacherName ?? "—")
+					)}
+				</dd>
+				<dt className="text-muted-foreground">Sala</dt>
+				<dd>{lesson.classroomSymbol ?? "—"}</dd>
+				<dt className="text-muted-foreground">Numer lekcji</dt>
+				<dd>{lesson.lessonNo ?? "—"}</dd>
+				<dt className="text-muted-foreground">Data</dt>
+				<dd>{lesson.dateFrom.slice(0, 10)}</dd>
+			</dl>
+			{(lesson.isCanceled || lesson.isSubstitutionClass || lesson.substitutionNote) && (
+				<div className="mt-4 flex flex-wrap gap-2">
+					{lesson.isCanceled && <Badge variant="secondary">Odwołana</Badge>}
+					{lesson.isSubstitutionClass && <Badge variant="secondary">Zastępstwo</Badge>}
+					{lesson.substitutionNote && <Badge variant="secondary">{lesson.substitutionNote}</Badge>}
 				</div>
-				<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-					<dt className="text-neutral-500 dark:text-neutral-400">Przedmiot</dt>
-					<dd>
-						{lesson.subjectId !== null ? (
-							<button type="button" onClick={onSubjectGrades} className="text-primary">
-								{lesson.subjectName ?? "—"}
-							</button>
-						) : (
-							(lesson.subjectName ?? "—")
-						)}
-					</dd>
-					<dt className="text-neutral-500 dark:text-neutral-400">Godziny</dt>
-					<dd>
-						{lesson.hourFrom}–{lesson.hourTo}
-					</dd>
-					<dt className="text-neutral-500 dark:text-neutral-400">Nauczyciel</dt>
-					<dd>
-						{lesson.isSubstitutionClass && lesson.orgTeacherName ? (
-							<>
-								<span className="line-through text-neutral-500 dark:text-neutral-400">
-									{lesson.orgTeacherName}
-								</span>
-								<span className="mx-1">→</span>
-								{lesson.teacherName ?? "—"}
-							</>
-						) : (
-							(lesson.teacherName ?? "—")
-						)}
-					</dd>
-					<dt className="text-neutral-500 dark:text-neutral-400">Sala</dt>
-					<dd>{lesson.classroomSymbol ?? "—"}</dd>
-					<dt className="text-neutral-500 dark:text-neutral-400">Numer lekcji</dt>
-					<dd>{lesson.lessonNo ?? "—"}</dd>
-					<dt className="text-neutral-500 dark:text-neutral-400">Data</dt>
-					<dd>{lesson.dateFrom.slice(0, 10)}</dd>
-				</dl>
-				{(lesson.isCanceled || lesson.isSubstitutionClass || lesson.substitutionNote) && (
-					<div className="mt-4 flex flex-wrap gap-2">
-						{lesson.isCanceled && <Flag label="Odwołana" />}
-						{lesson.isSubstitutionClass && <Flag label="Zastępstwo" />}
-						{lesson.substitutionNote && <Flag label={lesson.substitutionNote} />}
-					</div>
-				)}
-			</div>
-		</button>
-	);
-}
-
-function Flag({ label }: { label: string }) {
-	return (
-		<span className="text-xs px-2.5 py-1 rounded-full bg-secondary text-primary">{label}</span>
+			)}
+		</DetailOverlay>
 	);
 }

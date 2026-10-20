@@ -19,13 +19,13 @@ export function BottomBar({ activeTab, badge }: { activeTab: string; badge: numb
 						key={t.id}
 						type="button"
 						onClick={() => navigate(t.path)}
-						className={`flex-1 py-2 text-xs font-medium relative flex flex-col items-center gap-1 rounded-lg transition-colors ${
+						className={`group flex-1 py-2 text-xs font-medium relative flex flex-col items-center gap-1 rounded-lg transition-all [-webkit-tap-highlight-color:transparent] ${
 							activeTab === t.id
 								? "text-primary"
 								: "text-muted-foreground hover:bg-muted hover:text-foreground"
 						}`}
 					>
-						<span className="relative">
+						<span className="relative transition-transform group-active:scale-90">
 							<t.Icon className="size-5" aria-hidden="true" />
 							{t.id === "messages" && badge > 0 ? (
 								<span

@@ -31,7 +31,7 @@ describe("Sidebar (md+)", () => {
 			"Uwagi",
 			"Zebrania z rodzicami",
 			"Szkoła i klasa",
-			"Wiadomości — ustawienia",
+			"Ustawienia",
 			"Instalacja aplikacji",
 			"Powiadomienia push",
 		]) {
@@ -43,5 +43,17 @@ describe("Sidebar (md+)", () => {
 		}
 		const wiadomosci = screen.getByRole("button", { name: /^Wiadomości\s*(\d+)?$/ });
 		expect(wiadomosci.textContent).toContain("2");
+	});
+
+	it("shows the unread badge on Wiadomości only — never on Start, Oceny or Plan", () => {
+		render(
+			<RouterProvider>
+				<Sidebar unread={2} onSwitchAccount={() => {}} />
+			</RouterProvider>,
+		);
+		for (const label of ["Start", "Oceny", "Plan"]) {
+			const row = screen.getByRole("button", { name: new RegExp(`^${label}$`) });
+			expect(row.textContent).not.toContain("2");
+		}
 	});
 });

@@ -1,9 +1,10 @@
 /**
- * Responsive detail overlay on Radix Dialog: below md it docks to the
- * bottom edge (bottom sheet, rounded top); from md up it becomes a centered
- * preview (~90vw × ~85dvh). The choice is made purely in CSS — one component
- * for every breakpoint. Escape, backdrop click and the X all close through
- * one onOpenChange entry point; focus is trapped by Radix.
+ * Detail overlay on Radix Dialog: a CENTERED preview on every breakpoint —
+ * like the desktop one — so the dimmed, blurred backdrop stays visible
+ * around the sheet. Sizes are viewport-based and adapt to the phone
+ * (~92vw × ~85dvh below md, ~90vw × ~85dvh from md up); the choice is made
+ * purely in CSS. Escape, backdrop click and the X all close through one
+ * onOpenChange entry point; focus is trapped by Radix.
  */
 import type { ReactNode } from "react";
 import { LuX } from "react-icons/lu";
@@ -11,10 +12,11 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const sheetClasses = cn(
-	// Mobile: translate reset — the base DialogContent centers with
-	// -translate-1/2, which would push the sheet half off-screen here.
-	"fixed inset-x-0 bottom-0 top-auto left-0 flex w-full flex-col rounded-t-xl p-0 gap-0 max-h-[85dvh] translate-x-0 translate-y-0",
-	"md:top-1/2 md:bottom-auto md:left-1/2 md:h-[85dvh] md:w-[90vw] md:max-w-[90vw] md:max-h-none md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl",
+	// Centered on every breakpoint: the blurred backdrop stays visible around
+	// the sheet. Viewport-based sizes adapt to the phone (dvh/vw). sm:/md:
+	// max-w repeats the unprefixed value — responsive variants would otherwise
+	// win over it in the stylesheet order.
+	"fixed top-1/2 left-1/2 z-50 flex h-[85dvh] w-[92vw] max-w-[92vw] sm:max-w-[92vw] md:w-[90vw] md:max-w-[90vw] flex-col rounded-xl p-0 gap-0 -translate-x-1/2 -translate-y-1/2",
 	"data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-6",
 	"data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-6",
 	"md:data-[state=open]:zoom-in-95 md:data-[state=closed]:zoom-out-95",
@@ -61,7 +63,7 @@ function OverlayHeader({
 	return (
 		<div
 			data-slot="detail-overlay-header"
-			className="flex items-center justify-between gap-3 border-b px-6 py-4"
+			className="flex items-center justify-between gap-3 px-6 py-4"
 		>
 			<DialogTitle className="min-w-0 truncate text-base">{title}</DialogTitle>
 			{action ? <div className="shrink-0">{action}</div> : null}

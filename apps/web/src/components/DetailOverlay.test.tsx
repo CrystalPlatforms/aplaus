@@ -27,27 +27,20 @@ describe("DetailOverlay", () => {
 		expect(dialog.contains(document.activeElement)).toBe(true);
 	});
 
-	it("renders the bottom-sheet classes below md", () => {
+	it("renders a centered sheet with the blurred backdrop visible, on every breakpoint", () => {
 		renderOverlay();
 		const dialog = screen.getByRole("dialog") as HTMLElement;
-		// Mobile sheet: docked to the bottom edge, rounded top, height-capped.
-		expect(dialog.className).toContain("bottom-0");
-		expect(dialog.className).toContain("rounded-t-xl");
-		expect(dialog.className).toContain("max-h-[85dvh]");
-		// The base DialogContent centers with -translate-1/2; the sheet must
-		// reset it or the sheet renders half off-screen.
-		expect(dialog.className).toContain("translate-x-0");
-		expect(dialog.className).toContain("translate-y-0");
-	});
-
-	it("renders the centered preview classes from md up", () => {
-		renderOverlay();
-		const dialog = screen.getByRole("dialog") as HTMLElement;
-		// Desktop preview: centered, ~90vw × ~85dvh.
-		expect(dialog.className).toContain("md:top-1/2");
-		expect(dialog.className).toContain("md:left-1/2");
+		// Centered (like the desktop preview) — NOT fullscreen: the dimmed,
+		// blurred background stays visible around the sheet.
+		expect(dialog.className).toContain("top-1/2");
+		expect(dialog.className).toContain("left-1/2");
+		expect(dialog.className).toContain("-translate-x-1/2");
+		expect(dialog.className).toContain("-translate-y-1/2");
+		expect(dialog.className).toContain("rounded-xl");
+		// Viewport-based sizes adapt to the phone; md+ gets the wider preview.
+		expect(dialog.className).toContain("w-[92vw]");
+		expect(dialog.className).toContain("h-[85dvh]");
 		expect(dialog.className).toContain("md:w-[90vw]");
-		expect(dialog.className).toContain("md:h-[85dvh]");
 	});
 
 	it("Escape closes through onOpenChange(false)", () => {

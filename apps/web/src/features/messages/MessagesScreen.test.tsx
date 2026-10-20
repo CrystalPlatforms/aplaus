@@ -86,6 +86,13 @@ describe("MessagesScreen", () => {
 		await waitFor(() => expect(screen.getByText("Brak wiadomości.")).toBeTruthy());
 	});
 
+	it("marks the unread message with a primary dot (bold kept)", async () => {
+		renderMessages();
+		await waitFor(() => expect(screen.getByText("Wywiadówka")).toBeTruthy());
+		const dot = screen.getByRole("img", { name: "Nieprzeczytana" });
+		expect(dot.className).toContain("bg-primary");
+	});
+
 	it("requests page 2 when older messages are requested", async () => {
 		renderMessages();
 		await waitFor(() => expect(screen.getByText("Wywiadówka")).toBeTruthy());

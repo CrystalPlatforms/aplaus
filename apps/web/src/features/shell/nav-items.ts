@@ -11,8 +11,8 @@ import {
 	LuDownload,
 	LuEllipsis,
 	LuFileCheck,
-	LuGraduationCap,
 	LuHouse,
+	LuList,
 	LuMail,
 	LuMegaphone,
 	LuSchool,
@@ -39,7 +39,7 @@ export interface NavItem {
 /** The five mobile tabs. */
 export const TABS: Array<NavItem & { tab: "start" | "grades" | "plan" | "messages" | "more" }> = [
 	{ id: "start", label: "Start", path: "/start", Icon: LuHouse, tab: "start" },
-	{ id: "grades", label: "Oceny", path: "/grades", Icon: LuGraduationCap, tab: "grades" },
+	{ id: "grades", label: "Oceny", path: "/grades", Icon: LuList, tab: "grades" },
 	{ id: "plan", label: "Plan", path: "/timetable", Icon: LuCalendarDays, tab: "plan" },
 	{ id: "messages", label: "Wiadomości", path: "/messages", Icon: LuMail, tab: "messages" },
 	{ id: "more", label: "Więcej", path: "/more", Icon: LuEllipsis, tab: "more" },
@@ -72,9 +72,9 @@ export const MORE_SECTIONS: NavItem[] = [
 	},
 	{ id: "school", label: "Szkoła i klasa", path: "/more/school", Icon: LuSchool, tab: "more" },
 	{
-		id: "messages-settings",
-		label: "Wiadomości — ustawienia",
-		path: "/more/messages-settings",
+		id: "settings",
+		label: "Ustawienia",
+		path: "/settings",
 		Icon: LuSettings,
 		tab: "more",
 	},
@@ -110,6 +110,7 @@ export function activeTabOf(path: string): NavItem["tab"] {
 	if (path.startsWith("/start")) return "start";
 	if (path.startsWith("/timetable")) return "plan";
 	if (path.startsWith("/messages")) return "messages";
+	if (path.startsWith("/settings")) return "more";
 	if (path.startsWith("/more")) return "more";
 	return "grades";
 }

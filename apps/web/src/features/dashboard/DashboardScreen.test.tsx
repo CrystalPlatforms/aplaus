@@ -101,4 +101,13 @@ describe("DashboardScreen", () => {
 		expect(screen.getByText("Zadania na najbliższy czas")).toBeTruthy();
 		expect(screen.getByText("Ogłoszenia")).toBeTruthy();
 	});
+
+	it("lays the four cards on the shared Card in a two-column grid from md", async () => {
+		const { container } = renderDashboard();
+		await waitFor(() => expect(screen.getByText("Najnowsze oceny")).toBeTruthy());
+		// One DOM ships both layouts: single column below md, two from md up.
+		const grid = container.querySelector(".md\\:grid-cols-2");
+		expect(grid).toBeTruthy();
+		expect(container.querySelectorAll('[data-slot="card"]').length).toBe(4);
+	});
 });

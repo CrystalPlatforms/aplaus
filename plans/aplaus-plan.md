@@ -799,3 +799,10 @@ Lokalny serwer MCP (stdio) reużywający `librus-client`: narzędzia typu „oce
 - [ ] Serwer startuje i zgłasza narzędzia (inspektor MCP / rejestracja w kliencie) — [command]
 - [ ] Handlery narzędzi zwracają typowane dane z mockiem librus-client — [test: unit]
 - [ ] HITL: 3 przykładowe pytania w czacie Claude'a odpowiadane poprawnie z realnych danych — [observable: checklista HITL]
+
+---
+
+## Plan 3: Redesign UI (PRD #17)
+
+Plan faz redesignu warstwy prezentacji (shadcn/tweakcn, desktop sidebar, DetailOverlay,
+animacje, większa mobilka) — szczegóły w [redesign-ui.md](./redesign-ui.md).

@@ -43,7 +43,7 @@ export function Loader({ dotColor }: { dotColor?: string }) {
           height: 0.425rem;
           width: 0.425rem;
           border-radius: 50%;
-          background-color: var(--loader-dot-color, var(--aplaus-loader-blue));
+          background-color: var(--loader-dot-color, var(--crs-green));
         }
 
         .uib-dot-loader .uib-dot:nth-child(2) {
@@ -87,8 +87,8 @@ export function Loader({ dotColor }: { dotColor?: string }) {
 
 /**
  * Mały wariant loadera do przycisków w trakcie akcji — ten sam pierścień
- * kropek co wyżej, 14px, ustawiany PRZED tekstem statusu. Kolor kropek idzie
- * za --primary (bg-primary) — j.w., kropki podążają za akcentem motywu.
+ * kropek co wyżej, 14px, ustawiany PRZED tekstem statusu. Kolor kropek =
+ * CRS brand green (--crs-green) w obu motywach.
  */
 export function ButtonSpinner() {
 	return (
@@ -96,7 +96,7 @@ export function ButtonSpinner() {
 			{[0, 1, 2, 3, 4, 5].map((i) => (
 				<span
 					key={i}
-					className="btn-dot-spinner-dot size-[0.25rem] rounded-full bg-primary"
+					className="btn-dot-spinner-dot size-[0.25rem] rounded-full bg-[var(--crs-green)]"
 					style={{ animationDelay: `${i === 0 ? 0 : -(0.5 - i * 0.0833)}s` }}
 				/>
 			))}

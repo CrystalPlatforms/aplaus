@@ -8,7 +8,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Loader } from "@/components/Loader";
 import { OfflineBanner } from "@/components/OfflineBanner";
-import { StickyBack } from "@/components/StickyBack";
 import { DashboardScreen } from "@/features/dashboard/DashboardScreen";
 import { GradesScreen } from "@/features/grades/GradesScreen";
 import { SubjectGradesScreen } from "@/features/grades/SubjectGradesScreen";
@@ -23,6 +22,7 @@ import { useRoute } from "@/lib/router";
 import { usePullToRefresh } from "@/lib/usePullToRefresh";
 import { AccountSwitcher } from "./AccountSwitcher";
 import { BottomBar } from "./BottomBar";
+import { backTargetOf } from "./back-target";
 import { MoreRoutes } from "./MoreRoutes";
 import { activeTabOf } from "./nav-items";
 import { Sidebar } from "./Sidebar";
@@ -50,6 +50,9 @@ export function AppShell() {
 	const unread = useUnreadCount();
 	const badge = account ? (unread.data?.inbox ?? 0) : 0;
 
+	// The single back target for the TopBar — works on every breakpoint.
+	const back = backTargetOf(path);
+
 	return (
 		<div className="min-h-dvh bg-background text-foreground">
 			<div className="md:flex">
@@ -60,6 +63,7 @@ export function AppShell() {
 						logout={logout}
 						onSwitchAccount={() => setSwitcherOpen(true)}
 						onRefresh={refresh}
+						back={back}
 					/>
 					<OfflineBanner />
 					{progress > 0 || refreshing ? (
@@ -79,10 +83,7 @@ export function AppShell() {
 						) : isCompose ? (
 							<ComposeRoute />
 						) : isDraftsList ? (
-							<div>
-								<StickyBack to="/messages" label="Wiadomości" />
-								<DraftsScreen />
-							</div>
+							<DraftsScreen />
 						) : replyForward !== null ? (
 							<ReplyForwardRoute match={replyForward} />
 						) : isMessageDetail ? (
@@ -110,12 +111,7 @@ function ComposeRoute() {
 	const { path } = useRoute();
 	const parts = path.split("/");
 	const draftId = parts.length > 3 ? (parts[3] ?? undefined) : undefined;
-	return (
-		<div>
-			<StickyBack to="/messages" label="Wiadomości" />
-			<ComposeScreen draftId={draftId} />
-		</div>
-	);
+	return <ComposeScreen draftId={draftId} />;
 }
 
 /** Reply/forward route (/messages/:folder/:id/reply|forward). */
@@ -125,13 +121,10 @@ function ReplyForwardRoute({ match }: { match: RegExpExecArray }) {
 	const context = { folder, id: id ?? "" };
 	const actionIsForward = action === "forward";
 	return (
-		<div>
-			<StickyBack to={`/messages/${folder}/${id}`} label="Wiadomości" />
-			<ComposeScreen
-				replyTo={actionIsForward ? undefined : context}
-				forwardOf={actionIsForward ? context : undefined}
-			/>
-		</div>
+		<ComposeScreen
+			replyTo={actionIsForward ? undefined : context}
+			forwardOf={actionIsForward ? context : undefined}
+		/>
 	);
 }
 
@@ -141,22 +134,12 @@ function MessageDetailRoute() {
 	const parts = path.split("/");
 	const folder = parts[2] === "outbox" ? "outbox" : "inbox";
 	const id = parts.pop() ?? "";
-	return (
-		<div>
-			<StickyBack to="/messages" label="Wiadomości" />
-			<MessageDetailScreen folder={folder} id={id} />
-		</div>
-	);
+	return <MessageDetailScreen folder={folder} id={id} />;
 }
 
 /** Subject grades page (/grades/subject/:id) — a full view, not a drawer. */
 function SubjectGradesRoute() {
 	const { path } = useRoute();
 	const subjectId = path.split("/").pop() ?? "";
-	return (
-		<div>
-			<StickyBack to="/grades" label="Oceny" />
-			<SubjectGradesScreen subjectId={subjectId} />
-		</div>
-	);
+	return <SubjectGradesScreen subjectId={subjectId} />;
 }

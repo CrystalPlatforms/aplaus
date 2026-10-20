@@ -81,10 +81,26 @@ Package-specific rules live under `.claude/rules/data-service/` — see [llms.tx
 
 ## UI conventions
 
-- Every loading state shows the dot loader (`apps/web/src/components/Loader.tsx`, green dots), never a bare text placeholder alone.
-- ALL loaders (the view Loader and the ButtonSpinner) use the SAME fixed BLUE dots (#2563eb / bg-blue-600) in every theme — no light/dark variants. User decision, r.21.
+- Every loading state shows the dot loader (`apps/web/src/components/Loader.tsx`), never a bare text placeholder alone.
+- ALL loaders are the CRS loader: six rotating dots in the CRS brand green `--crs-green` (#167c51) in BOTH themes — the view Loader, the ButtonSpinner and the boot splash in `apps/web/index.html`. Brand color, independent of the theme accent.
+- The login submit button turns WHITE while loading, with the green CRS loader inside (no opacity dimming).
 - Button action labels during an operation (Zapisywanie…, Usuwanie… etc.) always get the small
-  ButtonSpinner (components/Loader.tsx, blue dots) placed BEFORE the label text. User decision, r.21.
+  ButtonSpinner (components/Loader.tsx) placed BEFORE the label text.
+- Pressed feedback: `Button` (ui/button.tsx) and nav items (Sidebar row, BottomBar icon) carry
+  `active:scale` (buttons 0.98, bottom-bar icons 0.90) and a transparent tap-highlight; the global
+  `prefers-reduced-motion` switch in `apps/web/src/index.css` also collapses the scale transitions.
+
+## Theming (tweakcn)
+
+The palette lives as two CSS blocks — `:root` (light) and `.dark` (dark) — at the top of
+`apps/web/src/index.css`, in tweakcn export format (CRS-Theme is the current default). To re-theme:
+
+1. Paste the new theme's `:root`/`.dark` blocks over the existing blocks in `apps/web/src/index.css` — colors + `--radius` only (fonts, shadows, tracking and spacing from the export are skipped).
+2. Never hand-edit the `@theme inline` mapping below the blocks — it only exposes the variables as Tailwind utilities.
+3. Sync the static colors that live OUTSIDE the blocks: `theme_color` in `apps/web/vite.config.ts` (PWA manifest) and the boot-splash colors in `apps/web/index.html`.
+
+Components read only tokens (`bg-primary`, `text-muted-foreground`, …), so no component changes
+when a new palette is pasted.
 
 ## Don't
 

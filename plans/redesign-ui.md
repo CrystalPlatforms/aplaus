@@ -21,7 +21,7 @@ Durable decisions that apply across all phases:
 
 ## Phase 1: Fundament tokenów CRS-Theme + tracer na ekranie logowania
 
-> **Status: ✅ zaimplementowana** (sesja /tdd 19,20 — 2026-10-19; fundament dokończony, bo #18 było zamknięte bez implementacji). Uwaga: paleta CRS-Theme zrekonstruowana wokół zieleni #167c51 z `crs-assets/loader.tsx` — przy fazie 5 (HITL) właściciel może wkleić swój eksport tweakcn, mapowanie @theme inline bez zmian.
+> **Status: ✅ zaimplementowana** (sesja /tdd 19,20 — 2026-10-19; fundament dokończony, bo #18 było zamknięte bez implementacji). 2026-10-20: właściciel wkleił DOKŁADNY eksport CRS-Theme (oklch) — rekonstrukcja z tej fazy zastąpiona eksportem (kolory + `--radius`); ciemny primary = `#167c51` (zieleń z loadera CRS), jasny = `#2bc585`; ciemne `destructive` wróciło do czerwieni (rekonstrukcja miała pomarańcz). Uwaga: przy fazie 5 (HITL) właściciel może wkleić nowszy eksport tweakcn, mapowanie @theme inline bez zmian.
 
 **User stories**: 1, 2, 3, 14, 18
 
@@ -52,7 +52,7 @@ End-to-end tracer nowego systemu: zależności (Radix Dialog/Slot/Label, cva, cl
 
 ## Phase 2: DetailOverlay — sheet na mobile, prawie pełnoekranowy preview na desktop
 
-> **Status: ✅ zaimplementowana** (sesja /tdd 19,20 — 2026-10-19). DetailOverlay (`components/DetailOverlay.tsx`) na Radix Dialog; mobile = dolny sheet, md+ = centered ~90vw/~85dvh; pierwszy konsument: szczegóły oceny (Badge na flagach, tokeny na tekstach). Test: `DetailOverlay.test.tsx` (6 przypadków).
+> **Status: ✅ zaimplementowana** (sesja /tdd 19,20 — 2026-10-19). DetailOverlay (`components/DetailOverlay.tsx`) na Radix Dialog; pierwszy konsument: szczegóły oceny (Badge na flagach, tokeny na tekstach). Test: `DetailOverlay.test.tsx`. Aktualizacja 2026-10-20 (decyzja właściciela): overlay WYŚRODKOWANY na każdym breakpointcie (~92vw × 85dvh < md, ~90vw × 85dvh md+) — tło (przyciemnione + `backdrop-blur-md`) zostaje widoczne wokół; koniec z pełnym ekranem na mobile i z dolnym sheetem.
 
 **User stories**: 5, 6, 18
 
@@ -81,7 +81,7 @@ Responsywna nakładka szczegółów na Radix Dialog: sticky nagłówek z tytułe
 
 ## Phase 3: Powłoka — sidebar (desktop), dolny bar z ikonami (mobile), skala mobilna
 
-> **Status: ✅ zaimplementowana** (sesja /tdd 19,20 — 2026-10-19). Sidebar md+ (pełna nawigacja + blok konta), BottomBar < md z ikonami react-icons/lu i tokenem primary, TopBar (mobile: konto/wyloguj; desktop: Odśwież z spin), StickyBack na tokenach (`components/StickyBack.tsx`), skala mobilna 106.25% < md (px→rem w Loader/Notifications/MessagesSettings), animacja montowania widoku `.animate-view-in`, AccountSwitcher i AddAccountModal na wycentrowanym Radix Dialog. Pliki powłoki ≤ 165 linii.
+> **Status: ✅ zaimplementowana** (sesja /tdd 19,20 — 2026-10-19). Sidebar md+ (pełna nawigacja + blok konta), BottomBar < md z ikonami react-icons/lu i tokenem primary, TopBar (mobile: konto/wyloguj; desktop: Odśwież z spin), skala mobilna 106.25% < md (px→rem w Loader/Notifications/MessagesSettings), animacja montowania widoku `.animate-view-in`, AccountSwitcher and a centered Radix Dialog. Pliki powłoki ≤ 165 linii. Aktualizacja 2026-10-20: StickyBack usunięty — jeden przycisk „Wróć" żyje w TopBar (cel z `features/shell/back-target.ts`), widoczny na każdym breakpointcie.
 
 **User stories**: 4, 7, 8, 9, 13, 18
 
@@ -112,6 +112,8 @@ Nowa powłoka: AppShell podzielony (limit 500 linii) — Sidebar na md+ z PEŁN�
 
 ## Phase 4: Kluczowe ekrany — kokpit (2 kolumny na desktop), plan, wiadomości
 
+> **Status: ✅ zaimplementowana** (sesja /tdd 21,22 — 2026-10-20). Kokpit na `Card` w siatce `md:grid-cols-2`; plan: szczegóły lekcji w DetailOverlay (akcja „Oceny" w nagłówku), strzałki tygodnia na `Button size="icon"` z ikonami lu/Chevron i zachowanymi aria-labelami; wiadomości: „Nowa wiadomość"/„Szkice" na Button (zieleń → primary), segmenty folderów na tokenach (tor muted / aktywny card+cień), kropka nieprzeczytanej `bg-primary`, akcje kosza na Button ghost z niezmienionymi etykietami. Grep migrowanych plików: zero surowych `blue-*`/`neutral-*`.
+
 **User stories**: 5, 6, 12, 14, 15, 18
 
 ### What to build
@@ -138,6 +140,8 @@ Migracja pozostałych ekranów codziennego użycia: kokpit (karty na Card, 2 kol
 ---
 
 ## Phase 5: Polish Fazy A — animacje, manifest, dokumentacja, bramki jakości
+
+> **Status: 🟡 kod zaimplementowany** (sesja /tdd 21,22 — 2026-10-20); bramki Lighthouse i checklista HITL zostały u właściciela. Zrobione: klik-feedback (`active:scale-[0.98]` na Button i wierszach sidebara, `group-active:scale-90` na ikonach BottomBar, tap-highlight przezroczysty globalnie + na komponentach), `theme_color` manifestu → `#167c51` (zieleń CRS; ciemny primary eksportu), Loader → kropki za `var(--primary)`, box logowania = czarny z zakresem `dark` (dokładne tokeny ciemnego bloku CRS), niebieski `--loader-login` usunięty, konwencje UI w AGENTS.md/CLAUDE.md nadpisane (loader za akcentem), notka theming (tweakcn) dodana.
 
 **User stories**: 1, 9, 10, 11, 16, 17
 

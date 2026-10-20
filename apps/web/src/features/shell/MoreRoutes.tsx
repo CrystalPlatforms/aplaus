@@ -1,6 +1,5 @@
 /** Routes under /more: the menu and the school-domain subviews. */
 
-import { StickyBack } from "@/components/StickyBack";
 import { AttendanceScreen } from "@/features/attendance/AttendanceScreen";
 import { ConferenceDetailScreen } from "@/features/conferences/ConferenceDetailScreen";
 import { ConferencesScreen } from "@/features/conferences/ConferencesScreen";
@@ -22,99 +21,45 @@ import { ThemeSwitch } from "./ThemeSwitch";
 export function MoreRoutes() {
 	const { path } = useRoute();
 	if (path.startsWith("/more/homework")) {
-		return (
-			<div>
-				<StickyBack to="/more" label="Więcej" />
-				<HomeworkScreen />
-			</div>
-		);
+		return <HomeworkScreen />;
 	}
 	if (path.startsWith("/more/attendance")) {
-		return (
-			<div>
-				<StickyBack to="/more" label="Więcej" />
-				<AttendanceScreen />
-			</div>
-		);
+		return <AttendanceScreen />;
 	}
 	if (path.startsWith("/more/notices/notice/")) {
 		const id = path.split("/").pop() ?? "";
-		return (
-			<div>
-				<StickyBack to="/more/notices" label="Ogłoszenia" />
-				<NoticeDetailScreen id={id} />
-			</div>
-		);
+		return <NoticeDetailScreen id={id} />;
 	}
 	if (path.startsWith("/more/notices")) {
-		return (
-			<div>
-				<StickyBack to="/more" label="Więcej" />
-				<NoticesScreen />
-			</div>
-		);
+		return <NoticesScreen />;
 	}
 	if (path.startsWith("/more/notes")) {
-		return (
-			<div>
-				<StickyBack to="/more" label="Więcej" />
-				<NotesScreen />
-			</div>
-		);
+		return <NotesScreen />;
 	}
 	if (path.startsWith("/more/conferences/")) {
 		const id = path.split("/").pop() ?? "";
-		return (
-			<div>
-				<StickyBack to="/more/conferences" label="Zebrania" />
-				<ConferenceDetailScreen id={id} />
-			</div>
-		);
+		return <ConferenceDetailScreen id={id} />;
 	}
 	if (path.startsWith("/more/conferences")) {
-		return (
-			<div>
-				<StickyBack to="/more" label="Więcej" />
-				<ConferencesScreen />
-			</div>
-		);
+		return <ConferencesScreen />;
 	}
 	if (path.startsWith("/more/school")) {
-		return (
-			<div>
-				<StickyBack to="/more" label="Więcej" />
-				<SchoolScreen />
-			</div>
-		);
+		return <SchoolScreen />;
 	}
 	if (path.startsWith("/more/justifications")) {
-		return (
-			<div>
-				<StickyBack to="/more" label="Więcej" />
-				<JustificationsScreen />
-			</div>
-		);
+		return <JustificationsScreen />;
 	}
 	if (path.startsWith("/more/install")) {
-		return (
-			<div>
-				<StickyBack to="/more" label="Więcej" />
-				<InstallScreen />
-			</div>
-		);
+		return <InstallScreen />;
 	}
 	if (path.startsWith("/more/notifications")) {
-		return (
-			<div>
-				<StickyBack to="/more" label="Więcej" />
-				<NotificationsScreen />
-			</div>
-		);
+		return <NotificationsScreen />;
 	}
-	if (path.startsWith("/more/messages-settings")) {
+	if (path.startsWith("/settings")) {
+		// The single settings hub: appearance (theme) + all message settings.
 		return (
-			<div>
-				<StickyBack to="/more" label="Więcej" />
+			<div className="flex flex-col gap-6">
+				<ThemeSwitch />
 				<MessagesSettingsScreen />
 			</div>
 		);
@@ -129,20 +74,17 @@ function MoreMenu() {
 	const isParent = account?.groupId === 5;
 	const sections = isParent ? [...MORE_SECTIONS, ...PARENT_SECTIONS] : MORE_SECTIONS;
 	return (
-		<div className="space-y-4">
-			<ThemeSwitch />
-			<div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
-				{sections.map((s) => (
-					<button
-						key={s.id}
-						type="button"
-						onClick={() => navigate(s.path)}
-						className="w-full px-4 py-4 text-left text-sm font-medium"
-					>
-						{s.label}
-					</button>
-				))}
-			</div>
+		<div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
+			{sections.map((s) => (
+				<button
+					key={s.id}
+					type="button"
+					onClick={() => navigate(s.path)}
+					className="w-full px-4 py-4 text-left text-sm font-medium"
+				>
+					{s.label}
+				</button>
+			))}
 		</div>
 	);
 }
