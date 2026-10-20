@@ -1,3 +1,22 @@
+# 1.0.0 (2026-10-20)
+
+
+### Bug Fixes
+
+* dostępność UI — kontrast w obu motywach, WCAG 2.5.3, polskie etykiety loadera ([#14](https://github.com/CrystalPlatforms/aplaus/issues/14)) ([ff0e84f](https://github.com/CrystalPlatforms/aplaus/commit/ff0e84ff19652be00af2c592fb85ed46e77e86ce))
+
+
+### Features
+
+* Aplaus — reset repo, logowanie Librusa, oceny end-to-end ([#2](https://github.com/CrystalPlatforms/aplaus/issues/2) [#3](https://github.com/CrystalPlatforms/aplaus/issues/3) [#4](https://github.com/CrystalPlatforms/aplaus/issues/4)) ([d622490](https://github.com/CrystalPlatforms/aplaus/commit/d62249009df08679cbfe4597f55cc6d4d5ea1e7f))
+* kokpit, ogłoszenia/uwagi/zebrania/szkoła, wiadomości end-to-end ([#8](https://github.com/CrystalPlatforms/aplaus/issues/8) [#9](https://github.com/CrystalPlatforms/aplaus/issues/9)) ([6b2b2b2](https://github.com/CrystalPlatforms/aplaus/commit/6b2b2b2638a73bb7cf1b545e6a1d1396b8d51164))
+* lokalny serwer MCP (stdio) + fundament tokenów CRS-Theme na logowaniu ([#15](https://github.com/CrystalPlatforms/aplaus/issues/15) [#18](https://github.com/CrystalPlatforms/aplaus/issues/18)) ([831c566](https://github.com/CrystalPlatforms/aplaus/commit/831c5665f8c1a19b616439e3c855a4827306e014))
+* offline + instalacja PWA, push 8 typów z cronem, motywy jasny/ciemny/system ([#12](https://github.com/CrystalPlatforms/aplaus/issues/12) [#13](https://github.com/CrystalPlatforms/aplaus/issues/13)) ([5365303](https://github.com/CrystalPlatforms/aplaus/commit/53653039d174c4902be4100a58df3ea4b97f2699))
+* plan z zastępstwami, zadania, frekwencja, wiele kont ([#5](https://github.com/CrystalPlatforms/aplaus/issues/5) [#6](https://github.com/CrystalPlatforms/aplaus/issues/6) [#7](https://github.com/CrystalPlatforms/aplaus/issues/7)) ([a7ba818](https://github.com/CrystalPlatforms/aplaus/commit/a7ba818e60ec0d39e7a6216ea4c2464e9e033654))
+* redesign UI fazy 2-3 — DetailOverlay, powłoka desktop+mobile ([#19](https://github.com/CrystalPlatforms/aplaus/issues/19) [#20](https://github.com/CrystalPlatforms/aplaus/issues/20)) ([1eda49a](https://github.com/CrystalPlatforms/aplaus/commit/1eda49ae8ee65b7a8fc261ada3a0b177b4ca9be9)), closes [#5895f7](https://github.com/CrystalPlatforms/aplaus/issues/5895f7)
+* redesign UI fazy 4-5 — kokpit/plan/wiadomości, polish Fazy A ([#21](https://github.com/CrystalPlatforms/aplaus/issues/21) [#22](https://github.com/CrystalPlatforms/aplaus/issues/22)) ([26dba75](https://github.com/CrystalPlatforms/aplaus/commit/26dba753a7bfb5865b5dad343dd77d4cc37f1177)), closes [#167c51](https://github.com/CrystalPlatforms/aplaus/issues/167c51) [#167c51](https://github.com/CrystalPlatforms/aplaus/issues/167c51)
+* wiadomości — odbiorcy, szkice, wysyłka, etykiety, grupy, kosz, podpisy ([#10](https://github.com/CrystalPlatforms/aplaus/issues/10) [#11](https://github.com/CrystalPlatforms/aplaus/issues/11)) ([446c53d](https://github.com/CrystalPlatforms/aplaus/commit/446c53d44586c7b256b7e59938af649bef63d54e))
+
 # [1.14.0](https://github.com/auditmos/hono-on-cf/compare/v1.13.1...v1.14.0) (2026-10-05)
 
 
