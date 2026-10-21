@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/CrystalPlatforms/aplaus/compare/v1.0.0...v1.1.0) (2026-10-21)
+
+
+### Features
+
+* redesign UI faza 6 + plan lekcji w 3 widokach ([#23](https://github.com/CrystalPlatforms/aplaus/issues/23) [#24](https://github.com/CrystalPlatforms/aplaus/issues/24)) ([0369af9](https://github.com/CrystalPlatforms/aplaus/commit/0369af964a1d10ebe03eed11ba983cc122c99718))
+
 # 1.0.0 (2026-10-20)
 
 
