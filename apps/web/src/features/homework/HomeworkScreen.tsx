@@ -1,12 +1,13 @@
 import type { HomeWork, HomeWorkAssignment } from "@repo/librus-client";
 import { useMemo, useState } from "react";
 import { DetailOverlay } from "@/components/DetailOverlay";
+import { Card } from "@/components/ui/card";
 import { ViewLoader } from "@/components/ViewLoader";
 import { useHomework } from "./queries";
 
 /**
  * Homework lists: schedule entries and assignments show a short preview;
- * tapping an entry opens the full content in a bottom sheet.
+ * tapping an entry opens the full content in the detail overlay.
  */
 export function HomeworkScreen() {
 	const { data, isLoading, isError } = useHomework();
@@ -22,21 +23,20 @@ export function HomeworkScreen() {
 	);
 
 	if (isError) {
-		return <p className="py-16 text-center text-sm text-red-500">Nie udało się pobrać zadań.</p>;
+		return (
+			<p className="py-16 text-center text-sm text-destructive">Nie udało się pobrać zadań.</p>
+		);
 	}
 	if (isLoading) return <ViewLoader />;
 
 	return (
 		<div className="flex flex-col gap-4">
-			<section
-				data-testid="homework-schedule"
-				className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800"
-			>
+			<Card data-testid="homework-schedule" className="gap-0 overflow-hidden py-0">
 				<h2 className="px-4 pt-3 pb-1 text-sm font-semibold">Zadania w terminarzu</h2>
 				{!isLoading && homeWorks.length === 0 && (
-					<p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">Brak zadań.</p>
+					<p className="px-4 py-6 text-sm text-muted-foreground">Brak zadań.</p>
 				)}
-				<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+				<ul className="divide-y divide-border">
 					{homeWorks.map((w) => (
 						<li key={w.id}>
 							<button
@@ -45,30 +45,23 @@ export function HomeworkScreen() {
 								className="w-full px-4 py-2.5 text-left"
 							>
 								<p className="text-sm font-medium">{w.subjectName ?? "Inne"}</p>
-								<p className="text-xs text-neutral-500 dark:text-neutral-400">
+								<p className="text-xs text-muted-foreground">
 									{w.date.slice(0, 10)} {w.createdByName ? `· ${w.createdByName}` : ""}
 								</p>
 								{w.content && (
-									<p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300 line-clamp-2">
-										{w.content}
-									</p>
+									<p className="mt-1 line-clamp-2 text-sm text-foreground">{w.content}</p>
 								)}
 							</button>
 						</li>
 					))}
 				</ul>
-			</section>
-			<section
-				data-testid="homework-assignments"
-				className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800"
-			>
+			</Card>
+			<Card data-testid="homework-assignments" className="gap-0 overflow-hidden py-0">
 				<h2 className="px-4 pt-3 pb-1 text-sm font-semibold">Prace domowe</h2>
 				{!isLoading && assignments.length === 0 && (
-					<p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">
-						Brak prac domowych.
-					</p>
+					<p className="px-4 py-6 text-sm text-muted-foreground">Brak prac domowych.</p>
 				)}
-				<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+				<ul className="divide-y divide-border">
 					{assignments.map((a) => (
 						<li key={a.id}>
 							<button
@@ -77,19 +70,15 @@ export function HomeworkScreen() {
 								className="w-full px-4 py-2.5 text-left"
 							>
 								<p className="text-sm font-medium">{a.topic || "Praca domowa"}</p>
-								<p className="text-xs text-neutral-500 dark:text-neutral-400">
+								<p className="text-xs text-muted-foreground">
 									{a.dueDate.slice(0, 10)} {a.teacherName ? `· ${a.teacherName}` : ""}
 								</p>
-								{a.text && (
-									<p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300 line-clamp-2">
-										{a.text}
-									</p>
-								)}
+								{a.text && <p className="mt-1 line-clamp-2 text-sm text-foreground">{a.text}</p>}
 							</button>
 						</li>
 					))}
 				</ul>
-			</section>
+			</Card>
 			{detail && <HomeworkSheet detail={detail} onClose={() => setDetail(null)} />}
 		</div>
 	);
@@ -122,7 +111,7 @@ function HomeworkSheet({ detail, onClose }: { detail: Detail; onClose: () => voi
 			</dl>
 			{(homework?.content || assignment?.text) && (
 				<div className="mt-4">
-					<p className="text-xs text-muted-foreground mb-1">Treść</p>
+					<p className="mb-1 text-xs text-muted-foreground">Treść</p>
 					<p className="text-sm whitespace-pre-line">{homework?.content ?? assignment?.text}</p>
 				</div>
 			)}

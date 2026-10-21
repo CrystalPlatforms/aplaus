@@ -3,6 +3,7 @@
  * /api/school/overview — three cards, each degrading independently.
  */
 import type { ClassInfo, Lesson, School } from "@repo/librus-client";
+import { Card } from "@/components/ui/card";
 import { ViewLoader } from "@/components/ViewLoader";
 import { useSchoolOverview } from "./queries";
 
@@ -11,7 +12,7 @@ export function SchoolScreen() {
 
 	if (isError) {
 		return (
-			<p className="py-16 text-center text-sm text-red-500">
+			<p className="py-16 text-center text-sm text-destructive">
 				Nie udało się pobrać informacji o szkole.
 			</p>
 		);
@@ -32,10 +33,10 @@ function SchoolCard({ school }: { school: School | null }) {
 		.filter((part) => part !== null && part !== "")
 		.join(", ");
 	return (
-		<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4">
-			<h2 className="text-sm font-semibold mb-2">Szkoła</h2>
+		<Card className="gap-0 p-4">
+			<h2 className="mb-2 text-sm font-semibold">Szkoła</h2>
 			{school === null ? (
-				<p className="text-sm text-neutral-500 dark:text-neutral-400">Brak danych o szkole</p>
+				<p className="text-sm text-muted-foreground">Brak danych o szkole</p>
 			) : (
 				<div className="flex flex-col gap-1">
 					<p className="text-sm font-medium">{school.name}</p>
@@ -60,57 +61,53 @@ function SchoolCard({ school }: { school: School | null }) {
 					)}
 				</div>
 			)}
-		</section>
+		</Card>
 	);
 }
 
 function ClassCard({ classes }: { classes: ClassInfo | null }) {
 	const className = classes ? `${classes.number ?? ""}${classes.symbol ?? ""}` : "";
 	return (
-		<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4">
-			<h2 className="text-sm font-semibold mb-2">Klasa</h2>
+		<Card className="gap-0 p-4">
+			<h2 className="mb-2 text-sm font-semibold">Klasa</h2>
 			<div className="flex flex-col gap-1 text-sm">
 				<p>
-					<span className="text-neutral-500 dark:text-neutral-400">Klasa: </span>
+					<span className="text-muted-foreground">Klasa: </span>
 					{className || "-"}
 				</p>
 				<p>
-					<span className="text-neutral-500 dark:text-neutral-400">Wychowawca: </span>
+					<span className="text-muted-foreground">Wychowawca: </span>
 					{classes?.tutorName ?? "-"}
 				</p>
 				{classes?.endFirstSemester && (
-					<p className="text-neutral-500 dark:text-neutral-400">
+					<p className="text-muted-foreground">
 						Koniec I semestru: {classes.endFirstSemester.slice(0, 10)}
 					</p>
 				)}
 				{classes?.endSchoolYear && (
-					<p className="text-neutral-500 dark:text-neutral-400">
-						Koniec roku: {classes.endSchoolYear.slice(0, 10)}
-					</p>
+					<p className="text-muted-foreground">Koniec roku: {classes.endSchoolYear.slice(0, 10)}</p>
 				)}
 			</div>
-		</section>
+		</Card>
 	);
 }
 
 function LessonsCard({ lessons }: { lessons: Lesson[] }) {
 	return (
-		<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4">
-			<h2 className="text-sm font-semibold mb-2">Przedmioty i lekcje</h2>
+		<Card className="gap-0 p-4">
+			<h2 className="mb-2 text-sm font-semibold">Przedmioty i lekcje</h2>
 			{lessons.length === 0 ? (
-				<p className="text-sm text-neutral-500 dark:text-neutral-400">Brak lekcji.</p>
+				<p className="text-sm text-muted-foreground">Brak lekcji.</p>
 			) : (
 				<ul className="flex flex-col gap-1">
 					{lessons.map((lesson) => (
-						<li key={lesson.id} className="text-sm flex justify-between gap-3">
+						<li key={lesson.id} className="flex justify-between gap-3 text-sm">
 							<span className="truncate">{lesson.subjectName ?? "-"}</span>
-							<span className="shrink-0 text-neutral-500 dark:text-neutral-400">
-								{lesson.teacherName ?? "-"}
-							</span>
+							<span className="shrink-0 text-muted-foreground">{lesson.teacherName ?? "-"}</span>
 						</li>
 					))}
 				</ul>
 			)}
-		</section>
+		</Card>
 	);
 }

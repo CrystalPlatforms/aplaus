@@ -169,6 +169,8 @@ Dokręcenie Fazy A: pełny zestaw animacji (overlaye już są; klik-feedback na 
 
 ## Phase 6: Faza B — pozostałe ekrany jednym przepisem
 
+> **Status: ✅ zaimplementowana** (sesja /tdd 23,24 — 2026-10-21). Zmigrowane wszystkie ekrany z listy (frekwencja, oceny przedmiotu, zadania, ogłoszenia + szczegół, uwagi, zebrania + szczegół, szkoła i klasa, usprawiedliwienia, instalacja, kompozycja, szkice, szczegół wiadomości, powiadomienia) + poza listą, bo grep AC wymaga zera w całym `src`: GradesScreen, ThemeSwitch, MoreRoutes (menu Więcej), LoginBanner, OfflineBanner. Nowe komponenty ui: `switch.tsx` (Radix — 9 przełączników powiadomień), `textarea.tsx`. Ustawienia wiadomości podzielone na `messages/settings/` (SectionCard / podpisy / etykiety / grupy / probe — pliki 12–158 linii). Surowe kolory palety w `src`: zero (także red/green/amber → destructive/primary/muted). Nowy test `NotificationsScreen.test.tsx` (3 przypadki: role=switch + aria-checked, zapis preferencji, disabled bez subskrypcji).
+
 **User stories**: 14, 15
 
 ### What to build
@@ -194,6 +196,8 @@ Migracja pozostałych ~15 ekranów przepisem mapowania (karta → Card, przycisk
 ---
 
 ## Phase 7: Zamknięcie Planu 3 — pełny sweep jakości
+
+> **Status: 🟡 bramki komend zielone** (sesja /tdd 23,24 — 2026-10-21): `types && test && lint:ci && knip && check:docs` przejście; theme.test zielony (4/4); Lighthouse a11y na ekranie logowania **100/100 w obu motywach** (audyt: seed `aplaus.theme` w localStorage na profilu audytowanego Chrome; przy okazji dodany `<main>` na logowaniu — audit landmark-one-main). U właściciela zostaje: Lighthouse na zalogowanych widokach (wymaga żywej sesji), pełny HITL wg checklisty stanów, zielony deploy CI po pushu, zamknięcie #17 po akceptacji.
 
 **User stories**: 16, 17
 

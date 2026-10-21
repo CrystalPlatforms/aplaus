@@ -18,12 +18,11 @@ describe("OfflineBanner", () => {
 		expect(screen.queryByRole("status")).toBeNull();
 	});
 
-	it("shows on the offline-fallback event with the last-data copy", () => {
+	it("shows on the offline-fallback event with the short copy", () => {
 		render(<OfflineBanner />);
 		act(() => window.dispatchEvent(new CustomEvent(API_OFFLINE_USED_EVENT)));
 		const banner = screen.getByRole("status");
 		expect(banner.textContent).toContain("Brak połączenia z internetem");
-		expect(banner.textContent).toContain("ostatnie zapisane dane");
 	});
 
 	it("hides again when the API connection is restored", () => {

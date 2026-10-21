@@ -1,11 +1,15 @@
 /**
- * Top bar. The right group always shows the back button ("Wróć") on
- * sub-routes, plus Wyloguj on mobile (< md) and Odśwież on desktop (md+, with
- * a spin animation while queries refetch — pull-to-refresh is touch-only).
- * The left side is the login banner button (Przełącz konto) on mobile.
+ * Top bar, one flex row: the login banner button (Przełącz konto, mobile),
+ * then "Wróć" on sub-routes, Wyloguj on mobile (< md) and Odśwież on desktop
+ * (md+, spin while queries refetch — pull-to-refresh is touch-only), then the
+ * timetable's week/month arrows on /timetable. On /timetable the
+ * Miesiąc|Dzień toggle takes `ml-auto` — pinned to the RIGHT edge with the
+ * rest of the cluster on the left.
  */
 import { useIsFetching } from "@tanstack/react-query";
 import { LuChevronLeft, LuRotateCw } from "react-icons/lu";
+import { TimetableRangeNav } from "@/features/timetable/TopNav";
+import { ViewToggle } from "@/features/timetable/ViewToggle";
 import type { AccountView } from "@/lib/auth";
 import { useRoute } from "@/lib/router";
 import { LoginBanner } from "./LoginBanner";
@@ -25,10 +29,10 @@ export function TopBar({
 	back?: { to: string; label: string };
 }) {
 	const fetching = useIsFetching();
-	const { navigate } = useRoute();
+	const { navigate, path } = useRoute();
 	return (
 		<header className="sticky top-0 z-10 backdrop-blur bg-surface/70">
-			<div className="px-4 py-2.5 flex items-center justify-between h-14">
+			<div className="px-4 py-2.5 flex items-center gap-1 h-14">
 				{account ? (
 					<button
 						type="button"
@@ -59,35 +63,43 @@ export function TopBar({
 						</svg>
 					</button>
 				) : null}
-				<div className="flex items-center gap-1">
-					{back ? (
-						<button
-							type="button"
-							onClick={() => navigate(back.to)}
-							className="inline-flex items-center gap-1.5 text-sm font-medium text-primary px-3 h-9 rounded-md hover:bg-accent"
-						>
-							<LuChevronLeft className="size-4" aria-hidden="true" />
-							{back.label}
-						</button>
-					) : null}
-					{account ? (
-						<button
-							type="button"
-							onClick={logout}
-							className="text-sm text-primary shrink-0 rounded-lg px-2 py-1 transition-colors hover:bg-muted md:hidden"
-						>
-							Wyloguj
-						</button>
-					) : null}
+				{back ? (
 					<button
 						type="button"
-						onClick={onRefresh}
-						className="hidden md:inline-flex items-center gap-2 text-sm font-medium text-primary px-3 h-9 rounded-md hover:bg-accent"
+						onClick={() => navigate(back.to)}
+						className="inline-flex items-center gap-1.5 text-sm font-medium text-primary px-3 h-9 rounded-md hover:bg-accent"
 					>
-						<LuRotateCw className={fetching ? "animate-spin" : undefined} aria-hidden="true" />
-						Odśwież
+						<LuChevronLeft className="size-4" aria-hidden="true" />
+						{back.label}
 					</button>
-				</div>
+				) : null}
+				{account ? (
+					<button
+						type="button"
+						onClick={logout}
+						className="ml-auto text-sm text-primary shrink-0 rounded-lg px-2 py-1 transition-colors hover:bg-muted md:hidden"
+					>
+						Wyloguj
+					</button>
+				) : null}
+				<button
+					type="button"
+					onClick={onRefresh}
+					className="hidden md:inline-flex items-center gap-2 text-sm font-medium text-primary px-3 h-9 rounded-md hover:bg-accent"
+				>
+					<LuRotateCw className={fetching ? "animate-spin" : undefined} aria-hidden="true" />
+					Odśwież
+				</button>
+				{/* Timetable route: range arrows right after Odśwież. */}
+				{path === "/timetable" && <TimetableRangeNav />}
+				{/* Timetable route (desktop): the Miesiąc|Dzień toggle pinned to
+					    the right edge — ml-auto creates the gap. Hidden on mobile,
+					    where Wyloguj's ml-auto keeps the logout at the edge instead. */}
+				{path === "/timetable" && (
+					<div className="ml-auto hidden md:block">
+						<ViewToggle />
+					</div>
+				)}
 			</div>
 		</header>
 	);

@@ -8,7 +8,6 @@ import {
 	LuBell,
 	LuBookOpen,
 	LuCalendarDays,
-	LuDownload,
 	LuEllipsis,
 	LuFileCheck,
 	LuHouse,
@@ -76,13 +75,6 @@ export const MORE_SECTIONS: NavItem[] = [
 		label: "Ustawienia",
 		path: "/settings",
 		Icon: LuSettings,
-		tab: "more",
-	},
-	{
-		id: "install",
-		label: "Instalacja aplikacji",
-		path: "/more/install",
-		Icon: LuDownload,
 		tab: "more",
 	},
 	{

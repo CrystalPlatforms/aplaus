@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Card } from "@/components/ui/card";
 import { ViewLoader } from "@/components/ViewLoader";
 import { GradeDetailSheet } from "./GradeDetailSheet";
 import { useGrades } from "./queries";
@@ -20,7 +21,7 @@ export function SubjectGradesScreen({ subjectId }: { subjectId: string }) {
 
 	if (isLoading) return <ViewLoader />;
 	if (isError) {
-		return <p className="py-16 text-center text-sm text-red-500">Nie udało się pobrać ocen.</p>;
+		return <p className="py-16 text-center text-sm text-destructive">Nie udało się pobrać ocen.</p>;
 	}
 
 	const semesters = [...new Set(grades.map((g) => g.semester))].sort();
@@ -33,18 +34,18 @@ export function SubjectGradesScreen({ subjectId }: { subjectId: string }) {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4">
+			<Card className="gap-0 p-4">
 				<h1 className="text-lg font-bold">{subjectName}</h1>
 				<div className="mt-3 flex gap-6">
 					<div>
-						<p className="text-xs text-neutral-500 dark:text-neutral-400">Średnia ogólna</p>
+						<p className="text-xs text-muted-foreground">Średnia ogólna</p>
 						<p className="text-2xl font-bold">
 							{overall.average === null ? "-" : overall.average.toFixed(2)}
 						</p>
 					</div>
 					{semesters.map((s) => (
 						<div key={s}>
-							<p className="text-xs text-neutral-500 dark:text-neutral-400">Semestr {s}</p>
+							<p className="text-xs text-muted-foreground">Semestr {s}</p>
 							<p className="text-2xl font-bold">
 								{perSemester[String(s)]?.average == null
 									? "-"
@@ -53,39 +54,39 @@ export function SubjectGradesScreen({ subjectId }: { subjectId: string }) {
 						</div>
 					))}
 				</div>
-			</div>
+			</Card>
 
 			{grades.length === 0 && (
-				<p className="py-12 text-center text-sm text-neutral-500 dark:text-neutral-400">
+				<p className="py-12 text-center text-sm text-muted-foreground">
 					Brak ocen z tego przedmiotu.
 				</p>
 			)}
 			{grades.length > 0 && (
-				<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800">
-					<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+				<Card className="gap-0 overflow-hidden py-0">
+					<ul className="divide-y divide-border">
 						{grades.map((g) => (
 							<li key={g.id}>
 								<button
 									type="button"
 									onClick={() => setDetail(g)}
-									className="w-full px-4 py-2.5 flex items-center justify-between text-left"
+									className="flex w-full items-center justify-between px-4 py-2.5 text-left"
 								>
 									<span className="min-w-0">
 										<span className="block text-sm font-medium">
 											{categoryOf(g.categoryId)?.name ?? "Ocena"}
 										</span>
-										<span className="block text-xs text-neutral-500 dark:text-neutral-400">
+										<span className="block text-xs text-muted-foreground">
 											{g.dateOccurred} {g.addedByName ? `· ${g.addedByName}` : ""}
 										</span>
 									</span>
-									<span className="ml-3 shrink-0 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
+									<span className="ml-3 flex size-10 shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground">
 										{g.grade}
 									</span>
 								</button>
 							</li>
 						))}
 					</ul>
-				</section>
+				</Card>
 			)}
 			{detail && (
 				<GradeDetailSheet

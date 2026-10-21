@@ -1,10 +1,10 @@
 /** Routes under /more: the menu and the school-domain subviews. */
 
+import { Card } from "@/components/ui/card";
 import { AttendanceScreen } from "@/features/attendance/AttendanceScreen";
 import { ConferenceDetailScreen } from "@/features/conferences/ConferenceDetailScreen";
 import { ConferencesScreen } from "@/features/conferences/ConferencesScreen";
 import { HomeworkScreen } from "@/features/homework/HomeworkScreen";
-import { InstallScreen } from "@/features/install/InstallScreen";
 import { JustificationsScreen } from "@/features/justifications/JustificationsScreen";
 import { MessagesSettingsScreen } from "@/features/messages/MessagesSettingsScreen";
 import { NotesScreen } from "@/features/notes/NotesScreen";
@@ -49,9 +49,6 @@ export function MoreRoutes() {
 	if (path.startsWith("/more/justifications")) {
 		return <JustificationsScreen />;
 	}
-	if (path.startsWith("/more/install")) {
-		return <InstallScreen />;
-	}
 	if (path.startsWith("/more/notifications")) {
 		return <NotificationsScreen />;
 	}
@@ -74,7 +71,7 @@ function MoreMenu() {
 	const isParent = account?.groupId === 5;
 	const sections = isParent ? [...MORE_SECTIONS, ...PARENT_SECTIONS] : MORE_SECTIONS;
 	return (
-		<div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
+		<Card className="divide-y divide-border gap-0 overflow-hidden py-0">
 			{sections.map((s) => (
 				<button
 					key={s.id}
@@ -85,6 +82,6 @@ function MoreMenu() {
 					{s.label}
 				</button>
 			))}
-		</div>
+		</Card>
 	);
 }

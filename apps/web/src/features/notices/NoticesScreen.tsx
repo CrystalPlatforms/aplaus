@@ -1,10 +1,12 @@
 /**
  * Ogłoszenia szkolne: najpierw streszczenie (3 linijki), pełny widok pod
- * /more/notices/notice/:id. Statusy: zakończone (szare), nadchodzące
- * (niebieskie); aktualne ogłoszenia nie mają etykiety — norma, nie wyróżnienie.
+ * /more/notices/notice/:id. Statusy: zakończone (Badge secondary), nadchodzące
+ * (Badge z tekstem primary); aktualne ogłoszenia nie mają etykiety — norma,
+ * nie wyróżnienie.
  */
 
 import type { SchoolNotice } from "@repo/librus-client";
+import { Badge } from "@/components/ui/badge";
 import { ViewLoader } from "@/components/ViewLoader";
 import { todayISO } from "@/features/dashboard/vm";
 import { useRoute } from "@/lib/router";
@@ -24,7 +26,9 @@ export function NoticesScreen() {
 	const { navigate } = useRoute();
 
 	if (isError) {
-		return <p className="py-16 text-center text-sm text-red-500">Nie udało się pobrać ogłoszeń.</p>;
+		return (
+			<p className="py-16 text-center text-sm text-destructive">Nie udało się pobrać ogłoszeń.</p>
+		);
 	}
 	if (isLoading) return <ViewLoader />;
 
@@ -33,9 +37,7 @@ export function NoticesScreen() {
 
 	return (
 		<div className="flex flex-col gap-3">
-			{notices.length === 0 && (
-				<p className="py-6 text-sm text-neutral-500 dark:text-neutral-400">Brak ogłoszeń.</p>
-			)}
+			{notices.length === 0 && <p className="py-6 text-sm text-muted-foreground">Brak ogłoszeń.</p>}
 			{notices.map((notice) => (
 				<NoticeItem
 					key={notice.id}
@@ -61,19 +63,17 @@ function NoticeItem({
 		<button
 			type="button"
 			onClick={onOpen}
-			className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4 text-left w-full"
+			className="w-full rounded-xl border border-border bg-card p-4 text-left shadow-sm"
 		>
 			<div className="flex items-start justify-between gap-2">
 				<p className="text-sm font-medium">{notice.subject}</p>
 				<StatusBadge status={status} />
 			</div>
-			<p className="text-xs text-neutral-500 dark:text-neutral-400">
+			<p className="text-xs text-muted-foreground">
 				od {notice.startDate} do {notice.endDate}
 			</p>
 			<p className="mt-1 text-sm whitespace-pre-line line-clamp-3">{notice.content}</p>
-			<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-				{notice.addedByName ?? "-"}
-			</p>
+			<p className="mt-1 text-xs text-muted-foreground">{notice.addedByName ?? "-"}</p>
 		</button>
 	);
 }
@@ -82,14 +82,14 @@ function StatusBadge({ status }: { status: NoticeStatus }) {
 	if (status === "active") return null;
 	if (status === "future") {
 		return (
-			<span className="text-xs text-primary bg-secondary dark:bg-secondary rounded-full px-2 py-0.5 shrink-0">
+			<Badge variant="secondary" className="shrink-0 text-primary">
 				Nadchodzące
-			</span>
+			</Badge>
 		);
 	}
 	return (
-		<span className="text-xs text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-full px-2 py-0.5 shrink-0">
+		<Badge variant="secondary" className="shrink-0">
 			Zakończone
-		</span>
+		</Badge>
 	);
 }

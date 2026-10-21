@@ -55,7 +55,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 	}
 
 	return (
-		<div className="min-h-dvh flex flex-col items-center justify-center px-6 bg-background">
+		<main className="min-h-dvh flex flex-col items-center justify-center px-6 bg-background">
 			{/* The login box is a permanent CRS dark island: black surface, and the
 		    `dark` class scopes the EXACT dark-block tokens of the theme to
 		    everything inside (labels, input, button, loader, rings). */}
@@ -128,6 +128,6 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
 					)}
 				</CardContent>
 			</Card>
-		</div>
+		</main>
 	);
 }

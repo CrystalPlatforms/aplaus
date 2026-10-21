@@ -16,9 +16,7 @@ export function LoginBanner({
 	return (
 		<div className="min-w-0" data-testid="login-banner">
 			<p className="text-sm font-semibold truncate">{name}</p>
-			{roleLabel && (
-				<p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{roleLabel}</p>
-			)}
+			{roleLabel && <p className="text-xs text-muted-foreground truncate">{roleLabel}</p>}
 		</div>
 	);
 }

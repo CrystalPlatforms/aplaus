@@ -3,6 +3,8 @@
  * więc konto ucznia nigdy nie wysyła żądania (serwer odpowiedziałby 403).
  */
 import type { Justification } from "@repo/librus-client";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { ViewLoader } from "@/components/ViewLoader";
 import { useAuth } from "@/lib/auth";
 import { useJustifications } from "./queries";
@@ -15,7 +17,7 @@ export function JustificationsScreen() {
 	if (!isParent) return null;
 	if (isError) {
 		return (
-			<p className="py-16 text-center text-sm text-red-500">
+			<p className="py-16 text-center text-sm text-destructive">
 				Nie udało się pobrać usprawiedliwień.
 			</p>
 		);
@@ -24,9 +26,7 @@ export function JustificationsScreen() {
 
 	const justifications = data ?? [];
 	if (justifications.length === 0) {
-		return (
-			<p className="py-6 text-sm text-neutral-500 dark:text-neutral-400">Brak usprawiedliwień.</p>
-		);
+		return <p className="py-6 text-sm text-muted-foreground">Brak usprawiedliwień.</p>;
 	}
 
 	return (
@@ -40,41 +40,41 @@ export function JustificationsScreen() {
 
 function JustificationItem({ justification }: { justification: Justification }) {
 	return (
-		<li className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4">
-			<div className="flex items-center justify-between gap-2">
-				<span className="text-xs rounded-full px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
-					{justification.justificationStatus ?? "-"}
-				</span>
-				<span className="text-xs text-neutral-500 dark:text-neutral-400">
-					{justification.postDate?.slice(0, 10) ?? "-"}
-				</span>
-			</div>
-			{justification.messageFromParent && (
-				<p className="mt-2 text-sm whitespace-pre-line">{justification.messageFromParent}</p>
-			)}
-			<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-				od {justification.dateFrom ?? "-"} do {justification.dateTo ?? "-"}
-			</p>
-			{justification.lessons.length > 0 && (
-				<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-					{justification.lessons
-						.map((lesson) => `lekcja ${lesson.number ?? "?"} (${lesson.date ?? "?"})`)
-						.join(", ")}
+		<li>
+			<Card className="gap-0 p-4">
+				<div className="flex items-center justify-between gap-2">
+					<Badge variant="secondary">{justification.justificationStatus ?? "-"}</Badge>
+					<span className="text-xs text-muted-foreground">
+						{justification.postDate?.slice(0, 10) ?? "-"}
+					</span>
+				</div>
+				{justification.messageFromParent && (
+					<p className="mt-2 text-sm whitespace-pre-line">{justification.messageFromParent}</p>
+				)}
+				<p className="mt-1 text-xs text-muted-foreground">
+					od {justification.dateFrom ?? "-"} do {justification.dateTo ?? "-"}
 				</p>
-			)}
-			{justification.notifiedTeachers.length > 0 && (
-				<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-					Powiadomieni nauczyciele: {justification.notifiedTeachers.join(", ")}
-				</p>
-			)}
-			{justification.justifiedAbsences !== null && (
-				<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-					Usprawiedliwione nieobecności: {justification.justifiedAbsences}
-				</p>
-			)}
-			{justification.hasAttachment && (
-				<p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Załącznik</p>
-			)}
+				{justification.lessons.length > 0 && (
+					<p className="mt-1 text-xs text-muted-foreground">
+						{justification.lessons
+							.map((lesson) => `lekcja ${lesson.number ?? "?"} (${lesson.date ?? "?"})`)
+							.join(", ")}
+					</p>
+				)}
+				{justification.notifiedTeachers.length > 0 && (
+					<p className="mt-1 text-xs text-muted-foreground">
+						Powiadomieni nauczyciele: {justification.notifiedTeachers.join(", ")}
+					</p>
+				)}
+				{justification.justifiedAbsences !== null && (
+					<p className="mt-1 text-xs text-muted-foreground">
+						Usprawiedliwione nieobecności: {justification.justifiedAbsences}
+					</p>
+				)}
+				{justification.hasAttachment && (
+					<p className="mt-1 text-xs text-muted-foreground">Załącznik</p>
+				)}
+			</Card>
 		</li>
 	);
 }

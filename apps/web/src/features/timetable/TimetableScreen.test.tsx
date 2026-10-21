@@ -13,7 +13,10 @@ vi.mock("@/lib/api", async (importOriginal) => {
 });
 
 import { RouterProvider } from "@/lib/router";
+import { TopBar } from "../shell/TopBar";
+import { resetTimetableNav } from "./nav-store";
 import { TimetableScreen } from "./TimetableScreen";
+import { setTimetableView } from "./view-store";
 
 const TIMETABLE_FIXTURE = {
 	days: [
@@ -113,15 +116,137 @@ const FREE_DAYS_FIXTURE = {
 	],
 };
 
+/** Month calendar shows only kartkówki (green) and sprawdziany (red). */
+const GRADES_FIXTURE = {
+	grades: [
+		{
+			id: 901,
+			grade: "4",
+			dateOccurred: "2026-10-13",
+			dateAdded: "2026-10-13",
+			semester: 1,
+			subjectId: 13,
+			subjectName: "Historia",
+			categoryId: 1,
+			addedById: 56,
+			addedByName: "Piotr Nowak",
+			studentId: 7,
+			lessonId: null,
+			isConstituent: true,
+			isSemester: false,
+			isFinal: false,
+			isSemesterProposition: false,
+			isFinalProposition: false,
+			commentIds: [],
+		},
+		{
+			id: 902,
+			grade: "3",
+			dateOccurred: "2026-10-14",
+			dateAdded: "2026-10-14",
+			semester: 1,
+			subjectId: 12,
+			subjectName: "Matematyka",
+			categoryId: 2,
+			addedById: 55,
+			addedByName: "Anna Kowalska",
+			studentId: 7,
+			lessonId: null,
+			isConstituent: true,
+			isSemester: false,
+			isFinal: false,
+			isSemesterProposition: false,
+			isFinalProposition: false,
+			commentIds: [],
+		},
+		{
+			id: 903,
+			grade: "+",
+			dateOccurred: "2026-10-15",
+			dateAdded: "2026-10-15",
+			semester: 1,
+			subjectId: 14,
+			subjectName: "Biologia",
+			categoryId: 3,
+			addedById: 57,
+			addedByName: "Ewa Zielińska",
+			studentId: 7,
+			lessonId: null,
+			isConstituent: false,
+			isSemester: false,
+			isFinal: false,
+			isSemesterProposition: false,
+			isFinalProposition: false,
+			commentIds: [],
+		},
+	],
+	categories: [
+		{
+			id: 1,
+			name: "Sprawdzian",
+			short: "S",
+			standard: true,
+			colorId: null,
+			isSemestral: false,
+			isFinal: false,
+			isSemestralProposition: false,
+			isFinalProposition: false,
+			blockAnyGrades: false,
+		},
+		{
+			id: 2,
+			name: "Kartkówka",
+			short: "K",
+			standard: true,
+			colorId: null,
+			isSemestral: false,
+			isFinal: false,
+			isSemestralProposition: false,
+			isFinalProposition: false,
+			blockAnyGrades: false,
+		},
+		{
+			id: 3,
+			name: "Odpowiedź ustna",
+			short: null,
+			standard: true,
+			colorId: null,
+			isSemestral: false,
+			isFinal: false,
+			isSemestralProposition: false,
+			isFinalProposition: false,
+			blockAnyGrades: false,
+		},
+	],
+	comments: [
+		{
+			id: 501,
+			gradeId: 901,
+			addedById: 56,
+			text: "Powodzenia na kolejnych sprawdzianach!",
+		},
+	],
+	subjects: [],
+};
+
 function renderTimetable() {
+	// The TopBar shows the timetable nav cluster only on /timetable.
+	window.history.pushState({}, "", "/timetable");
 	const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 	return render(
 		<QueryClientProvider client={client}>
 			<RouterProvider>
+				{/* The week/month arrows live in the shell TopBar on /timetable. */}
+				<TopBar account={null} logout={() => {}} onSwitchAccount={() => {}} onRefresh={() => {}} />
 				<TimetableScreen />
 			</RouterProvider>
 		</QueryClientProvider>,
 	);
+}
+
+/** The redesign shows ONE day at a time — tests select the day tab first. */
+async function openDay(tabName: string) {
+	fireEvent.click(screen.getByRole("tab", { name: tabName }));
 }
 
 describe("TimetableScreen", () => {
@@ -129,23 +254,35 @@ describe("TimetableScreen", () => {
 		// The screen renders the current week; pin the clock to the middle of
 		// the fixture week (2026-10-12…18) so the test is calendar-independent.
 		vi.setSystemTime(new Date("2026-10-14T10:00:00"));
+		// The range nav is module-level (shared with the TopBar) — reset scroll.
+		resetTimetableNav();
 		apiFetchMock.mockReset();
 		apiFetchMock.mockImplementation(async (path: string) => {
 			if (path.startsWith("/api/timetable")) return TIMETABLE_FIXTURE;
 			if (path.startsWith("/api/calendar/free-days")) return FREE_DAYS_FIXTURE;
+			if (path.startsWith("/api/grades")) return GRADES_FIXTURE;
 			throw new Error(`unexpected path ${path}`);
 		});
 	});
 
-	it("renders the day cards with subjects from fixtures", async () => {
+	it("renders the selected day's lessons; day tabs switch days", async () => {
 		const { container } = renderTimetable();
+		await waitFor(() =>
+			expect(screen.getByRole("tab", { name: "Poniedziałek 12.10" })).toBeTruthy(),
+		);
+		await openDay("Poniedziałek 12.10");
 		await waitFor(() => expect(screen.getByText("Matematyka")).toBeTruthy());
-		expect(screen.getByText("Historia")).toBeTruthy();
 		expect(container.textContent).toContain("Anna Kowalska");
+
+		await openDay("Wtorek 13.10");
+		await waitFor(() => expect(screen.getByText("Historia")).toBeTruthy());
+		// One day at a time: Monday's lesson is no longer in the document.
+		expect(screen.queryByText("Matematyka")).toBeNull();
 	});
 
 	it("distinguishes canceled lessons and substitutions visually, not only by color", async () => {
 		renderTimetable();
+		await openDay("Wtorek 13.10");
 		await waitFor(() => expect(screen.getByText("Historia")).toBeTruthy());
 
 		// Both flags carry data attributes AND textual labels.
@@ -174,6 +311,7 @@ describe("TimetableScreen", () => {
 
 	it("opens the lesson detail overlay on tap", async () => {
 		renderTimetable();
+		await openDay("Poniedziałek 12.10");
 		await waitFor(() => expect(screen.getByText("Matematyka")).toBeTruthy());
 		fireEvent.click(screen.getByText("Matematyka"));
 		// The dialog's accessible name comes from the visible title (Radix
@@ -186,8 +324,106 @@ describe("TimetableScreen", () => {
 		await waitFor(() => expect(window.location.pathname).toBe("/grades/subject/12"));
 	});
 
+	it("keeps the week bar and day tabs mounted while the next week loads", async () => {
+		renderTimetable();
+		await openDay("Poniedziałek 12.10");
+		await waitFor(() => expect(screen.getByText("Matematyka")).toBeTruthy());
+
+		// The next week never arrives — the bar must stay, the content swaps to
+		// the loader instead of unmounting the whole screen.
+		let release: (() => void) | undefined;
+		apiFetchMock.mockImplementation(
+			(path: string) =>
+				new Promise((resolve) => {
+					if (path.startsWith("/api/timetable")) {
+						release = () => resolve(TIMETABLE_FIXTURE);
+					} else {
+						resolve(FREE_DAYS_FIXTURE);
+					}
+				}),
+		);
+		fireEvent.click(screen.getByLabelText("Następny tydzień"));
+
+		// Bar and tabs survive the switch…
+		expect(screen.getByLabelText("Następny tydzień")).toBeTruthy();
+		expect(screen.getByRole("tab", { name: "Poniedziałek 19.10" })).toBeTruthy();
+		expect(screen.getByText("19.10 – 25.10")).toBeTruthy();
+		// …the stale content is gone and a loader (aria-busy) shows instead.
+		expect(screen.queryByText("Matematyka")).toBeNull();
+		expect(document.querySelector("[aria-busy='true']")).toBeTruthy();
+
+		// Data eventually lands and renders without ever unmounting the bar.
+		release?.();
+		await waitFor(() => expect(screen.getByText("19.10 – 25.10")).toBeTruthy());
+		expect(screen.getByLabelText("Następny tydzień")).toBeTruthy();
+	});
+
+	it("desktop: month grid shows kartkówki and sprawdziany; the store switches to the day view", async () => {
+		// Desktop viewport (md+): matchMedia stub from test-setup returns false;
+		// this test needs a desktop pointer.
+		vi.stubGlobal("matchMedia", (query: string) => ({
+			matches: query === "(min-width: 768px)",
+			media: query,
+			onchange: null,
+			addEventListener: () => {},
+			removeEventListener: () => {},
+			addListener: () => {},
+			removeListener: () => {},
+		}));
+		try {
+			renderTimetable();
+			expect(await screen.findByTestId("timetable-month")).toBeTruthy();
+			expect(screen.getByText("Październik 2026")).toBeTruthy();
+
+			// Cells hold exam events from the grades cache, not lessons.
+			const tuesdayCell = screen
+				.getByText("Sprawdzian · Historia")
+				.closest("[data-date='2026-10-13']");
+			expect(tuesdayCell).toBeTruthy();
+			const wednesdayCell = screen
+				.getByText("Kartkówka · Matematyka")
+				.closest("[data-date='2026-10-14']");
+			expect(wednesdayCell).toBeTruthy();
+			// Other grade categories stay out of the calendar.
+			expect(screen.queryByText(/Odpowiedź ustna/)).toBeNull();
+
+			// Tapping an exam opens the detail overlay with the grade's info.
+			fireEvent.click(screen.getByText("Sprawdzian · Historia"));
+			const examDialog = await waitFor(() => screen.getByRole("dialog", { name: "Historia" }));
+			expect(examDialog).toBeTruthy();
+			expect(screen.getByText("Sprawdzian", { selector: "span" })).toBeTruthy();
+			expect(screen.getByText("Piotr Nowak")).toBeTruthy();
+			expect(screen.getByText("4")).toBeTruthy();
+			// The teacher's comment on the grade is visible in the overlay.
+			expect(screen.getByText("Komentarze")).toBeTruthy();
+			expect(screen.getByText("Powodzenia na kolejnych sprawdzianach!")).toBeTruthy();
+			// Close, then leave the overlay behind for the view switch below.
+			fireEvent.click(screen.getByText("Zamknij"));
+			await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+			// The TopBar toggle drives the shared store; switching views works
+			// without leaving the screen (the toggle itself lives in the shell).
+			setTimetableView("day");
+			await waitFor(() => expect(screen.getByTestId("timetable-day")).toBeTruthy());
+			expect(screen.queryByTestId("timetable-month")).toBeNull();
+		} finally {
+			// Restore the test-setup default (mobile) for subsequent tests.
+			vi.stubGlobal("matchMedia", (query: string) => ({
+				matches: false,
+				media: query,
+				onchange: null,
+				addEventListener: () => {},
+				removeEventListener: () => {},
+				addListener: () => {},
+				removeListener: () => {},
+			}));
+			setTimetableView("month");
+		}
+	});
+
 	it("shows a textual week range and navigation buttons", async () => {
 		renderTimetable();
+		await openDay("Poniedziałek 12.10");
 		await waitFor(() => expect(screen.getByText("Matematyka")).toBeTruthy());
 		expect(screen.getByLabelText("Poprzedni tydzień")).toBeTruthy();
 		expect(screen.getByLabelText("Następny tydzień")).toBeTruthy();

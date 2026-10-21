@@ -3,6 +3,8 @@
  */
 import { useState } from "react";
 import { ButtonSpinner } from "@/components/Loader";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { ViewLoader } from "@/components/ViewLoader";
 import { useRoute } from "@/lib/router";
 import { useDeleteDraft, useDrafts } from "./queries";
@@ -17,7 +19,9 @@ export function DraftsScreen() {
 	const [error, setError] = useState<string | null>(null);
 
 	if (drafts.isError) {
-		return <p className="py-16 text-center text-sm text-red-500">Nie udało się pobrać szkiców.</p>;
+		return (
+			<p className="py-16 text-center text-sm text-destructive">Nie udało się pobrać szkiców.</p>
+		);
 	}
 	if (drafts.isLoading) return <ViewLoader />;
 
@@ -39,16 +43,16 @@ export function DraftsScreen() {
 			{error && (
 				<p
 					role="alert"
-					className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 px-3 py-2 text-xs text-red-700 dark:text-red-300"
+					className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive"
 				>
 					{error}
 				</p>
 			)}
-			<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800">
+			<Card className="gap-0 overflow-hidden py-0">
 				{list.length === 0 ? (
-					<p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">Brak szkiców.</p>
+					<p className="px-4 py-6 text-sm text-muted-foreground">Brak szkiców.</p>
 				) : (
-					<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+					<ul className="divide-y divide-border">
 						{list.map((d) => (
 							<li key={d.identifier} className="flex items-center gap-2 px-4 py-2.5">
 								<button
@@ -56,19 +60,20 @@ export function DraftsScreen() {
 									onClick={() => navigate(`/messages/compose/${d.identifier}`)}
 									className="min-w-0 flex-1 text-left"
 								>
-									<span className="block text-sm font-medium truncate">
+									<span className="block truncate text-sm font-medium">
 										{d.topic || "(bez tematu)"}
 									</span>
-									<span className="block text-xs text-neutral-500 dark:text-neutral-400">
+									<span className="block text-xs text-muted-foreground">
 										{d.dateAdded?.slice(0, 16).replace("T", " ") ?? ""}
 									</span>
 								</button>
-								<button
-									type="button"
+								<Button
+									variant="ghost"
+									size="sm"
 									aria-label={`Usuń szkic ${d.topic || d.identifier}`}
 									onClick={() => void onDelete(d.identifier)}
 									disabled={deleteDraft.isPending}
-									className="shrink-0 text-sm text-red-600 dark:text-red-400 px-2 py-1"
+									className="h-7 shrink-0 text-xs text-destructive"
 								>
 									{deleteDraft.isPending && deleteDraft.variables === d.identifier ? (
 										<>
@@ -78,32 +83,34 @@ export function DraftsScreen() {
 									) : (
 										"Usuń"
 									)}
-								</button>
+								</Button>
 							</li>
 						))}
 					</ul>
 				)}
-			</section>
+			</Card>
 			<div className="flex items-center justify-between">
-				<button
-					type="button"
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-8 px-3 text-sm text-primary disabled:text-muted-foreground"
 					onClick={() => setPage((p) => p + 1)}
 					disabled={page * PAGE_LIMIT >= total}
-					className="text-sm font-medium text-primary disabled:text-neutral-400 px-3 py-2"
 				>
 					Starsze
-				</button>
-				<span className="text-sm text-neutral-500 dark:text-neutral-400">
+				</Button>
+				<span className="text-sm text-muted-foreground">
 					Strona {page} z {totalPages}
 				</span>
-				<button
-					type="button"
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-8 px-3 text-sm text-primary disabled:text-muted-foreground"
 					onClick={() => setPage((p) => p - 1)}
 					disabled={page <= 1}
-					className="text-sm font-medium text-primary disabled:text-neutral-400 px-3 py-2"
 				>
 					Nowsze
-				</button>
+				</Button>
 			</div>
 		</div>
 	);

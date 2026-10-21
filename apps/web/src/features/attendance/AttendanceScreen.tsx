@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Card } from "@/components/ui/card";
 import { ViewLoader } from "@/components/ViewLoader";
 import { useAttendance } from "./queries";
 import { attendanceSemesters, computeAttendanceStats } from "./stats";
@@ -19,7 +20,7 @@ export function AttendanceScreen() {
 
 	if (isError) {
 		return (
-			<p className="py-16 text-center text-sm text-red-500">Nie udało się pobrać frekwencji.</p>
+			<p className="py-16 text-center text-sm text-destructive">Nie udało się pobrać frekwencji.</p>
 		);
 	}
 	if (isLoading) return <ViewLoader />;
@@ -27,16 +28,14 @@ export function AttendanceScreen() {
 	return (
 		<div className="flex flex-col gap-4">
 			{semesters.length > 1 && (
-				<div className="flex rounded-xl bg-neutral-200/70 dark:bg-neutral-900 p-1">
+				<div className="flex rounded-lg bg-muted p-1">
 					{semesters.map((s) => (
 						<button
 							key={s}
 							type="button"
 							onClick={() => setSemester(s)}
-							className={`flex-1 py-2 text-sm font-medium rounded-lg ${
-								activeSemester === s
-									? "bg-white dark:bg-neutral-800 shadow"
-									: "text-neutral-500 dark:text-neutral-400"
+							className={`flex-1 rounded-md py-2 text-sm font-medium ${
+								activeSemester === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
 							}`}
 						>
 							Semestr {s}
@@ -48,36 +47,34 @@ export function AttendanceScreen() {
 			<StatsCard stats={stats} />
 
 			{perType.length > 0 && (
-				<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4">
-					<h2 className="text-sm font-semibold mb-2">Rozbicie po typach</h2>
+				<Card className="gap-0 p-4">
+					<h2 className="mb-2 text-sm font-semibold">Rozbicie po typach</h2>
 					<ul className="flex flex-col gap-1">
 						{perType.map((t) => (
-							<li key={t.id} className="text-sm flex justify-between">
+							<li key={t.id} className="flex justify-between text-sm">
 								<span>{t.name}</span>
 								<span className="font-semibold">{t.count}</span>
 							</li>
 						))}
 					</ul>
-				</section>
+				</Card>
 			)}
 
-			<section className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800">
+			<Card className="gap-0 overflow-hidden py-0">
 				<h2 className="px-4 pt-3 pb-1 text-sm font-semibold">Lista wpisów</h2>
 				{!isLoading &&
 					attendances.filter((a) => activeSemester === null || a.semester === activeSemester)
 						.length === 0 && (
-						<p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">
-							Brak wpisów w tym semestrze.
-						</p>
+						<p className="px-4 py-6 text-sm text-muted-foreground">Brak wpisów w tym semestrze.</p>
 					)}
-				<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+				<ul className="divide-y divide-border">
 					{attendances
 						.filter((a) => activeSemester === null || a.semester === activeSemester)
 						.map((a) => (
-							<li key={a.id} className="px-4 py-2.5 flex items-center justify-between">
+							<li key={a.id} className="flex items-center justify-between px-4 py-2.5">
 								<span>
 									<span className="block text-sm font-medium">{typeOf(types, a.typeId)}</span>
-									<span className="block text-xs text-neutral-500 dark:text-neutral-400">
+									<span className="block text-xs text-muted-foreground">
 										{a.date.slice(0, 10)} {a.lessonNo ? `· lekcja ${a.lessonNo}` : ""}
 									</span>
 								</span>
@@ -85,7 +82,7 @@ export function AttendanceScreen() {
 							</li>
 						))}
 				</ul>
-			</section>
+			</Card>
 		</div>
 	);
 }
@@ -96,21 +93,21 @@ function typeOf(types: { id: number; name: string }[], typeId: number | null): s
 
 function StatsCard({ stats }: { stats: ReturnType<typeof computeAttendanceStats> }) {
 	return (
-		<div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4">
+		<Card className="gap-0 p-4">
 			<div className="grid grid-cols-2 gap-4">
 				<Stat label="Obecności" value={stats.presence} />
 				<Stat label="Usprawiedliwione" value={stats.excused} />
 				<Stat label="Nieusprawiedliwione" value={stats.unexcused} />
 				<Stat label="Spóźnienia" value={stats.lateness} />
 			</div>
-		</div>
+		</Card>
 	);
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
 	return (
 		<div>
-			<p className="text-xs text-neutral-500 dark:text-neutral-400">{label}</p>
+			<p className="text-xs text-muted-foreground">{label}</p>
 			<p className="text-2xl font-bold">{value}</p>
 		</div>
 	);
@@ -126,7 +123,7 @@ function AttendanceDot({
 	const color = types.find((t) => t.id === typeId)?.colorHex ?? null;
 	return (
 		<span
-			className="ml-3 shrink-0 w-3 h-3 rounded-full border border-neutral-300 dark:border-neutral-700"
+			className="ml-3 size-3 shrink-0 rounded-full border border-border"
 			style={color ? { backgroundColor: color } : undefined}
 			aria-hidden="true"
 		/>

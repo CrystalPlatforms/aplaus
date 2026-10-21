@@ -1,5 +1,6 @@
 import type { Grade } from "@repo/librus-client";
 import { useMemo, useState } from "react";
+import { Card } from "@/components/ui/card";
 import { ViewLoader } from "@/components/ViewLoader";
 import { GradeDetailSheet } from "./GradeDetailSheet";
 import { useGrades } from "./queries";
@@ -37,18 +38,20 @@ export function GradesScreen() {
 
 	if (isLoading) return <ViewLoader />;
 	if (isError)
-		return <p className="py-16 text-center text-sm text-red-500">Nie udało się pobrać ocen.</p>;
+		return <p className="py-16 text-center text-sm text-destructive">Nie udało się pobrać ocen.</p>;
 
 	return (
 		<div className="flex flex-col gap-4">
 			{semesters.length > 1 && (
-				<div className="flex rounded-xl bg-neutral-200/70 dark:bg-neutral-900 p-1">
+				<div className="flex rounded-lg bg-muted p-1">
 					{semesters.map((s) => (
 						<button
 							key={s}
 							type="button"
 							onClick={() => setSemester(s)}
-							className={`flex-1 py-2 text-sm font-medium rounded-lg ${activeSemester === s ? "bg-white dark:bg-neutral-800 shadow" : "text-neutral-500 dark:text-neutral-400"}`}
+							className={`flex-1 rounded-md py-2 text-sm font-medium ${
+								activeSemester === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+							}`}
 						>
 							Semestr {s}
 						</button>
@@ -60,40 +63,37 @@ export function GradesScreen() {
 				semester={activeSemester ? perSemester[String(activeSemester)] : undefined}
 			/>
 			{grouped.length === 0 && (
-				<p className="py-12 text-center text-sm text-neutral-500 dark:text-neutral-400">
+				<p className="py-12 text-center text-sm text-muted-foreground">
 					Brak ocen w tym semestrze.
 				</p>
 			)}
 			{grouped.map(([subject, list]) => (
-				<section
-					key={subject}
-					className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800"
-				>
+				<Card key={subject} className="gap-0 overflow-hidden py-0">
 					<h2 className="px-4 pt-3 pb-1 text-sm font-semibold">{subject}</h2>
-					<ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+					<ul className="divide-y divide-border">
 						{list.map((grade) => (
 							<li key={grade.id}>
 								<button
 									type="button"
-									className="w-full px-4 py-2.5 flex items-center justify-between text-left"
+									className="flex w-full items-center justify-between px-4 py-2.5 text-left"
 									onClick={() => setDetail(grade)}
 								>
 									<span className="min-w-0">
 										<span className="block text-sm font-medium">
 											{categoryOf(grade.categoryId)?.name ?? "Ocena"}
 										</span>
-										<span className="block text-xs text-neutral-500 dark:text-neutral-400">
+										<span className="block text-xs text-muted-foreground">
 											{grade.dateOccurred} {grade.addedByName ? `· ${grade.addedByName}` : ""}
 										</span>
 									</span>
-									<span className="ml-3 shrink-0 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
+									<span className="ml-3 flex size-10 shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground">
 										{grade.grade}
 									</span>
 								</button>
 							</li>
 						))}
 					</ul>
-				</section>
+				</Card>
 			))}
 			{detail && (
 				<GradeDetailSheet
@@ -115,23 +115,23 @@ function StatsCard({
 	semester?: { average: number | null; count: number };
 }) {
 	return (
-		<div className="rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200/60 dark:border-neutral-800 p-4 flex gap-6">
+		<Card className="flex-row gap-6 p-4">
 			<div>
-				<p className="text-xs text-neutral-500 dark:text-neutral-400">Średnia ogólna</p>
+				<p className="text-xs text-muted-foreground">Średnia ogólna</p>
 				<p className="text-2xl font-bold">
 					{overall.average === null ? "-" : overall.average.toFixed(2)}
 				</p>
 			</div>
 			<div>
-				<p className="text-xs text-neutral-500 dark:text-neutral-400">W tym semestrze</p>
+				<p className="text-xs text-muted-foreground">W tym semestrze</p>
 				<p className="text-2xl font-bold">
 					{semester?.average == null ? "-" : semester.average.toFixed(2)}
 				</p>
 			</div>
 			<div>
-				<p className="text-xs text-neutral-500 dark:text-neutral-400">Ocen liczących się</p>
+				<p className="text-xs text-muted-foreground">Ocen liczących się</p>
 				<p className="text-2xl font-bold">{overall.count}</p>
 			</div>
-		</div>
+		</Card>
 	);
 }

@@ -27,7 +27,7 @@ export function OfflineBanner() {
 
 	if (!visible) return null;
 	return (
-		<output className="sticky top-14 z-[5] flex items-center justify-center gap-2 bg-amber-50/80 backdrop-blur-md px-4 py-2 text-sm text-amber-900 dark:bg-amber-950/80 dark:text-amber-100">
+		<output className="sticky top-14 z-[5] flex items-center justify-center gap-2 bg-muted/80 backdrop-blur-md px-4 py-2 text-sm text-muted-foreground">
 			<svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0">
 				<path
 					d="M12 20h.01M8.5 16.4a5 5 0 017 0M5 12.9a10 10 0 0114 0M2 9.4a15 15 0 0120 0M2 2l20 20"
@@ -37,7 +37,7 @@ export function OfflineBanner() {
 					strokeLinecap="round"
 				/>
 			</svg>
-			Brak połączenia z internetem — pokazuję ostatnie zapisane dane.
+			Brak połączenia z internetem
 		</output>
 	);
 }

@@ -32,7 +32,6 @@ describe("Sidebar (md+)", () => {
 			"Zebrania z rodzicami",
 			"Szkoła i klasa",
 			"Ustawienia",
-			"Instalacja aplikacji",
 			"Powiadomienia push",
 		]) {
 			// Adjacent inline spans flatten without a space in the computed name

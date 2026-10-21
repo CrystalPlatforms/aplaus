@@ -1,10 +1,12 @@
 /**
  * Powiadomienia push: włączenie subskrypcji na tym urządzeniu + 8
- * przełączników per typ zdarzenia. Preferencje są per konto (serwer),
- * subskrypcja per urządzenie/przeglądarka.
+ * przełączników per typ zdarzenia (Radix Switch). Preferencje są per konto
+ * (serwer), subskrypcja per urządzenie/przeglądarka.
  */
 import { useEffect, useState } from "react";
 import { ButtonSpinner } from "@/components/Loader";
+import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import {
 	getPushPreferences,
 	isStandalone,
@@ -92,28 +94,23 @@ export function NotificationsScreen() {
 	return (
 		<div className="space-y-4">
 			{requiresInstall && !enabled ? (
-				<p className="rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/60 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
-					Na iPhonie powiadomienia działają tylko w zainstalowanej aplikacji — najpierw przejdź do
-					„Więcej → Instalacja aplikacji".
+				<p className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
+					Na iPhonie powiadomienia działają tylko w zainstalowanej aplikacji — dodaj ją do ekranu
+					głównego w Safari (Udostępnij → Dodaj do ekranu głównego).
 				</p>
 			) : null}
 
 			{error ? (
 				<p
 					role="alert"
-					className="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/60 px-4 py-3 text-sm text-red-800 dark:text-red-200"
+					className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
 				>
 					{error}
 				</p>
 			) : null}
 
-			<button
-				type="button"
-				onClick={() => void toggleEnabled()}
-				disabled={busy}
-				className="w-full rounded-2xl border border-neutral-200/60 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-4 text-left"
-			>
-				<span className="flex items-center justify-between">
+			<Card className="flex-row items-center justify-between gap-3 p-4">
+				<span className="min-w-0">
 					<span className="text-sm font-semibold">
 						{busy ? (
 							<>
@@ -124,54 +121,32 @@ export function NotificationsScreen() {
 							"Powiadomienia push na tym urządzeniu"
 						)}
 					</span>
-					<span
-						aria-hidden="true"
-						className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-							enabled ? "bg-primary" : "bg-neutral-300 dark:bg-neutral-700"
-						}`}
-					>
-						<span
-							className={`inline-block size-5 rounded-full bg-white shadow transition-transform ${
-								enabled ? "translate-x-[1.375rem]" : "translate-x-0.5"
-							}`}
-						/>
+					<span className="mt-1 block text-xs text-muted-foreground">
+						{enabled ? "Włączone — nowa ocena dotrze w ≤ 5 minut." : "Wyłączone."}
 					</span>
 				</span>
-				<span className="mt-1 block text-xs text-neutral-500 dark:text-neutral-400">
-					{enabled ? "Włączone — nowa ocena dotrze w ≤ 5 minut." : "Wyłączone."}
-				</span>
-			</button>
+				<Switch
+					checked={enabled}
+					disabled={busy}
+					onCheckedChange={() => void toggleEnabled()}
+					aria-label="Powiadomienia push na tym urządzeniu"
+				/>
+			</Card>
 
-			<section className="rounded-2xl border border-neutral-200/60 dark:border-neutral-800 bg-white dark:bg-neutral-900 divide-y divide-neutral-100 dark:divide-neutral-800">
+			<Card className="divide-y divide-border gap-0 overflow-hidden py-0">
 				<h2 className="px-4 py-3 text-sm font-semibold">Co powiadamiać</h2>
 				{(Object.keys(PUSH_TYPE_LABELS) as Array<keyof PushPreferencesState>).map((type) => (
-					<button
-						key={type}
-						type="button"
-						role="switch"
-						aria-checked={prefs[type]}
-						onClick={() => void toggleType(type)}
-						disabled={!enabled}
-						className="w-full px-4 py-3.5 text-left text-sm disabled:opacity-50"
-					>
-						<span className="flex items-center justify-between">
-							{PUSH_TYPE_LABELS[type]}
-							<span
-								aria-hidden="true"
-								className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-									prefs[type] ? "bg-primary" : "bg-neutral-300 dark:bg-neutral-700"
-								}`}
-							>
-								<span
-									className={`inline-block size-5 rounded-full bg-white shadow transition-transform ${
-										prefs[type] ? "translate-x-[1.375rem]" : "translate-x-0.5"
-									}`}
-								/>
-							</span>
-						</span>
-					</button>
+					<div key={type} className="flex items-center justify-between gap-3 px-4 py-3.5">
+						<span className="text-sm">{PUSH_TYPE_LABELS[type]}</span>
+						<Switch
+							checked={prefs[type]}
+							disabled={!enabled}
+							onCheckedChange={() => void toggleType(type)}
+							aria-label={PUSH_TYPE_LABELS[type]}
+						/>
+					</div>
 				))}
-			</section>
+			</Card>
 		</div>
 	);
 }
