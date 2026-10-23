@@ -158,6 +158,16 @@ jobs:
             echo "::warning::No previously deployed version found — a failed rollout cannot be rolled back automatically."
           fi
 
+      # versions upload refuses a Worker that does not exist yet, and the canary
+      # needs an active version to split traffic against. A Worker's very first
+      # deploy has neither, so this one step creates it with a full-traffic
+      # deploy of this exact commit — every later run skips it and goes through
+      # the versioned upload, the canary and the gate below.
+      - name: Bootstrap the first deployment
+        if: env.PREVIOUS_VERSION == ''
+        working-directory: apps/data-service
+        run: pnpm exec wrangler deploy --env "$DEPLOY_ENV"
+
       # Uploads without taking traffic. Nothing a user can reach changes here.
       #
       # The version id has to come back out of wrangler's own output — it is the
