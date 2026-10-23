@@ -1,10 +1,12 @@
 /**
  * Desktop sidebar (md+), CRS-Theme look: no separator lines, active row on
  * the full primary fill, collapsible "Więcej" group (options slide up into
- * the heading), account block pinned to the bottom. Hidden below md.
+ * the heading), account block pinned to the bottom. The refresh icon is
+ * pinned to the sidebar's right edge and does a full page reload (the
+ * F5/Cmd+R equivalent); hidden below md.
  */
 import { useState } from "react";
-import { LuChevronDown } from "react-icons/lu";
+import { LuChevronDown, LuRotateCw } from "react-icons/lu";
 import { useAuth } from "@/lib/auth";
 import { useRoute } from "@/lib/router";
 import { cn } from "@/lib/utils";
@@ -14,9 +16,12 @@ import { activeTabOf, MORE_SECTIONS, type NavItem, PARENT_SECTIONS, TABS } from 
 export function Sidebar({
 	unread,
 	onSwitchAccount,
+	onRefresh,
 }: {
 	unread: number;
 	onSwitchAccount: () => void;
+	/** Full page reload — the F5/Cmd+R equivalent. */
+	onRefresh: () => void;
 }) {
 	const { path } = useRoute();
 	const { account, logout } = useAuth();
@@ -25,8 +30,16 @@ export function Sidebar({
 	const [moreOpen, setMoreOpen] = useState(true);
 	return (
 		<aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-sidebar text-sidebar-foreground h-dvh sticky top-0">
-			<div className="flex items-center px-4 h-14">
-				<span className="font-display text-lg font-bold">Aplaus</span>
+			<div className="flex items-center gap-2 px-4 h-14">
+				<span className="font-display text-2xl font-bold">Aplaus</span>
+				<button
+					type="button"
+					onClick={onRefresh}
+					aria-label="Odśwież"
+					className="text-muted-foreground hover:text-foreground ml-auto rounded-md p-1.5 transition-all active:scale-[0.98] [-webkit-tap-highlight-color:transparent]"
+				>
+					<LuRotateCw className="size-5" aria-hidden="true" />
+				</button>
 			</div>
 			<nav
 				aria-label="Nawigacja główna"

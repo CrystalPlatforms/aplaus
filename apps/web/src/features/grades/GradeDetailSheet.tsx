@@ -4,9 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { useRoute } from "@/lib/router";
 
 /**
+ * On phones (max-md) the sheet expands to a true fullscreen modal — the giant
+ * grade hero gets the whole screen. The trailing `!` outranks the shared
+ * sheet's unprefixed and sm:/md: sizes regardless of Tailwind's variant
+ * order; from md up the centered DetailOverlay stays as-is.
+ */
+const fullscreenOnPhone =
+	"max-md:inset-0! max-md:h-[100dvh]! max-md:w-screen! max-md:max-w-none! " +
+	"max-md:translate-x-0! max-md:translate-y-0! max-md:rounded-none!";
+
+/**
  * Grade details in the responsive DetailOverlay, shared by the grades list
  * and the subject grades page. The subject row navigates to all grades of
- * that subject.
+ * that subject. The grade itself leads as a huge hero: 7rem = 8× the 14px
+ * (text-sm) it had inline in the dl.
  */
 export function GradeDetailSheet({
 	grade,
@@ -22,10 +33,17 @@ export function GradeDetailSheet({
 	const { navigate } = useRoute();
 	const g = grade;
 	return (
-		<DetailOverlay open onOpenChange={(o) => !o && onClose()} title={g.subjectName ?? "—"}>
+		<DetailOverlay
+			open
+			onOpenChange={(o) => !o && onClose()}
+			title={g.subjectName ?? "—"}
+			className={fullscreenOnPhone}
+		>
+			<div className="flex flex-col items-center gap-2 py-6 text-center">
+				<p className="text-[7rem] leading-none font-black">{g.grade}</p>
+				<p className="text-muted-foreground text-sm">{category?.name ?? "Ocena"}</p>
+			</div>
 			<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-				<dt className="text-muted-foreground">Ocena</dt>
-				<dd className="font-semibold">{g.grade}</dd>
 				<dt className="text-muted-foreground">Przedmiot</dt>
 				<dd>
 					{g.subjectId !== null ? (

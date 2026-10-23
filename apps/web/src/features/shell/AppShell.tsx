@@ -1,8 +1,9 @@
 /**
- * Shell layout: desktop sidebar (md+) with full navigation, mobile bottom
- * bar with icons, top bar (account actions on mobile, Odśwież on desktop),
- * the sub-routes under /more and /messages, and the account switcher dialog.
- * A path change remounts the view block with a fade + rise animation.
+ * Shell layout: desktop sidebar (md+) with full navigation and the refresh
+ * icon by the "Aplaus" heading, mobile bottom bar with icons, top bar on
+ * /timetable only (week/month nav + view toggle), the sub-routes under /more
+ * and /messages, and the account switcher dialog. A path change remounts
+ * the view block with a fade + rise animation.
  */
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
@@ -22,7 +23,6 @@ import { useRoute } from "@/lib/router";
 import { usePullToRefresh } from "@/lib/usePullToRefresh";
 import { AccountSwitcher } from "./AccountSwitcher";
 import { BottomBar } from "./BottomBar";
-import { backTargetOf } from "./back-target";
 import { MoreRoutes } from "./MoreRoutes";
 import { activeTabOf } from "./nav-items";
 import { Sidebar } from "./Sidebar";
@@ -35,6 +35,9 @@ export function AppShell() {
 	const queryClient = useQueryClient();
 	const refresh = useCallback(() => queryClient.invalidateQueries(), [queryClient]);
 	const { progress, refreshing } = usePullToRefresh(refresh);
+	// The sidebar refresh icon does a real page reload — the F5/Cmd+R
+	// equivalent (pull-to-refresh below stays data-only for the gesture).
+	const reloadPage = useCallback(() => window.location.reload(), []);
 
 	useEffect(() => {
 		if (path === "/") navigate("/start");
@@ -50,25 +53,29 @@ export function AppShell() {
 	const unread = useUnreadCount();
 	const badge = account ? (unread.data?.inbox ?? 0) : 0;
 
-	// The single back target for the TopBar — works on every breakpoint.
-	const back = backTargetOf(path);
-
 	return (
 		<div className="min-h-dvh bg-background text-foreground">
 			<div className="md:flex">
-				<Sidebar unread={badge} onSwitchAccount={() => setSwitcherOpen(true)} />
+				<Sidebar
+					unread={badge}
+					onSwitchAccount={() => setSwitcherOpen(true)}
+					onRefresh={reloadPage}
+				/>
 				<div className="flex-1 min-w-0">
-					<TopBar
-						account={account}
-						logout={logout}
-						onSwitchAccount={() => setSwitcherOpen(true)}
-						onRefresh={refresh}
-						back={back}
-					/>
+					{/* The top bar carries only the timetable nav cluster, so it renders
+					    on /timetable alone — elsewhere it would be an empty gray strip. */}
+					{path === "/timetable" && (
+						<TopBar
+							account={account}
+							logout={logout}
+							onSwitchAccount={() => setSwitcherOpen(true)}
+						/>
+					)}
 					<OfflineBanner />
 					{progress > 0 || refreshing ? (
 						<div
-							className="sticky top-14 z-[5] flex justify-center py-2"
+							// Below the bar on /timetable, flush with the top elsewhere.
+							className={`sticky z-[5] flex justify-center py-2 ${path === "/timetable" ? "top-14" : "top-0"}`}
 							style={{ opacity: refreshing ? 1 : progress }}
 							aria-hidden={!refreshing}
 						>

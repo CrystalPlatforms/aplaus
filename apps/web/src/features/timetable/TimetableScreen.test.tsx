@@ -237,7 +237,7 @@ function renderTimetable() {
 		<QueryClientProvider client={client}>
 			<RouterProvider>
 				{/* The week/month arrows live in the shell TopBar on /timetable. */}
-				<TopBar account={null} logout={() => {}} onSwitchAccount={() => {}} onRefresh={() => {}} />
+				<TopBar account={null} logout={() => {}} onSwitchAccount={() => {}} />
 				<TimetableScreen />
 			</RouterProvider>
 		</QueryClientProvider>,

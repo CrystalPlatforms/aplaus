@@ -12,7 +12,7 @@ describe("Sidebar (md+)", () => {
 	it("renders the full navigation to existing routes, hidden below md", () => {
 		const { container } = render(
 			<RouterProvider>
-				<Sidebar unread={2} onSwitchAccount={() => {}} />
+				<Sidebar unread={2} onSwitchAccount={() => {}} onRefresh={() => {}} />
 			</RouterProvider>,
 		);
 		const aside = container.querySelector("aside");
@@ -47,7 +47,7 @@ describe("Sidebar (md+)", () => {
 	it("shows the unread badge on Wiadomości only — never on Start, Oceny or Plan", () => {
 		render(
 			<RouterProvider>
-				<Sidebar unread={2} onSwitchAccount={() => {}} />
+				<Sidebar unread={2} onSwitchAccount={() => {}} onRefresh={() => {}} />
 			</RouterProvider>,
 		);
 		for (const label of ["Start", "Oceny", "Plan"]) {

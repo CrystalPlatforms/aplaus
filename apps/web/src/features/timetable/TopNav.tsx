@@ -7,7 +7,7 @@ import { monthLabel, weekRangeLabel } from "./vm";
 
 /**
  * The week/month navigation arrows for the shell TopBar's right group
- * (rendered after Odśwież; the Miesiąc|Dzień toggle follows at the far
+ * (rendered at the left edge of the TopBar; the Miesiąc|Dzień toggle follows at the far
  * right, rendered by the TopBar itself). Below md the timetable is always
  * the day view, so the arrows navigate weeks even when the stored
  * preference is "month".
