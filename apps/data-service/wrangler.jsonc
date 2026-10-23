@@ -60,7 +60,7 @@
 					// Local dev and tests use the workerd KV simulation; this id is
 					// consulted only when deploying. Create the namespace once and
 					// paste its real id here (see README, "Wdrozenie").
-					"id": "00000000000000000000000000000000"
+					"id": "4e1ab553cd5342e4ace9c0dffa16eca1"
 				}
 			]
 			// "queues": {
@@ -85,19 +85,18 @@
 		 * Remote / Staging environment
 		 */
 		"staging": {
-			// "routes": [
-			//   {
-			//     "pattern": "api-staging.YOUR_DOMAIN.COM",
-			//     "custom_domain": true
-			//   }
-			// ],
+			// No owned domain: the readiness gate probes the free workers.dev host
+			// instead — deploy-target.ts builds the URL from this opt-in plus the
+			// account's subdomain (crs-studio). A custom domain, when added later,
+			// wins automatically.
+			"workers_dev": true,
 			"name": "aplaus-ds-staging",
 			// Poll every 5 minutes (phase 12): the cron diffs the 8 tracked
 			// resources per account and sends web push on changes.
 			"triggers": { "crons": ["*/5 * * * *"] },
 			"vars": {
 				"CLOUDFLARE_ENV": "staging",
-				"ALLOWED_ORIGINS": "https://staging.YOUR_DOMAIN.COM"
+				"ALLOWED_ORIGINS": "https://aplaus.pages.dev"
 			},
 			"ratelimits": [
 				{
@@ -115,7 +114,7 @@
 			"kv_namespaces": [
 				{
 					"binding": "KV",
-					"id": "00000000000000000000000000000000"
+					"id": "1c2cedc2e9ce4f5fad87f9e8f336e6d3"
 				}
 			]
 			// "queues": {
@@ -140,19 +139,18 @@
 		 * Remote / Production environment
 		 */
 		"production": {
-			// "routes": [
-			//   {
-			//     "pattern": "api.YOUR_DOMAIN.COM",
-			//     "custom_domain": true
-			//   }
-			// ],
+			// No owned domain: the readiness gate probes the free workers.dev host
+			// instead — deploy-target.ts builds the URL from this opt-in plus the
+			// account's subdomain (crs-studio). A custom domain, when added later,
+			// wins automatically.
+			"workers_dev": true,
 			"name": "aplaus-ds-production",
 			// Poll every 5 minutes (phase 12): the cron diffs the 8 tracked
 			// resources per account and sends web push on changes.
 			"triggers": { "crons": ["*/5 * * * *"] },
 			"vars": {
 				"CLOUDFLARE_ENV": "production",
-				"ALLOWED_ORIGINS": "https://YOUR_DOMAIN.COM"
+				"ALLOWED_ORIGINS": "https://aplaus.pages.dev"
 			},
 			"ratelimits": [
 				{
@@ -170,7 +168,7 @@
 			"kv_namespaces": [
 				{
 					"binding": "KV",
-					"id": "00000000000000000000000000000000"
+					"id": "d3e2521b24304872be50bc12f8732b48"
 				}
 			]
 			// "queues": {

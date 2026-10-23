@@ -21,6 +21,14 @@ const WORKER_CONFIG = join("apps", "data-service", "wrangler.jsonc");
 /** The endpoint that verifies database connectivity, unlike `/health/live`. */
 const READINESS_PATH = "/health/ready";
 
+/**
+ * This account's workers.dev subdomain — the free host Cloudflare serves for
+ * every Worker. An environment that opts in (`"workers_dev": true`) gates its
+ * rollout there instead of on an owned domain; the version-override header
+ * pins probes to one version just as it does on a custom domain.
+ */
+const WORKERS_DEV_SUBDOMAIN = "crs-studio";
+
 export type DeployTrigger = {
 	/** GitHub event name, e.g. `push` or `workflow_dispatch`. */
 	eventName: string;
@@ -53,7 +61,7 @@ function isDeployEnvironment(value: string | undefined): value is DeployEnvironm
 }
 
 type WorkerRoute = { pattern?: string; custom_domain?: boolean };
-type WorkerEnv = { name?: string; routes?: WorkerRoute[] };
+type WorkerEnv = { name?: string; routes?: WorkerRoute[]; workers_dev?: boolean };
 type WorkerConfig = { env?: Record<string, WorkerEnv> };
 
 /**
@@ -81,18 +89,24 @@ export function resolveWorkerName(root: string, environment: DeployEnvironment):
 }
 
 /**
- * Returns the readiness URL for an environment, or `null` when the Worker binds
- * no custom domain there — which is the state a fresh template ships in, its
- * routes commented out. A caller that cannot resolve a URL cannot gate a
+ * Returns the readiness URL for an environment, or `null` when nothing there
+ * names a probeable host. Preference order: a custom-domain binding, then the
+ * account's workers.dev host when the environment opts in with
+ * `"workers_dev": true`. A caller that cannot resolve a URL cannot gate a
  * rollout, and must refuse to promote rather than promote unwatched.
  */
 export function resolveReadinessUrl(root: string, environment: DeployEnvironment): string | null {
-	const routes = readEnvConfig(root, environment)?.routes ?? [];
+	const envConfig = readEnvConfig(root, environment);
 	// Only a custom-domain binding names a whole host. A route pattern carries
 	// path globs and needs a DNS record nobody promised to create, so it is not a
 	// probe target.
-	const domain = routes.find((route) => route.custom_domain === true)?.pattern;
-	return domain ? `https://${domain}${READINESS_PATH}` : null;
+	const domain = (envConfig?.routes ?? []).find((route) => route.custom_domain === true)?.pattern;
+	if (domain) return `https://${domain}${READINESS_PATH}`;
+	const name = envConfig?.name;
+	if (envConfig?.workers_dev === true && name) {
+		return `https://${name}.${WORKERS_DEV_SUBDOMAIN}.workers.dev${READINESS_PATH}`;
+	}
+	return null;
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────
@@ -125,8 +139,8 @@ function main(argv: string[]): void {
 	const readinessUrl = resolveReadinessUrl(root, environment);
 	if (!readinessUrl) {
 		console.error(
-			`✗ ${environment} binds no custom domain, so its rollout cannot be gated on a readiness probe.\n` +
-				`  Add one under env.${environment}.routes in ${WORKER_CONFIG} with "custom_domain": true —\n` +
+			`✗ ${environment} binds neither a custom domain nor workers.dev, so its rollout cannot be gated on a readiness probe.\n` +
+				`  Add "workers_dev": true, or a route with "custom_domain": true, under env.${environment} in ${WORKER_CONFIG} —\n` +
 				"  `pnpm run init-project` prompts for it. Refusing to deploy a version nobody can watch.",
 		);
 		process.exit(1);

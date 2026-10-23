@@ -28,10 +28,48 @@ function parse(content: string): { env?: Record<string, WranglerEnv> } {
 describe("wireCustomDomain", () => {
 	const shipped = readFileSync(WRANGLER, "utf8");
 
+	// The shape the wiring was built for: routes shipped commented out (two
+	// spaces per level inside the comment, converted to the file's tabs on
+	// uncomment) with placeholder hosts. The live config has since opted into
+	// workers.dev and carries no placeholders, so the behaviour tests pin this
+	// fixture rather than the shipped file.
+	const TEMPLATE = `{
+	// the Worker
+	"name": "svc",
+	"env": {
+		"staging": {
+			// "routes": [
+			//   {
+			//     "pattern": "api-staging.YOUR_DOMAIN.COM",
+			//     "custom_domain": true
+			//   }
+			// ],
+			"name": "svc-staging",
+			"vars": {
+				"CLOUDFLARE_ENV": "staging",
+				"ALLOWED_ORIGINS": "https://staging.YOUR_DOMAIN.COM"
+			}
+		},
+		"production": {
+			// "routes": [
+			//   {
+			//     "pattern": "api.YOUR_DOMAIN.COM",
+			//     "custom_domain": true
+			//   }
+			// ],
+			"name": "svc-production",
+			"vars": {
+				"CLOUDFLARE_ENV": "production",
+				"ALLOWED_ORIGINS": "https://YOUR_DOMAIN.COM"
+			}
+		}
+	}
+}`;
+
 	it("binds each remote environment as a custom domain, not a route pattern", () => {
 		// Custom domains create the DNS record and certificate themselves. A route
 		// pattern needs a proxied record to already exist, or requests fail outright.
-		const { env } = parse(wireCustomDomain(shipped, "example.com"));
+		const { env } = parse(wireCustomDomain(TEMPLATE, "example.com"));
 		expect(env?.staging?.routes).toEqual([
 			{ pattern: "api-staging.example.com", custom_domain: true },
 		]);
@@ -39,22 +77,22 @@ describe("wireCustomDomain", () => {
 	});
 
 	it("points allowed origins at the same domain", () => {
-		const { env } = parse(wireCustomDomain(shipped, "example.com"));
+		const { env } = parse(wireCustomDomain(TEMPLATE, "example.com"));
 		expect(env?.staging?.vars?.ALLOWED_ORIGINS).toBe("https://staging.example.com");
 		expect(env?.production?.vars?.ALLOWED_ORIGINS).toBe("https://example.com");
 	});
 
 	it("leaves no placeholder host anywhere in the config", () => {
-		expect(wireCustomDomain(shipped, "example.com")).not.toContain("YOUR_DOMAIN");
+		expect(wireCustomDomain(TEMPLATE, "example.com")).not.toContain("YOUR_DOMAIN");
 	});
 
 	it("keeps the config's comments, which explain why each setting is there", () => {
-		const wired = wireCustomDomain(shipped, "example.com");
-		expect(wired).toContain("Sized for uptime monitors");
+		const wired = wireCustomDomain(TEMPLATE, "example.com");
+		expect(wired).toContain("// the Worker");
 	});
 
 	it("indents what it uncomments with the tabs the rest of the file uses", () => {
-		const wired = wireCustomDomain(shipped, "example.com");
+		const wired = wireCustomDomain(TEMPLATE, "example.com");
 		const routeLines = wired
 			.split("\n")
 			.filter((line) => /"(routes|pattern|custom_domain)"/.test(line));
@@ -68,13 +106,17 @@ describe("wireCustomDomain", () => {
 		// Re-running during incremental configuration must be safe. Once a real
 		// host is in place there is no placeholder left to substitute, so a second
 		// run with a different answer is a no-op rather than a silent replacement.
-		const wired = wireCustomDomain(shipped, "example.com");
+		const wired = wireCustomDomain(TEMPLATE, "example.com");
 		expect(wireCustomDomain(wired, "somewhere-else.com")).toBe(wired);
 		expect(needsCustomDomain(wired)).toBe(false);
 	});
 
-	it("recognises the shipped template as still needing a domain", () => {
-		expect(needsCustomDomain(shipped)).toBe(true);
+	it("ships domain-free: the live config needs no custom domain any more", () => {
+		// The shipped config opted into workers.dev — deploy-target.ts gates its
+		// rollout there — so it carries no placeholder hosts. Only the template
+		// state the wiring step was built for still does.
+		expect(needsCustomDomain(shipped)).toBe(false);
+		expect(needsCustomDomain(TEMPLATE)).toBe(true);
 	});
 
 	it("accepts a bare hostname and refuses anything carrying a scheme or path", () => {

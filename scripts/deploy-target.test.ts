@@ -115,11 +115,17 @@ describe("resolveReadinessUrl", () => {
 		expect(resolveReadinessUrl(root, "production")).toBe("https://api.example.com/health/ready");
 	});
 
-	it("resolves nothing while the template's domains are still placeholders", () => {
-		// The shipped template comments its routes out, so there is no domain to
-		// probe. A deploy must refuse to promote rather than promote unwatched.
-		expect(resolveReadinessUrl(ROOT, "staging")).toBeNull();
-		expect(resolveReadinessUrl(ROOT, "production")).toBeNull();
+	it("falls back to the account's workers.dev host once an env opts in", () => {
+		// The real config ships its routes commented out (no owned domain) but
+		// opts both environments into workers.dev — the free host Cloudflare
+		// serves for the account. It gates just as well: the version-override
+		// header pins probes to one version there exactly as on a custom domain.
+		expect(resolveReadinessUrl(ROOT, "staging")).toBe(
+			"https://aplaus-ds-staging.crs-studio.workers.dev/health/ready",
+		);
+		expect(resolveReadinessUrl(ROOT, "production")).toBe(
+			"https://aplaus-ds-production.crs-studio.workers.dev/health/ready",
+		);
 	});
 
 	it("ignores a route that is not bound as a custom domain", () => {
@@ -132,6 +138,22 @@ describe("resolveReadinessUrl", () => {
 			}),
 		);
 		expect(resolveReadinessUrl(root, "staging")).toBeNull();
+	});
+
+	it("falls back to workers.dev only when the env opts in", () => {
+		const optedIn = makeFixture(
+			JSON.stringify({
+				name: "svc",
+				env: { staging: { name: "svc-staging", workers_dev: true } },
+			}),
+		);
+		expect(resolveReadinessUrl(optedIn, "staging")).toBe(
+			"https://svc-staging.crs-studio.workers.dev/health/ready",
+		);
+		const silent = makeFixture(
+			JSON.stringify({ name: "svc", env: { staging: { name: "svc-staging" } } }),
+		);
+		expect(resolveReadinessUrl(silent, "staging")).toBeNull();
 	});
 });
 
@@ -159,6 +181,20 @@ describe("deploy-target CLI", () => {
 		expect(stdout).toContain("readiness_url=https://api-staging.example.com/health/ready");
 	});
 
+	it("emits a workers.dev readiness URL when the env opts in", () => {
+		const root = makeFixture(
+			JSON.stringify({
+				name: "svc",
+				env: { staging: { name: "svc-staging", workers_dev: true } },
+			}),
+		);
+		const { stdout, status } = run(["--event", "push", "--ref", "refs/heads/main", "--root", root]);
+		expect(status).toBe(0);
+		expect(stdout).toContain(
+			"readiness_url=https://svc-staging.crs-studio.workers.dev/health/ready",
+		);
+	});
+
 	it("reports that nothing deploys rather than guessing", () => {
 		const { stdout, status } = run(["--event", "push", "--ref", "refs/heads/topic"]);
 		expect(status).toBe(0);
@@ -167,13 +203,14 @@ describe("deploy-target CLI", () => {
 	});
 
 	it("refuses to deploy an environment it cannot probe", () => {
-		// Credentials are configured — this is a real deployment — but no custom
-		// domain is bound, so no readiness gate is possible. Fail before uploading
-		// anything rather than promote a version nobody is watching.
+		// Credentials are configured — this is a real deployment — but the env
+		// neither binds a custom domain nor opts into workers.dev, so no readiness
+		// gate is possible. Fail before uploading anything rather than promote a
+		// version nobody is watching.
 		const root = makeFixture(JSON.stringify({ name: "svc", env: { staging: {} } }));
 		const { stderr, status } = run(["--event", "push", "--ref", "refs/heads/main", "--root", root]);
 		expect(status).not.toBe(0);
-		expect(stderr).toContain("no custom domain");
+		expect(stderr).toContain("neither a custom domain nor workers.dev");
 		expect(stderr).toContain("init-project");
 	});
 });
