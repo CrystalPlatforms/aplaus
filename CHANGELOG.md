@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/CrystalPlatforms/aplaus/compare/v1.1.0...v1.2.0) (2026-10-23)
+
+
+### Features
+
+* ocena fullscreen na mobile, refresh w sidebarze (reload), top bar tylko na /timetable ([4c46443](https://github.com/CrystalPlatforms/aplaus/commit/4c4644353f31bafdfd67457b65ebb231cd48f17e))
+
 # [1.1.0](https://github.com/CrystalPlatforms/aplaus/compare/v1.0.0...v1.1.0) (2026-10-21)
 
 
