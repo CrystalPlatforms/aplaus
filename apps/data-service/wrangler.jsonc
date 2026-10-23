@@ -96,7 +96,7 @@
 			"triggers": { "crons": ["*/5 * * * *"] },
 			"vars": {
 				"CLOUDFLARE_ENV": "staging",
-				"ALLOWED_ORIGINS": "https://aplaus-web.crs-studio.workers.dev"
+				"ALLOWED_ORIGINS": "https://aplaus-web.crs-studio.workers.dev,https://aplaus-app.pages.dev"
 			},
 			"ratelimits": [
 				{
