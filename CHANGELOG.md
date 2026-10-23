@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/CrystalPlatforms/aplaus/compare/v1.4.1...v1.4.2) (2026-10-23)
+
+
+### Bug Fixes
+
+* **web:** usuniety _redirects - SPA fallback robi not_found_handling w konfigu assets ([a4071e6](https://github.com/CrystalPlatforms/aplaus/commit/a4071e6a7578d99aa1b0e06027b0ca585ed41152))
+
 ## [1.4.1](https://github.com/CrystalPlatforms/aplaus/compare/v1.4.0...v1.4.1) (2026-10-23)
 
 
