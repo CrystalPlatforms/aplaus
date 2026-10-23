@@ -7,6 +7,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc --noEmit && vite build",
+		"cf-typegen": "wrangler types",
 		"preview": "vite preview",
 		"types": "tsc --noEmit"
 	},
@@ -36,6 +37,7 @@
 		"tailwindcss": "^4.1.0",
 		"typescript": "^5.9.3",
 		"vite": "^7.1.0",
+		"wrangler": "^4.147.0",
 		"vite-plugin-pwa": "^1.0.0",
 		"vitest": "^4.1.11",
 		"workbox-core": "^7.4.1",

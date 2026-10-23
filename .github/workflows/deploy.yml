@@ -287,11 +287,12 @@ jobs:
             --env "$DEPLOY_ENV" --yes \
             --message "rollback — ${GITHUB_SHA:0:7} failed its readiness gate"
 
-  # The PWA is static: build it with the staging API base baked in and publish.
-  # Pages deep links need the SPA fallback in apps/web/public/_redirects.
-  # Production web is a later phase — a production dispatch deploys the API only.
+  # The PWA is an assets-only Worker (the current Cloudflare Pages is part of
+  # Workers): build it with the staging API base baked in and publish with
+  # `wrangler deploy` against apps/web/wrangler.jsonc. Production web is a
+  # later phase — a production dispatch deploys the API only.
   web:
-    name: Deploy web (Pages)
+    name: Deploy web
     needs: guard
     if: needs.guard.outputs.configured == 'true' && needs.guard.outputs.environment == 'staging'
     runs-on: ubuntu-latest
@@ -322,6 +323,6 @@ jobs:
         run: pnpm run build
 
       # Run through apps/data-service, which declares the wrangler binary.
-      - name: Deploy to Pages
+      - name: Deploy
         working-directory: apps/data-service
-        run: pnpm exec wrangler pages deploy ../web/dist --project-name aplaus-web --branch main
+        run: pnpm exec wrangler deploy -c ../web/wrangler.jsonc
