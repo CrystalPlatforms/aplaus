@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/CrystalPlatforms/aplaus/compare/v1.2.0...v1.3.0) (2026-10-23)
+
+
+### Features
+
+* **deploy:** bramka zdrowia na darmowym workers.dev, KV namespace ids, ALLOWED_ORIGINS ([b4217e8](https://github.com/CrystalPlatforms/aplaus/commit/b4217e8847ca5ab40937977524882832e00a18d6))
+
 # [1.2.0](https://github.com/CrystalPlatforms/aplaus/compare/v1.1.0...v1.2.0) (2026-10-23)
 
 
