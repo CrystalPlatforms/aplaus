@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/CrystalPlatforms/aplaus/compare/v1.4.2...v1.5.0) (2026-10-23)
+
+
+### Features
+
+* **deploy:** API jako aplaus-api, glowna apka jako aplaus - finalna topologia ([6cfa3dd](https://github.com/CrystalPlatforms/aplaus/commit/6cfa3dd2ca1813bf45573a74cbc6be06ea30971b))
+
 ## [1.4.2](https://github.com/CrystalPlatforms/aplaus/compare/v1.4.1...v1.4.2) (2026-10-23)
 
 
