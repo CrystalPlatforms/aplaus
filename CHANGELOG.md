@@ -1,3 +1,16 @@
+# [1.4.0](https://github.com/CrystalPlatforms/aplaus/compare/v1.3.0...v1.4.0) (2026-10-23)
+
+
+### Bug Fixes
+
+* **deploy:** bootstrap pierwszego deployu w CI - tworzy Workera gdy jeszcze nie istnieje ([89452b3](https://github.com/CrystalPlatforms/aplaus/commit/89452b350d6d72c7851171d057b39a522533365c))
+* **deploy:** canary dzieli ruch do 100%, bramka czyta kv:available, rollback po bootstrapie ([997579e](https://github.com/CrystalPlatforms/aplaus/commit/997579e9f979d00777a1e67d336c72c109e42275))
+
+
+### Features
+
+* **deploy:** API jako aplaus.workers.dev, web na CF Pages (aplaus-web), SPA fallback ([b17b8ca](https://github.com/CrystalPlatforms/aplaus/commit/b17b8cad818d20a500b8685c674eead2cb085f6e))
+
 # [1.3.0](https://github.com/CrystalPlatforms/aplaus/compare/v1.2.0...v1.3.0) (2026-10-23)
 
 
