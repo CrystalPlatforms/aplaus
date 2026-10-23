@@ -1,9 +1,9 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	// The PWA as an assets-only Worker — the current Cloudflare Pages is part of
-	// Workers, so deploys go through `wrangler deploy` (CI web job), which owns
-	// https://aplaus-web.crs-studio.workers.dev.
-	"name": "aplaus-web",
+	// Workers, so deploys go through `wrangler deploy` (CI web job). This is the
+	// main app: https://aplaus.crs-studio.workers.dev.
+	"name": "aplaus",
 	"compatibility_date": "2026-10-07",
 	"workers_dev": true,
 	"assets": {

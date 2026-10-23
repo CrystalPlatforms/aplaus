@@ -301,7 +301,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       # Baked into the bundle at build time — the staging API the PWA talks to.
-      VITE_API_URL: https://aplaus.crs-studio.workers.dev
+      VITE_API_URL: https://aplaus-api.crs-studio.workers.dev
     steps:
       - name: Checkout
         uses: actions/checkout@v7

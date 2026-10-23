@@ -90,13 +90,13 @@
 			// account's subdomain (crs-studio). A custom domain, when added later,
 			// wins automatically.
 			"workers_dev": true,
-			"name": "aplaus",
+			"name": "aplaus-api",
 			// Poll every 5 minutes (phase 12): the cron diffs the 8 tracked
 			// resources per account and sends web push on changes.
 			"triggers": { "crons": ["*/5 * * * *"] },
 			"vars": {
 				"CLOUDFLARE_ENV": "staging",
-				"ALLOWED_ORIGINS": "https://aplaus-web.crs-studio.workers.dev,https://aplaus-app.pages.dev"
+				"ALLOWED_ORIGINS": "https://aplaus.crs-studio.workers.dev"
 			},
 			"ratelimits": [
 				{
@@ -150,7 +150,7 @@
 			"triggers": { "crons": ["*/5 * * * *"] },
 			"vars": {
 				"CLOUDFLARE_ENV": "production",
-				"ALLOWED_ORIGINS": "https://aplaus-web.crs-studio.workers.dev"
+				"ALLOWED_ORIGINS": "https://aplaus.crs-studio.workers.dev"
 			},
 			"ratelimits": [
 				{
