@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/CrystalPlatforms/aplaus/compare/v1.4.0...v1.4.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **web:** deploy PWA jako assets-only Worker (wrangler deploy), cf-typegen dla web ([0098e7d](https://github.com/CrystalPlatforms/aplaus/commit/0098e7dfbf8ff80fb37320135c530095de725d6e))
+
 # [1.4.0](https://github.com/CrystalPlatforms/aplaus/compare/v1.3.0...v1.4.0) (2026-10-23)
 
 
