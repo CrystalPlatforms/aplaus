@@ -121,10 +121,10 @@ describe("resolveReadinessUrl", () => {
 		// serves for the account. It gates just as well: the version-override
 		// header pins probes to one version there exactly as on a custom domain.
 		expect(resolveReadinessUrl(ROOT, "staging")).toBe(
-			"https://aplaus-ds-staging.crs-studio.workers.dev/health/ready",
+			"https://aplaus.crs-studio.workers.dev/health/ready",
 		);
 		expect(resolveReadinessUrl(ROOT, "production")).toBe(
-			"https://aplaus-ds-production.crs-studio.workers.dev/health/ready",
+			"https://aplaus-production.crs-studio.workers.dev/health/ready",
 		);
 	});
 
@@ -224,8 +224,8 @@ describe("resolveWorkerName", () => {
 	});
 
 	it("matches the name the shipped Worker actually deploys under", () => {
-		expect(resolveWorkerName(ROOT, "staging")).toBe("aplaus-ds-staging");
-		expect(resolveWorkerName(ROOT, "production")).toBe("aplaus-ds-production");
+		expect(resolveWorkerName(ROOT, "staging")).toBe("aplaus");
+		expect(resolveWorkerName(ROOT, "production")).toBe("aplaus-production");
 	});
 
 	it("resolves nothing for an environment that names no Worker", () => {

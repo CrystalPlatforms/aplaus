@@ -266,9 +266,18 @@ describe("deploy workflow rolls out gradually behind a readiness gate", () => {
 
 	it("uploads a version instead of replacing the running one", () => {
 		expect(script).toContain("wrangler versions upload");
-		// `wrangler deploy` replaces production in place. The lookahead spares
-		// `wrangler deployments`, which only reads.
-		expect(script).not.toMatch(/wrangler deploy(?![a-z])/);
+		// `wrangler deploy` replaces the Worker in place. The one sanctioned use
+		// is the first-deploy bootstrap: versions upload refuses a Worker that
+		// does not exist yet, and the canary needs an active version to split
+		// against. Every other step must take the versioned path.
+		const withoutBootstrap = steps
+			.filter((step) => !(step.name ?? "").toLowerCase().includes("bootstrap"))
+			.map((step) => step.run)
+			.join("\n");
+		expect(withoutBootstrap).not.toMatch(/wrangler deploy(?![a-z])/);
+		const bootstrap = steps[named("bootstrap")];
+		expect(bootstrap?.if).toBe("env.PREVIOUS_VERSION == ''");
+		expect(bootstrap?.run).toContain("wrangler deploy --env");
 	});
 
 	it("proves the bundle builds before uploading anything", () => {
@@ -290,8 +299,8 @@ describe("deploy workflow rolls out gradually behind a readiness gate", () => {
 		expect(gate?.run).toContain("READINESS_URL");
 		expect(script).not.toContain("/health/live");
 		// The resolver only ever builds a /health/ready URL, and the gate reads
-		// the database status that endpoint alone reports.
-		expect(gate?.run).toContain('"database":"connected"');
+		// the kv status that endpoint alone reports (services/health-service.ts).
+		expect(gate?.run).toContain('"kv":"available"');
 	});
 
 	it("halts the rollout when the gate fails", () => {
