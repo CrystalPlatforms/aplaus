@@ -92,6 +92,19 @@
 	--crs-green: #167c51;
 }
 
+/* Tabler Icons — defaulty wszystkich ikon w jednym miejscu: grubość linii i
+   bazowy rozmiar. :where() daje specyficzność 0, więc klasy size-* w miejscach
+   użycia nadal wygrywają; atrybuty svg są niżej niż cokolwiek z klas. */
+:root {
+	--icon-stroke: 2;
+	--icon-size: 20px;
+}
+svg:where([stroke-width="2"]) {
+	stroke-width: var(--icon-stroke);
+	width: var(--icon-size);
+	height: var(--icon-size);
+}
+
 /* shadcn token utilities: bg-background, text-foreground, bg-primary, … */
 @theme inline {
 	--color-background: var(--background);
@@ -162,6 +175,10 @@ body {
 	/* Tap feedback is carried by the components' scale/background states, not
 	   the gray WebView flash — so the tap-highlight is transparent everywhere. */
 	-webkit-tap-highlight-color: transparent;
+	/* Własny pull-to-refresh (usePullToRefresh) zamiast natywnego: none blokuje
+	   rubber-band/PTR przeglądarki na over-scrollu body, nie dotykając zwykłego
+	   scrolla ani wewnętrznych kontenerów (dialogi, listy w sidebarze). */
+	overscroll-behavior-y: none;
 }
 
 /* Splash title font (loaded in index.html). */

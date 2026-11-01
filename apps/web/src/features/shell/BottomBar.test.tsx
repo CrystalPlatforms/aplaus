@@ -3,8 +3,8 @@
  * token, unread badge; hidden from md up (where the sidebar takes over).
  * The desktop sidebar ships the complementary classes in the same DOM.
  */
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import { RouterProvider } from "@/lib/router";
 import { BottomBar } from "./BottomBar";
 
@@ -53,5 +53,64 @@ describe("BottomBar", () => {
 		const iconWrapper = start.querySelector("span.relative") as HTMLElement | null;
 		expect(iconWrapper?.className).toContain("group-active:scale-90");
 		expect(iconWrapper?.className).toContain("transition-transform");
+	});
+});
+
+/**
+ * Issue #28: na podstronie sekcji ikona tego taba staje się ←; klik cofa
+ * (z fallbackiem na korzeń sekcji przy wejściu z deep-linka).
+ */
+describe("BottomBar back arrow on section subpages", () => {
+	function openAt(path: string) {
+		window.history.pushState({}, "", path);
+		return render(
+			<RouterProvider>
+				<BottomBar activeTab="messages" badge={0} />
+			</RouterProvider>,
+		);
+	}
+
+	afterEach(() => {
+		window.history.pushState({}, "", "/");
+		cleanup();
+	});
+
+	it("keeps the section icon on the section root (no back arrow)", () => {
+		openAt("/messages");
+		// Bez historii klik nawiguje na korzeń — tu korzeń = obecna ścieżka,
+		// więc po kliku path pozostaje /messages (pushState tej samej ścieżki).
+		const button = screen.getByRole("button", { name: "Wiadomości" });
+		expect(button).toBeTruthy();
+		expect(button.querySelector("svg")).toBeTruthy();
+	});
+
+	it("deep-link subpage: clicking the section tab lands on the section root", () => {
+		openAt("/messages/inbox/abc"); // history.state bez idx → brak historii
+		fireEvent.click(screen.getByRole("button", { name: "Wiadomości" }));
+		expect(window.location.pathname).toBe("/messages");
+	});
+
+	it("more subpage (/settings): Więcej click falls back to /more", () => {
+		window.history.pushState({}, "", "/settings");
+		render(
+			<RouterProvider>
+				<BottomBar activeTab="more" badge={0} />
+			</RouterProvider>,
+		);
+		fireEvent.click(screen.getByRole("button", { name: "Więcej" }));
+		expect(window.location.pathname).toBe("/more");
+	});
+
+	it("with app history, section tab click goes back instead of pushing the root", () => {
+		openAt("/messages");
+		// Symulacja nawigacji w głąb: wpis /messages/inbox/abc z licznikiem idx.
+		act(() => {
+			window.history.pushState({ idx: 1 }, "", "/messages/inbox/abc");
+			window.dispatchEvent(new PopStateEvent("popstate", { state: { idx: 1 } }));
+		});
+
+		fireEvent.click(screen.getByRole("button", { name: "Wiadomości" })); // history.back()
+		// jsdom: back() jest asynchroniczne — czekamy na cofnięcie ścieżki.
+		return waitFor(() => expect(window.location.pathname).toBe("/messages"));
 	});
 });

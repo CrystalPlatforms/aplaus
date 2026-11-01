@@ -5,8 +5,8 @@
  * pinned to the sidebar's right edge and does a full page reload (the
  * F5/Cmd+R equivalent); hidden below md.
  */
+import { IconChevronDown, IconRotate } from "@tabler/icons-react";
 import { useState } from "react";
-import { LuChevronDown, LuRotateCw } from "react-icons/lu";
 import { useAuth } from "@/lib/auth";
 import { useRoute } from "@/lib/router";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,7 @@ export function Sidebar({
 					aria-label="Odśwież"
 					className="text-muted-foreground hover:text-foreground ml-auto rounded-md p-1.5 transition-all active:scale-[0.98] [-webkit-tap-highlight-color:transparent]"
 				>
-					<LuRotateCw className="size-5" aria-hidden="true" />
+					<IconRotate className="size-5" aria-hidden="true" />
 				</button>
 			</div>
 			<nav
@@ -65,7 +65,7 @@ export function Sidebar({
 						className="w-full flex items-center justify-between px-3 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
 					>
 						Więcej
-						<LuChevronDown
+						<IconChevronDown
 							className={cn("size-3.5 transition-transform", moreOpen && "rotate-180")}
 							aria-hidden="true"
 						/>

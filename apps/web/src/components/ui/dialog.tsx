@@ -4,9 +4,8 @@
  * not use it yet.
  */
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { IconX as XIcon } from "@tabler/icons-react";
 import type * as React from "react";
-// react-icons ships Lucide under the `lu` set; shadcn's XIcon is LuX here.
-import { LuX as XIcon } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -67,7 +66,7 @@ function DialogContent({
 						data-slot="dialog-close"
 						className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
 					>
-						<XIcon />
+						<XIcon aria-hidden="true" />
 						<span className="sr-only">Zamknij</span>
 					</DialogPrimitive.Close>
 				)}

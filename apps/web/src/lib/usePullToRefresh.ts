@@ -1,8 +1,9 @@
 /**
  * Pull-to-refresh: pociągnięcie w dół na górze strony (scrollY = 0)
- * odświeża dane. Zwraca postęp pociągnięcia (0..1) i stan odświeżania —
- * AppShell renderuje wskaźnik z kropek loadera (te same niebieskie kropki,
- * decyzja r.21). Dotyk tylko: mysz nie wywołuje odświeżania.
+ * odświeża dane. Zwraca postęp pociągnięcia (0..1), przesunięcie treści w px
+ * (treść podąża za palcem z oporem) i stan odświeżania — AppShell renderuje
+ * wskaźnik z kropek loadera (CRS green) i przesuwa treść translateY(pull).
+ * Dotyk tylko: mysz nie wywołuje odświeżania.
  */
 import { useEffect, useRef, useState } from "react";
 
@@ -14,9 +15,15 @@ const RESISTANCE = 0.45;
 
 export function usePullToRefresh(onRefresh: () => Promise<unknown>): {
 	progress: number;
+	/** Przesunięcie treści w px (po oporze) — treść podąża za palcem. */
+	pull: number;
+	/** Palec jest w dół i ciągnie — treść bez transition (śledzi 1:1 z oporem). */
+	holding: boolean;
 	refreshing: boolean;
 } {
 	const [progress, setProgress] = useState(0);
+	const [pull, setPull] = useState(0);
+	const [holding, setHolding] = useState(false);
 	const [refreshing, setRefreshing] = useState(false);
 	const refreshingRef = useRef(false);
 
@@ -34,6 +41,7 @@ export function usePullToRefresh(onRefresh: () => Promise<unknown>): {
 			if (!touch) return;
 			startY = touch.clientY;
 			distance = 0;
+			setHolding(true);
 		};
 
 		const onTouchMove = (event: TouchEvent) => {
@@ -44,18 +52,22 @@ export function usePullToRefresh(onRefresh: () => Promise<unknown>): {
 			if (delta <= 0) {
 				distance = 0;
 				setProgress(0);
+				setPull(0);
 				return;
 			}
 			distance = Math.min(MAX_PULL, delta * RESISTANCE);
 			setProgress(Math.min(1, distance / THRESHOLD));
-			// Tylko przy pociąganiu w dół z góry: blokuje natywny odbicie-scroll,
-			// żeby wskaźnik był jedyną odpowiedzią na gest.
+			setPull(distance);
+			// Tylko przy pociąganiu w dół z góry: blokuje natywny odbicie-scroll
+			// i natywny pull-to-refresh przeglądarki, żeby wskaźnik i przesunięta
+			// treść były jedyną odpowiedzią na gest.
 			event.preventDefault();
 		};
 
 		const onTouchEnd = () => {
 			if (startY === null) return;
 			startY = null;
+			setHolding(false);
 			if (distance >= THRESHOLD) {
 				setRefreshing(true);
 				setProgress(1);
@@ -66,6 +78,9 @@ export function usePullToRefresh(onRefresh: () => Promise<unknown>): {
 			} else {
 				setProgress(0);
 			}
+			// Puszczenie: treść sprężyście wraca do 0 (transition w AppShellu),
+			// wskaźnik powyżej progu zostaje do końca odświeżania.
+			setPull(0);
 			distance = 0;
 		};
 
@@ -79,5 +94,5 @@ export function usePullToRefresh(onRefresh: () => Promise<unknown>): {
 		};
 	}, [onRefresh]);
 
-	return { progress, refreshing };
+	return { progress, pull, holding, refreshing };
 }

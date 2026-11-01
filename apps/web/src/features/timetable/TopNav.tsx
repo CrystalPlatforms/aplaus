@@ -1,4 +1,4 @@
-import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { shiftTimetableMonth, shiftTimetableWeek, useTimetableNav } from "./nav-store";
@@ -26,7 +26,8 @@ export function TimetableRangeNav() {
 				aria-label={isMonth ? "Poprzedni miesiąc" : "Poprzedni tydzień"}
 				onClick={() => (isMonth ? shiftTimetableMonth(-1) : shiftTimetableWeek(-1))}
 			>
-				<LuChevronLeft aria-hidden="true" />
+				{/* size-4: Tabler default to 24px — tu 16px, jak w pierwotnym wyglądzie. */}
+				<IconChevronLeft className="size-4" aria-hidden="true" />
 			</Button>
 			<span className="min-w-24 px-1 text-center text-xs font-semibold">
 				{isMonth ? monthLabel(nav.month) : weekRangeLabel(nav.weekStart)}
@@ -38,7 +39,7 @@ export function TimetableRangeNav() {
 				aria-label={isMonth ? "Następny miesiąc" : "Następny tydzień"}
 				onClick={() => (isMonth ? shiftTimetableMonth(1) : shiftTimetableWeek(1))}
 			>
-				<LuChevronRight aria-hidden="true" />
+				<IconChevronRight className="size-4" aria-hidden="true" />
 			</Button>
 		</div>
 	);

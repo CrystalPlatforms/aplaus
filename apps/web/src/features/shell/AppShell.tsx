@@ -34,7 +34,7 @@ export function AppShell() {
 	const [switcherOpen, setSwitcherOpen] = useState(false);
 	const queryClient = useQueryClient();
 	const refresh = useCallback(() => queryClient.invalidateQueries(), [queryClient]);
-	const { progress, refreshing } = usePullToRefresh(refresh);
+	const { progress, pull, holding, refreshing } = usePullToRefresh(refresh);
 	// The sidebar refresh icon does a real page reload — the F5/Cmd+R
 	// equivalent (pull-to-refresh below stays data-only for the gesture).
 	const reloadPage = useCallback(() => window.location.reload(), []);
@@ -84,7 +84,24 @@ export function AppShell() {
 							</div>
 						</div>
 					) : null}
-					<main className="pb-24 md:pb-8 px-4 pt-4 max-w-xl md:max-w-3xl mx-auto">
+					{/* Pull-to-refresh: treść podąża za palcem (translateY(pull)) —
+					    podczas trzymania bez transition, po puszczeniu sprężysty powrót.
+					    Transform tylko przy aktywnym geście: bez niego main nie tworzy
+					    containing blocku dla warstwy fixed (ViewLoader). prefers-reduced-motion
+					    zwija transition globalną regułą w index.css. */}
+					<main
+						className="pb-24 md:pb-8 px-4 pt-4 max-w-xl md:max-w-3xl mx-auto"
+						style={
+							pull > 0
+								? {
+										transform: `translateY(${pull}px)`,
+										transition: holding
+											? "none"
+											: "transform 280ms cubic-bezier(0.34, 1.3, 0.64, 1)",
+									}
+								: undefined
+						}
+					>
 						{isSubject ? (
 							<SubjectGradesRoute />
 						) : isCompose ? (

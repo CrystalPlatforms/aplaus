@@ -6,8 +6,8 @@
  * purely in CSS. Escape, backdrop click and the X all close through one
  * onOpenChange entry point; focus is trapped by Radix.
  */
+import { IconX } from "@tabler/icons-react";
 import type { ReactNode } from "react";
-import { LuX } from "react-icons/lu";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
@@ -72,7 +72,7 @@ function OverlayHeader({
 				onClick={() => onOpenChange(false)}
 				className="text-muted-foreground hover:text-foreground shrink-0 rounded-sm p-1"
 			>
-				<LuX className="size-5" aria-hidden="true" />
+				<IconX className="size-5" aria-hidden="true" />
 				<span className="sr-only">Zamknij</span>
 			</button>
 		</div>
